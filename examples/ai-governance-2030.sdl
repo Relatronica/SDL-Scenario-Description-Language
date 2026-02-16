@@ -1,0 +1,274 @@
+// ============================================================
+// SDL Example: Global AI Governance 2030
+// ============================================================
+// Explores scenarios for the evolution of AI regulation,
+// labor market impact, and societal trust in AI systems
+// across major geopolitical blocs.
+// ============================================================
+
+scenario "Global AI Governance 2030" {
+  timeframe: 2025 -> 2035
+  resolution: yearly
+  confidence: 0.40
+  author: "Relatronica"
+  version: "1.0"
+  description: "Models the interplay between AI regulation, 
+                labor displacement, and public trust across 
+                EU, US, and China"
+  tags: ["ai", "governance", "labor", "global"]
+
+  // ── Assumptions ──
+
+  assumption eu_ai_act_enforcement {
+    value: 0.75
+    source: "EU AI Act enforcement timeline, 2025"
+    confidence: 0.7
+    uncertainty: beta(6, 2)
+  }
+
+  assumption us_regulatory_stance {
+    value: 0.35
+    source: "Executive Order on AI Safety, ongoing"
+    confidence: 0.3
+    uncertainty: beta(3, 5)
+  }
+
+  assumption china_ai_investment {
+    value: 50B USD
+    source: "State Council AI Development Plan"
+    confidence: 0.5
+    uncertainty: normal(±30%)
+  }
+
+  assumption global_compute_growth {
+    value: 4.2
+    source: "Epoch AI compute tracking, 2024"
+    confidence: 0.6
+    uncertainty: lognormal(1.4, 0.3)
+  }
+
+  // ── Parameters ──
+
+  parameter automation_adoption_rate {
+    value: 12%
+    range: [5%, 25%]
+    description: "Annual rate of AI-driven automation adoption in workforce"
+  }
+
+  parameter regulatory_friction {
+    value: 0.3
+    range: [0.1, 0.8]
+    description: "How much regulation slows AI deployment (0=none, 1=full stop)"
+  }
+
+  // ── Variables ──
+
+  variable ai_capability_index {
+    description: "Composite AI capability index (2025=100)"
+    unit: "index"
+
+    2025: 100
+    2027: 180
+    2029: 320
+    2031: 500
+    2033: 720
+    2035: 950
+
+    depends_on: global_compute_growth, china_ai_investment
+    model: exponential(rate=0.25, base=100)
+    uncertainty: normal(±25%)
+    interpolation: spline
+  }
+
+  variable jobs_displaced_eu {
+    description: "Cumulative jobs displaced by AI in EU"
+    unit: "millions"
+
+    2025: 0.5
+    2027: 1.8
+    2029: 4.2
+    2031: 7.5
+    2033: 11.0
+    2035: 14.5
+
+    depends_on: ai_capability_index, eu_ai_act_enforcement, automation_adoption_rate
+    uncertainty: normal(±20%)
+    interpolation: linear
+  }
+
+  variable jobs_displaced_us {
+    description: "Cumulative jobs displaced by AI in US"
+    unit: "millions"
+
+    2025: 0.8
+    2027: 2.5
+    2029: 6.0
+    2031: 10.5
+    2033: 15.0
+    2035: 19.5
+
+    depends_on: ai_capability_index, us_regulatory_stance, automation_adoption_rate
+    uncertainty: normal(±22%)
+    interpolation: linear
+  }
+
+  variable jobs_created_ai {
+    description: "New jobs created in AI-adjacent sectors globally"
+    unit: "millions"
+
+    2025: 2.0
+    2027: 4.5
+    2029: 8.0
+    2031: 12.0
+    2033: 16.5
+    2035: 21.0
+
+    depends_on: ai_capability_index
+    uncertainty: normal(±18%)
+    interpolation: spline
+  }
+
+  variable public_trust_ai_eu {
+    description: "Public trust in AI systems in EU (0-1)"
+    unit: "index"
+
+    2025: 0.42
+    2027: 0.45
+    2029: 0.48
+    2031: 0.50
+    2033: 0.53
+    2035: 0.55
+
+    depends_on: eu_ai_act_enforcement, jobs_displaced_eu
+    model: sigmoid(k=0.3, midpoint=2030)
+    uncertainty: beta(4, 4)
+    interpolation: spline
+  }
+
+  variable public_trust_ai_us {
+    description: "Public trust in AI systems in US (0-1)"
+    unit: "index"
+
+    2025: 0.38
+    2027: 0.36
+    2029: 0.33
+    2031: 0.32
+    2033: 0.34
+    2035: 0.38
+
+    depends_on: us_regulatory_stance, jobs_displaced_us
+    uncertainty: beta(3, 5)
+    interpolation: spline
+  }
+
+  variable ai_incident_rate {
+    description: "Annual reported AI incidents (safety, bias, misuse)"
+    unit: "incidents"
+
+    2025: 450
+    2027: 800
+    2029: 1200
+    2031: 1800
+    2033: 2100
+    2035: 1900
+
+    depends_on: ai_capability_index, eu_ai_act_enforcement
+    uncertainty: normal(±30%)
+    interpolation: spline
+  }
+
+  // ── Branches ──
+
+  branch "AGI Breakthrough" when ai_capability_index > 800 {
+    probability: 0.08
+
+    variable jobs_displaced_eu {
+      2033: 18.0
+      2035: 28.0
+      uncertainty: normal(±30%)
+    }
+
+    variable jobs_displaced_us {
+      2033: 25.0
+      2035: 38.0
+      uncertainty: normal(±30%)
+    }
+
+    variable public_trust_ai_eu {
+      2033: 0.30
+      2035: 0.25
+      uncertainty: beta(2, 6)
+    }
+  }
+
+  branch "Regulatory Convergence" when eu_ai_act_enforcement > 0.7 and us_regulatory_stance > 0.5 {
+    probability: 0.25
+
+    variable ai_incident_rate {
+      2031: 1200
+      2033: 900
+      2035: 600
+      uncertainty: normal(±20%)
+    }
+
+    variable public_trust_ai_eu {
+      2031: 0.58
+      2033: 0.65
+      2035: 0.72
+      uncertainty: beta(6, 3)
+    }
+  }
+
+  branch "AI Arms Race" when china_ai_investment > 80B and us_regulatory_stance < 0.2 {
+    probability: 0.18
+
+    variable ai_capability_index {
+      2031: 700
+      2033: 1200
+      2035: 2000
+      uncertainty: normal(±35%)
+    }
+
+    variable ai_incident_rate {
+      2031: 2500
+      2033: 3800
+      2035: 5000
+      uncertainty: normal(±40%)
+    }
+  }
+
+  // ── Impacts ──
+
+  impact global_net_employment {
+    description: "Net global employment effect of AI"
+    unit: "millions"
+    derives_from: jobs_created_ai, jobs_displaced_eu, jobs_displaced_us
+    formula: jobs_created_ai - jobs_displaced_eu - jobs_displaced_us
+  }
+
+  impact regulatory_divergence {
+    description: "Gap between EU and US regulatory approaches"
+    unit: "index"
+    derives_from: eu_ai_act_enforcement, us_regulatory_stance
+    formula: abs(eu_ai_act_enforcement - us_regulatory_stance)
+  }
+
+  impact trust_gap {
+    description: "Trust gap between EU and US citizens"
+    unit: "index"
+    derives_from: public_trust_ai_eu, public_trust_ai_us
+    formula: public_trust_ai_eu - public_trust_ai_us
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 10000
+    method: monte_carlo
+    seed: 2026
+    output: distribution
+    percentiles: [5, 10, 25, 50, 75, 90, 95]
+    convergence: 0.01
+    timeout: 30s
+  }
+}

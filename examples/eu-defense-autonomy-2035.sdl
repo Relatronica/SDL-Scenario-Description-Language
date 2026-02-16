@@ -1,0 +1,340 @@
+// ============================================================
+// SDL Example: European Defense Autonomy 2035
+// ============================================================
+// Models Europe's path toward strategic autonomy in defense,
+// exploring the interplay between US commitment to NATO,
+// EU defense spending, industrial capacity, and threat
+// perception. High geopolitical uncertainty throughout.
+// ============================================================
+
+scenario "European Defense Autonomy 2035" {
+  timeframe: 2025 -> 2038
+  resolution: yearly
+  confidence: 0.25
+  author: "Relatronica"
+  version: "1.0"
+  description: "Explores trajectories for European strategic defense 
+                autonomy under shifting transatlantic relations, 
+                rising threat perceptions, and industrial constraints"
+  tags: ["defense", "europe", "geopolitics", "nato", "industry"]
+
+  // ── Assumptions ──
+
+  assumption us_nato_commitment {
+    value: 0.65
+    source: "US Congressional NATO support votes + executive posture, 2025"
+    confidence: 0.25
+    uncertainty: beta(3, 3)
+  }
+
+  assumption russia_threat_level {
+    value: 0.70
+    source: "EU Intelligence and Situation Centre (INTCEN) assessment, 2025"
+    confidence: 0.3
+    uncertainty: beta(5, 3)
+  }
+
+  assumption eu_political_cohesion {
+    value: 0.55
+    source: "European Council unanimity rate on CFSP, 2024"
+    confidence: 0.35
+    uncertainty: beta(4, 4)
+  }
+
+  assumption global_arms_market_growth {
+    value: 6.5%
+    source: "SIPRI Arms Transfers Database trend, 2024"
+    confidence: 0.5
+    uncertainty: normal(±25%)
+  }
+
+  assumption china_taiwan_tension {
+    value: 0.50
+    source: "Composite geopolitical risk index, Indo-Pacific, 2025"
+    confidence: 0.2
+    uncertainty: beta(3, 3)
+  }
+
+  // ── Parameters ──
+
+  parameter eu_defense_budget_target {
+    value: 2.5%
+    range: [1.5%, 4%]
+    description: "Average EU member state defense spending target as % of GDP"
+  }
+
+  parameter joint_procurement_share {
+    value: 18%
+    range: [10%, 50%]
+    description: "Share of defense procurement done jointly through EU mechanisms"
+  }
+
+  parameter edirpa_budget {
+    value: 1.5B EUR
+    range: [0.5B EUR, 8B EUR]
+    description: "EU Defence Industry Reinforcement through common Procurement Act budget"
+  }
+
+  // ── Variables ──
+
+  variable avg_defense_spending_gdp {
+    description: "Average EU member defense spending as % of GDP"
+    unit: "%"
+
+    2025: 1.9%
+    2027: 2.1%
+    2029: 2.3%
+    2031: 2.5%
+    2033: 2.7%
+    2035: 2.9%
+    2038: 3.1%
+
+    depends_on: russia_threat_level, us_nato_commitment, eu_defense_budget_target
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  variable ammunition_production_capacity {
+    description: "EU annual ammunition production capacity index (2025=100)"
+    unit: "index"
+
+    2025: 100
+    2027: 130
+    2029: 175
+    2031: 230
+    2033: 290
+    2035: 350
+    2038: 420
+
+    depends_on: avg_defense_spending_gdp, edirpa_budget
+    model: logistic(k=0.2, midpoint=2031, max=500)
+    uncertainty: normal(±20%)
+    interpolation: spline
+  }
+
+  variable us_equipment_dependency {
+    description: "EU dependency on US defense equipment (% of total procurement)"
+    unit: "%"
+
+    2025: 55%
+    2027: 52%
+    2029: 48%
+    2031: 43%
+    2033: 38%
+    2035: 33%
+    2038: 28%
+
+    depends_on: joint_procurement_share, us_nato_commitment, edirpa_budget
+    uncertainty: normal(±12%)
+    interpolation: linear
+  }
+
+  variable rapid_deployment_capacity {
+    description: "EU Rapid Deployment Capacity (troops deployable in 30 days)"
+    unit: "thousands"
+
+    2025: 5
+    2027: 12
+    2029: 22
+    2031: 35
+    2033: 48
+    2035: 60
+    2038: 70
+
+    depends_on: avg_defense_spending_gdp, eu_political_cohesion
+    model: logistic(k=0.25, midpoint=2030, max=80)
+    uncertainty: normal(±25%)
+    interpolation: spline
+  }
+
+  variable interoperability_score {
+    description: "EU forces interoperability score (0-100)"
+    unit: "index"
+
+    2025: 35
+    2027: 40
+    2029: 47
+    2031: 55
+    2033: 62
+    2035: 68
+    2038: 75
+
+    depends_on: joint_procurement_share, eu_political_cohesion
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  variable defense_industry_employment {
+    description: "EU defense industry direct employment"
+    unit: "thousands"
+
+    2025: 470
+    2027: 510
+    2029: 560
+    2031: 620
+    2033: 680
+    2035: 740
+    2038: 800
+
+    depends_on: avg_defense_spending_gdp, ammunition_production_capacity
+    uncertainty: normal(±12%)
+    interpolation: linear
+  }
+
+  variable cyber_defense_readiness {
+    description: "EU collective cyber defense readiness index (0-100)"
+    unit: "index"
+
+    2025: 42
+    2027: 50
+    2029: 58
+    2031: 65
+    2033: 72
+    2035: 78
+    2038: 84
+
+    depends_on: avg_defense_spending_gdp, interoperability_score
+    model: logistic(k=0.18, midpoint=2030, max=95)
+    uncertainty: normal(±18%)
+    interpolation: spline
+  }
+
+  // ── Branches ──
+
+  branch "US Withdrawal" when us_nato_commitment < 0.35 {
+    probability: 0.15
+
+    variable avg_defense_spending_gdp {
+      2029: 2.8%
+      2031: 3.3%
+      2033: 3.6%
+      2035: 3.8%
+      uncertainty: normal(±12%)
+    }
+
+    variable us_equipment_dependency {
+      2029: 42%
+      2031: 32%
+      2033: 22%
+      2035: 15%
+      uncertainty: normal(±15%)
+    }
+
+    variable rapid_deployment_capacity {
+      2031: 50
+      2033: 65
+      2035: 78
+      uncertainty: normal(±20%)
+    }
+  }
+
+  branch "EU Army" when eu_political_cohesion > 0.75 and avg_defense_spending_gdp > 2.8% {
+    probability: 0.10
+
+    variable interoperability_score {
+      2031: 68
+      2033: 78
+      2035: 88
+      2038: 94
+      uncertainty: normal(±10%)
+    }
+
+    variable rapid_deployment_capacity {
+      2031: 45
+      2033: 65
+      2035: 80
+      2038: 95
+      uncertainty: normal(±15%)
+    }
+
+    variable joint_procurement_share {
+      2031: 35%
+      2033: 48%
+      2035: 60%
+      uncertainty: normal(±12%)
+    }
+  }
+
+  branch "Eastern Escalation" when russia_threat_level > 0.85 {
+    probability: 0.18
+
+    variable avg_defense_spending_gdp {
+      2027: 2.5%
+      2029: 3.0%
+      2031: 3.5%
+      2033: 3.8%
+      2035: 4.0%
+      uncertainty: normal(±10%)
+    }
+
+    variable ammunition_production_capacity {
+      2029: 250
+      2031: 400
+      2033: 550
+      2035: 650
+      uncertainty: normal(±20%)
+    }
+
+    variable cyber_defense_readiness {
+      2029: 68
+      2031: 78
+      2033: 85
+      2035: 92
+      uncertainty: normal(±12%)
+    }
+  }
+
+  branch "Indo-Pacific Diversion" when china_taiwan_tension > 0.8 and us_nato_commitment < 0.5 {
+    probability: 0.12
+
+    variable us_equipment_dependency {
+      2029: 38%
+      2031: 28%
+      2033: 20%
+      2035: 15%
+      uncertainty: normal(±15%)
+    }
+
+    variable avg_defense_spending_gdp {
+      2029: 2.6%
+      2031: 3.0%
+      2033: 3.3%
+      uncertainty: normal(±15%)
+    }
+  }
+
+  // ── Impacts ──
+
+  impact strategic_autonomy_index {
+    description: "Composite EU strategic defense autonomy score"
+    unit: "index"
+    derives_from: us_equipment_dependency, rapid_deployment_capacity, interoperability_score, cyber_defense_readiness
+    formula: ((100 - us_equipment_dependency) * 0.25) + (rapid_deployment_capacity / 80 * 25) + (interoperability_score * 0.25) + (cyber_defense_readiness * 0.25)
+  }
+
+  impact deterrence_credibility {
+    description: "EU deterrence credibility index"
+    unit: "index"
+    derives_from: avg_defense_spending_gdp, ammunition_production_capacity, rapid_deployment_capacity
+    formula: (avg_defense_spending_gdp / 3 * 30) + (ammunition_production_capacity / 500 * 40) + (rapid_deployment_capacity / 80 * 30)
+  }
+
+  impact industrial_sovereignty {
+    description: "Defense industrial sovereignty score"
+    unit: "index"
+    derives_from: us_equipment_dependency, defense_industry_employment, joint_procurement_share
+    formula: ((100 - us_equipment_dependency) * 0.4) + (defense_industry_employment / 1000 * 30) + (joint_procurement_share * 0.3)
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 10000
+    method: monte_carlo
+    seed: 2035
+    output: distribution
+    percentiles: [5, 10, 25, 50, 75, 90, 95]
+    convergence: 0.01
+    timeout: 30s
+  }
+}

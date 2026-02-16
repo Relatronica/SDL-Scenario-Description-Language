@@ -1,0 +1,364 @@
+// ============================================================
+// SDL Example: Demographic Winter Europe 2050
+// ============================================================
+// Models Europe's aging crisis: shrinking workforce,
+// pension sustainability, migration policy trade-offs,
+// and cascading effects on GDP and public finance.
+// Demonstrates composability with green-transition-italy.sdl.
+// ============================================================
+
+import "green-transition-italy.sdl" as green
+
+scenario "Demographic Winter Europe 2050" {
+  timeframe: 2025 -> 2060
+  resolution: yearly
+  confidence: 0.45
+  author: "Relatronica"
+  version: "1.0"
+  description: "Explores the consequences of Europe's demographic 
+                decline on pensions, labor markets, GDP, and fiscal 
+                sustainability across the EU-27"
+  tags: ["demographics", "europe", "pensions", "migration", "fiscal"]
+
+  // ── Assumptions ──
+
+  assumption fertility_rate {
+    value: 1.46
+    source: "Eurostat, EU-27 TFR 2024"
+    confidence: 0.7
+    uncertainty: normal(±8%)
+
+    bind {
+      source: "https://ec.europa.eu/eurostat/api/fertility/eu27"
+      refresh: yearly
+      field: "total_fertility_rate"
+      fallback: 1.46
+    }
+  }
+
+  assumption net_migration {
+    value: 1.5M
+    source: "Eurostat migration statistics 2024"
+    confidence: 0.4
+    uncertainty: triangular(0.5M, 1.5M, 3.5M)
+  }
+
+  assumption retirement_age {
+    value: 65
+    source: "EU average statutory retirement age, 2025"
+    confidence: 0.8
+    uncertainty: uniform(64, 70)
+  }
+
+  assumption productivity_growth {
+    value: 1.2%
+    source: "European Commission Ageing Report 2024"
+    confidence: 0.5
+    uncertainty: normal(±30%)
+  }
+
+  // ── Parameters ──
+
+  parameter natality_incentive_budget {
+    value: 25B EUR
+    range: [5B EUR, 80B EUR]
+    description: "Annual EU-wide spending on family support and birth incentives"
+  }
+
+  parameter integration_efficiency {
+    value: 0.6
+    range: [0.3, 0.9]
+    description: "How effectively migrants integrate into the labor market (0-1)"
+  }
+
+  parameter pension_reform_speed {
+    value: 0.4
+    range: [0.1, 0.8]
+    description: "Speed of pension system reform implementation (0=frozen, 1=rapid)"
+  }
+
+  // ── Variables ──
+
+  variable total_population {
+    description: "EU-27 total population"
+    unit: "millions"
+
+    2025: 448
+    2030: 446
+    2035: 442
+    2040: 436
+    2045: 428
+    2050: 418
+    2055: 407
+    2060: 395
+
+    depends_on: fertility_rate, net_migration
+    model: linear(slope=-1.5, intercept=448)
+    uncertainty: normal(±3%)
+    interpolation: spline
+  }
+
+  variable working_age_population {
+    description: "Population aged 15-64"
+    unit: "millions"
+
+    2025: 290
+    2030: 280
+    2035: 268
+    2040: 255
+    2045: 242
+    2050: 228
+    2055: 216
+    2060: 205
+
+    depends_on: fertility_rate, net_migration, retirement_age
+    uncertainty: normal(±5%)
+    interpolation: spline
+  }
+
+  variable elderly_population {
+    description: "Population aged 65+"
+    unit: "millions"
+
+    2025: 95
+    2030: 105
+    2035: 115
+    2040: 123
+    2045: 128
+    2050: 130
+    2055: 128
+    2060: 124
+
+    depends_on: total_population
+    uncertainty: normal(±4%)
+    interpolation: spline
+  }
+
+  variable dependency_ratio {
+    description: "Old-age dependency ratio (65+ / 15-64)"
+    unit: "%"
+
+    2025: 33%
+    2030: 37%
+    2035: 43%
+    2040: 48%
+    2045: 53%
+    2050: 57%
+    2055: 59%
+    2060: 60%
+
+    depends_on: working_age_population, elderly_population
+    uncertainty: normal(±8%)
+    interpolation: spline
+  }
+
+  variable pension_expenditure_gdp {
+    description: "Public pension expenditure as % of GDP"
+    unit: "%"
+
+    2025: 12.5%
+    2030: 13.2%
+    2035: 14.1%
+    2040: 15.0%
+    2045: 15.8%
+    2050: 16.4%
+    2055: 16.8%
+    2060: 17.0%
+
+    depends_on: dependency_ratio, pension_reform_speed, productivity_growth
+    uncertainty: normal(±12%)
+    interpolation: spline
+  }
+
+  variable gdp_growth_rate {
+    description: "Annual real GDP growth rate EU-27"
+    unit: "%"
+
+    2025: 1.4%
+    2030: 1.1%
+    2035: 0.8%
+    2040: 0.5%
+    2045: 0.3%
+    2050: 0.1%
+    2055: -0.1%
+    2060: -0.3%
+
+    depends_on: working_age_population, productivity_growth
+    uncertainty: normal(±25%)
+    interpolation: spline
+  }
+
+  variable healthcare_expenditure_gdp {
+    description: "Public healthcare expenditure as % of GDP"
+    unit: "%"
+
+    2025: 7.5%
+    2030: 7.9%
+    2035: 8.4%
+    2040: 8.9%
+    2045: 9.3%
+    2050: 9.7%
+    2055: 10.0%
+    2060: 10.2%
+
+    depends_on: elderly_population, dependency_ratio
+    uncertainty: normal(±10%)
+    interpolation: linear
+  }
+
+  variable labor_shortage_index {
+    description: "Labor shortage severity index (2025=100)"
+    unit: "index"
+
+    2025: 100
+    2030: 115
+    2035: 135
+    2040: 155
+    2045: 172
+    2050: 185
+    2055: 192
+    2060: 198
+
+    depends_on: working_age_population, net_migration, integration_efficiency
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  // ── Branches ──
+
+  branch "Open Migration" when net_migration > 2.5M {
+    probability: 0.20
+
+    variable working_age_population {
+      2035: 278
+      2040: 270
+      2045: 262
+      2050: 255
+      uncertainty: normal(±6%)
+    }
+
+    variable gdp_growth_rate {
+      2035: 1.2%
+      2040: 0.9%
+      2045: 0.7%
+      2050: 0.5%
+      uncertainty: normal(±20%)
+    }
+
+    variable labor_shortage_index {
+      2035: 118
+      2040: 125
+      2050: 140
+      uncertainty: normal(±12%)
+    }
+  }
+
+  branch "Baby Boom Policy" when natality_incentive_budget > 50B and fertility_rate > 1.6 {
+    probability: 0.10
+
+    variable total_population {
+      2040: 445
+      2050: 438
+      2060: 430
+      uncertainty: normal(±4%)
+    }
+
+    variable dependency_ratio {
+      2040: 45%
+      2050: 52%
+      2060: 50%
+      uncertainty: normal(±8%)
+    }
+  }
+
+  branch "Secular Stagnation" when gdp_growth_rate < 0.3% and dependency_ratio > 50% {
+    probability: 0.30
+
+    variable pension_expenditure_gdp {
+      2045: 17.5%
+      2050: 19.0%
+      2055: 20.5%
+      2060: 21.5%
+      uncertainty: normal(±15%)
+    }
+
+    variable gdp_growth_rate {
+      2045: -0.2%
+      2050: -0.5%
+      2055: -0.8%
+      2060: -1.0%
+      uncertainty: normal(±30%)
+    }
+  }
+
+  branch "Automation Offset" when labor_shortage_index > 160 and productivity_growth > 1.5% {
+    probability: 0.22
+
+    variable gdp_growth_rate {
+      2040: 1.0%
+      2045: 0.9%
+      2050: 0.8%
+      uncertainty: normal(±20%)
+    }
+
+    variable labor_shortage_index {
+      2040: 130
+      2045: 125
+      2050: 120
+      uncertainty: normal(±15%)
+    }
+  }
+
+  // ── Impacts ──
+
+  impact fiscal_sustainability {
+    description: "Fiscal sustainability gap (pension + healthcare as % GDP)"
+    unit: "%"
+    derives_from: pension_expenditure_gdp, healthcare_expenditure_gdp
+    formula: pension_expenditure_gdp + healthcare_expenditure_gdp
+  }
+
+  impact workforce_decline {
+    description: "Cumulative working-age population decline since 2025"
+    unit: "millions"
+    derives_from: working_age_population
+    formula: 290 - working_age_population
+  }
+
+  impact economic_vitality {
+    description: "Economic vitality index combining GDP growth and labor market"
+    unit: "index"
+    derives_from: gdp_growth_rate, labor_shortage_index
+    formula: (gdp_growth_rate * 50) + (200 - labor_shortage_index)
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 10000
+    method: monte_carlo
+    seed: 2050
+    output: distribution
+    percentiles: [5, 10, 25, 50, 75, 90, 95]
+    convergence: 0.01
+    timeout: 45s
+  }
+
+  // ── Calibration ──
+
+  calibrate total_population {
+    historical: "https://ec.europa.eu/eurostat/api/population/eu27/2000-2025"
+    method: bayesian_update
+    window: 10y
+    prior: normal(±5%)
+    update_frequency: yearly
+  }
+
+  calibrate fertility_rate {
+    historical: "https://ec.europa.eu/eurostat/api/fertility/eu27/2000-2025"
+    method: bayesian_update
+    window: 10y
+    prior: normal(±10%)
+    update_frequency: yearly
+  }
+}

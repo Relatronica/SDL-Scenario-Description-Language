@@ -1,0 +1,349 @@
+// ============================================================
+// SDL Example: Water Scarcity Mediterranean 2040
+// ============================================================
+// Models the escalating water crisis in the Mediterranean
+// basin, exploring the interplay between climate change,
+// agricultural demand, infrastructure investment, and
+// cross-border water governance.
+// Heavily uses bind, watch, and calibrate features.
+// ============================================================
+
+scenario "Water Scarcity Mediterranean 2040" {
+  timeframe: 2025 -> 2045
+  resolution: yearly
+  confidence: 0.40
+  author: "Relatronica"
+  version: "1.0"
+  description: "Explores pathways for the Mediterranean water crisis, 
+                modeling rainfall decline, agricultural adaptation, 
+                desalination capacity, and geopolitical water tensions"
+  tags: ["water", "climate", "agriculture", "mediterranean", "infrastructure"]
+
+  // ── Assumptions ──
+
+  assumption annual_rainfall_index {
+    value: 100
+    source: "Copernicus ERA5 Mediterranean precipitation baseline, 2020-2024"
+    confidence: 0.6
+    uncertainty: normal(±18%)
+
+    bind {
+      source: "https://cds.climate.copernicus.eu/api/v2/precipitation/mediterranean"
+      refresh: monthly
+      field: "annual_precipitation_index"
+      fallback: 100
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.85
+      error when: actual < assumed * 0.70
+
+      on_trigger {
+        recalculate: true
+        notify: ["author", "subscribers"]
+        suggest: "drought_scenario_activation"
+      }
+    }
+  }
+
+  assumption avg_temperature_anomaly {
+    value: 1.3
+    source: "IPCC AR6 Mediterranean hotspot, current anomaly vs. pre-industrial"
+    confidence: 0.7
+    uncertainty: normal(±15%)
+
+    bind {
+      source: "https://cds.climate.copernicus.eu/api/v2/temperature/mediterranean"
+      refresh: monthly
+      field: "annual_anomaly_celsius"
+      fallback: 1.3
+    }
+  }
+
+  assumption eu_water_directive_enforcement {
+    value: 0.65
+    source: "EU Water Framework Directive compliance, 2024"
+    confidence: 0.5
+    uncertainty: beta(5, 3)
+  }
+
+  assumption desalination_cost_per_m3 {
+    value: 0.55 EUR
+    source: "IDA Desalination Yearbook 2024"
+    confidence: 0.6
+    uncertainty: normal(±20%)
+  }
+
+  // ── Parameters ──
+
+  parameter infrastructure_investment {
+    value: 8B EUR
+    range: [3B EUR, 25B EUR]
+    description: "Annual EU + national investment in water infrastructure"
+  }
+
+  parameter irrigation_efficiency_target {
+    value: 0.75
+    range: [0.5, 0.95]
+    description: "Target irrigation efficiency for Mediterranean agriculture"
+  }
+
+  parameter water_pricing_reform {
+    value: 0.4
+    range: [0.1, 0.9]
+    description: "Degree of water pricing reform implementation (0=subsidized, 1=full cost recovery)"
+  }
+
+  // ── Variables ──
+
+  variable water_stress_index {
+    description: "Mediterranean water stress index (0=abundant, 100=extreme scarcity)"
+    unit: "index"
+
+    2025: 42
+    2028: 47
+    2030: 52
+    2033: 58
+    2035: 63
+    2038: 68
+    2040: 72
+    2045: 78
+
+    depends_on: annual_rainfall_index, avg_temperature_anomaly
+    model: logistic(k=0.08, midpoint=2035, max=95)
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  variable groundwater_depletion {
+    description: "Cumulative groundwater depletion vs. 2025 baseline"
+    unit: "%"
+
+    2025: 0%
+    2028: 4%
+    2030: 8%
+    2033: 14%
+    2035: 19%
+    2040: 28%
+    2045: 35%
+
+    depends_on: water_stress_index, irrigation_efficiency_target
+    uncertainty: normal(±20%)
+    interpolation: linear
+  }
+
+  variable desalination_capacity {
+    description: "Installed desalination capacity in Mediterranean countries"
+    unit: "million m³/day"
+
+    2025: 12
+    2028: 15
+    2030: 19
+    2033: 24
+    2035: 30
+    2040: 42
+    2045: 55
+
+    depends_on: infrastructure_investment, desalination_cost_per_m3
+    uncertainty: normal(±18%)
+    interpolation: spline
+  }
+
+  variable agricultural_output_index {
+    description: "Mediterranean agricultural output index (2025=100)"
+    unit: "index"
+
+    2025: 100
+    2028: 97
+    2030: 93
+    2033: 88
+    2035: 84
+    2040: 76
+    2045: 70
+
+    depends_on: water_stress_index, irrigation_efficiency_target, groundwater_depletion
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  variable population_at_water_risk {
+    description: "Mediterranean population under high water stress"
+    unit: "millions"
+
+    2025: 80
+    2028: 95
+    2030: 110
+    2033: 128
+    2035: 142
+    2040: 165
+    2045: 180
+
+    depends_on: water_stress_index, desalination_capacity
+    uncertainty: normal(±12%)
+    interpolation: linear
+  }
+
+  variable water_conflict_risk {
+    description: "Transboundary water conflict risk index (0-100)"
+    unit: "index"
+
+    2025: 22
+    2028: 28
+    2030: 35
+    2033: 42
+    2035: 48
+    2040: 58
+    2045: 65
+
+    depends_on: water_stress_index, eu_water_directive_enforcement
+    uncertainty: beta(4, 4)
+    interpolation: spline
+  }
+
+  variable ecosystem_health {
+    description: "Mediterranean freshwater ecosystem health index (100=pristine)"
+    unit: "index"
+
+    2025: 58
+    2028: 54
+    2030: 50
+    2033: 45
+    2035: 41
+    2040: 35
+    2045: 30
+
+    depends_on: groundwater_depletion, water_stress_index
+    uncertainty: normal(±12%)
+    interpolation: linear
+  }
+
+  // ── Branches ──
+
+  branch "Extreme Drought" when annual_rainfall_index < 70 and avg_temperature_anomaly > 2.0 {
+    probability: 0.18
+
+    variable water_stress_index {
+      2030: 65
+      2035: 80
+      2040: 90
+      uncertainty: normal(±10%)
+    }
+
+    variable agricultural_output_index {
+      2030: 82
+      2035: 65
+      2040: 50
+      uncertainty: normal(±20%)
+    }
+
+    variable population_at_water_risk {
+      2035: 180
+      2040: 220
+      2045: 250
+      uncertainty: normal(±15%)
+    }
+  }
+
+  branch "Water Marshall Plan" when infrastructure_investment > 15B and eu_water_directive_enforcement > 0.8 {
+    probability: 0.15
+
+    variable desalination_capacity {
+      2030: 25
+      2035: 45
+      2040: 70
+      2045: 95
+      uncertainty: normal(±15%)
+    }
+
+    variable water_stress_index {
+      2035: 52
+      2040: 48
+      2045: 45
+      uncertainty: normal(±12%)
+    }
+
+    variable ecosystem_health {
+      2035: 48
+      2040: 50
+      2045: 55
+      uncertainty: normal(±10%)
+    }
+  }
+
+  branch "Transboundary Conflict" when water_conflict_risk > 60 and water_stress_index > 70 {
+    probability: 0.12
+
+    variable water_conflict_risk {
+      2040: 78
+      2045: 85
+      uncertainty: normal(±15%)
+    }
+
+    variable agricultural_output_index {
+      2040: 65
+      2045: 55
+      uncertainty: normal(±20%)
+    }
+  }
+
+  // ── Impacts ──
+
+  impact food_security_risk {
+    description: "Food security risk from agricultural decline"
+    unit: "index"
+    derives_from: agricultural_output_index
+    formula: 100 - agricultural_output_index
+  }
+
+  impact infrastructure_gap {
+    description: "Gap between desalination capacity and water demand"
+    unit: "million m³/day"
+    derives_from: desalination_capacity, population_at_water_risk
+    formula: (population_at_water_risk * 0.15) - desalination_capacity
+  }
+
+  impact adaptation_effectiveness {
+    description: "Overall adaptation effectiveness score"
+    unit: "index"
+    derives_from: water_stress_index, desalination_capacity, ecosystem_health
+    formula: (desalination_capacity / 55 * 40) + (ecosystem_health / 58 * 30) + ((100 - water_stress_index) / 58 * 30)
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 10000
+    method: monte_carlo
+    seed: 2040
+    output: distribution
+    percentiles: [5, 10, 25, 50, 75, 90, 95]
+    convergence: 0.01
+    timeout: 30s
+  }
+
+  // ── Calibration ──
+
+  calibrate annual_rainfall_index {
+    historical: "https://cds.climate.copernicus.eu/api/v2/precipitation/mediterranean/2000-2025"
+    method: bayesian_update
+    window: 10y
+    prior: normal(±18%)
+    update_frequency: monthly
+  }
+
+  calibrate water_stress_index {
+    historical: "https://www.wri.org/api/aqueduct/mediterranean/2010-2025"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±15%)
+    update_frequency: yearly
+  }
+
+  calibrate groundwater_depletion {
+    historical: "https://grace.jpl.nasa.gov/api/groundwater/mediterranean/2010-2025"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±20%)
+    update_frequency: monthly
+  }
+}

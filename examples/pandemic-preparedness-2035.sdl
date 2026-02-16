@@ -1,0 +1,325 @@
+// ============================================================
+// SDL Example: Global Pandemic Preparedness 2035
+// ============================================================
+// Models investment in pandemic prevention infrastructure
+// and explores outbreak scenarios with fat-tailed uncertainty.
+// Demonstrates lognormal and custom distributions for
+// rare, high-impact events.
+// ============================================================
+
+scenario "Global Pandemic Preparedness 2035" {
+  timeframe: 2025 -> 2040
+  resolution: yearly
+  confidence: 0.30
+  author: "Relatronica"
+  version: "1.0"
+  description: "Models the interplay between pandemic preparedness 
+                investment, genomic surveillance, healthcare capacity, 
+                and the risk and impact of future outbreaks"
+  tags: ["health", "pandemic", "global", "biosecurity", "resilience"]
+
+  // ── Assumptions ──
+
+  assumption annual_pandemic_probability {
+    value: 0.03
+    source: "Metabiota/GCBR historical frequency analysis, 2024"
+    confidence: 0.3
+    uncertainty: lognormal(-3.5, 0.8)
+  }
+
+  assumption who_ihr_compliance {
+    value: 0.55
+    source: "WHO IHR State Party Self-Assessment, 2024"
+    confidence: 0.5
+    uncertainty: beta(5, 4)
+  }
+
+  assumption global_health_security_funding {
+    value: 31B USD
+    source: "G20 Pandemic Fund + bilateral, 2025"
+    confidence: 0.4
+    uncertainty: lognormal(3.4, 0.4)
+  }
+
+  assumption mrna_platform_maturity {
+    value: 0.65
+    source: "CEPI vaccine platform readiness assessment, 2025"
+    confidence: 0.6
+    uncertainty: beta(6, 3)
+  }
+
+  assumption antimicrobial_resistance_trend {
+    value: 1.05
+    source: "WHO AMR surveillance annual growth factor, 2024"
+    confidence: 0.5
+    uncertainty: normal(±10%)
+  }
+
+  // ── Parameters ──
+
+  parameter surveillance_coverage {
+    value: 35%
+    range: [15%, 80%]
+    description: "Percentage of world population covered by genomic pathogen surveillance"
+  }
+
+  parameter stockpile_investment {
+    value: 5B USD
+    range: [1B USD, 20B USD]
+    description: "Annual global investment in medical countermeasure stockpiles"
+  }
+
+  parameter days_to_100_day_vaccine {
+    value: 300
+    range: [100, 500]
+    description: "Current estimated days from pathogen ID to vaccine at scale"
+  }
+
+  // ── Variables ──
+
+  variable genomic_surveillance_coverage {
+    description: "Percentage of global population under active genomic surveillance"
+    unit: "%"
+
+    2025: 18%
+    2027: 25%
+    2029: 34%
+    2031: 44%
+    2033: 54%
+    2035: 62%
+    2037: 68%
+    2040: 75%
+
+    depends_on: global_health_security_funding, surveillance_coverage
+    model: logistic(k=0.15, midpoint=2032, max=85)
+    uncertainty: normal(±18%)
+    interpolation: spline
+  }
+
+  variable vaccine_response_time {
+    description: "Days from novel pathogen identification to vaccine deployment at scale"
+    unit: "days"
+
+    2025: 300
+    2027: 250
+    2029: 200
+    2031: 160
+    2033: 130
+    2035: 100
+    2037: 85
+    2040: 70
+
+    depends_on: mrna_platform_maturity, global_health_security_funding
+    model: exponential(rate=-0.08, base=300)
+    uncertainty: normal(±20%)
+    interpolation: spline
+  }
+
+  variable icu_capacity_per_100k {
+    description: "Global average ICU beds per 100,000 population"
+    unit: "beds"
+
+    2025: 7.5
+    2027: 7.8
+    2029: 8.2
+    2031: 8.7
+    2033: 9.2
+    2035: 9.8
+    2037: 10.3
+    2040: 11.0
+
+    depends_on: global_health_security_funding
+    uncertainty: normal(±12%)
+    interpolation: linear
+  }
+
+  variable outbreak_detection_time {
+    description: "Average days to detect novel outbreak from first case"
+    unit: "days"
+
+    2025: 45
+    2027: 38
+    2029: 30
+    2031: 23
+    2033: 18
+    2035: 14
+    2037: 11
+    2040: 8
+
+    depends_on: genomic_surveillance_coverage, who_ihr_compliance
+    model: exponential(rate=-0.12, base=45)
+    uncertainty: lognormal(2.5, 0.5)
+    interpolation: spline
+  }
+
+  variable amr_deaths_annual {
+    description: "Annual deaths attributable to antimicrobial resistance globally"
+    unit: "millions"
+
+    2025: 1.3
+    2027: 1.5
+    2029: 1.8
+    2031: 2.1
+    2033: 2.5
+    2035: 2.9
+    2037: 3.3
+    2040: 4.0
+
+    depends_on: antimicrobial_resistance_trend
+    model: exponential(rate=0.07, base=1300000)
+    uncertainty: lognormal(0.1, 0.3)
+    interpolation: spline
+  }
+
+  variable pandemic_gdp_risk {
+    description: "Expected annual GDP loss from pandemic risk (%)"
+    unit: "%"
+
+    2025: 0.8%
+    2027: 0.7%
+    2029: 0.6%
+    2031: 0.5%
+    2033: 0.4%
+    2035: 0.35%
+    2037: 0.3%
+    2040: 0.25%
+
+    depends_on: genomic_surveillance_coverage, vaccine_response_time, icu_capacity_per_100k
+    uncertainty: lognormal(-1.2, 0.6)
+    interpolation: spline
+  }
+
+  variable health_workforce_density {
+    description: "Health workers per 10,000 population (global average)"
+    unit: "per 10k"
+
+    2025: 55
+    2027: 57
+    2029: 59
+    2031: 62
+    2033: 65
+    2035: 68
+    2037: 71
+    2040: 75
+
+    depends_on: global_health_security_funding
+    uncertainty: normal(±10%)
+    interpolation: linear
+  }
+
+  // ── Branches ──
+
+  branch "Pandemic X — Novel Respiratory" when annual_pandemic_probability > 0.05 {
+    probability: 0.12
+
+    variable pandemic_gdp_risk {
+      2029: 4.5%
+      2030: 3.0%
+      2031: 1.5%
+      2033: 0.6%
+      uncertainty: lognormal(0.5, 0.8)
+    }
+
+    variable icu_capacity_per_100k {
+      2029: 7.0
+      2030: 8.5
+      2031: 10.0
+      uncertainty: normal(±15%)
+    }
+  }
+
+  branch "100-Day Vaccine Success" when vaccine_response_time < 120 and mrna_platform_maturity > 0.8 {
+    probability: 0.30
+
+    variable pandemic_gdp_risk {
+      2033: 0.2%
+      2035: 0.15%
+      2040: 0.1%
+      uncertainty: normal(±25%)
+    }
+
+    variable vaccine_response_time {
+      2033: 95
+      2035: 70
+      2040: 45
+      uncertainty: normal(±15%)
+    }
+  }
+
+  branch "AMR Crisis" when antimicrobial_resistance_trend > 1.08 and amr_deaths_annual > 3.0 {
+    probability: 0.22
+
+    variable amr_deaths_annual {
+      2035: 4.5
+      2037: 6.0
+      2040: 8.5
+      uncertainty: lognormal(1.0, 0.5)
+    }
+
+    variable health_workforce_density {
+      2035: 62
+      2037: 58
+      2040: 55
+      uncertainty: normal(±12%)
+    }
+
+    variable pandemic_gdp_risk {
+      2035: 0.8%
+      2040: 1.2%
+      uncertainty: lognormal(-0.5, 0.5)
+    }
+  }
+
+  branch "Surveillance Failure" when genomic_surveillance_coverage < 30% and who_ihr_compliance < 0.4 {
+    probability: 0.15
+
+    variable outbreak_detection_time {
+      2031: 40
+      2033: 38
+      2035: 35
+      uncertainty: lognormal(3.5, 0.3)
+    }
+
+    variable pandemic_gdp_risk {
+      2031: 1.0%
+      2035: 0.9%
+      2040: 0.8%
+      uncertainty: lognormal(-0.3, 0.5)
+    }
+  }
+
+  // ── Impacts ──
+
+  impact lives_saved_by_preparedness {
+    description: "Estimated lives saved annually by faster detection and response"
+    unit: "millions"
+    derives_from: outbreak_detection_time, vaccine_response_time
+    formula: (45 - outbreak_detection_time) * 0.02 + (300 - vaccine_response_time) * 0.005
+  }
+
+  impact economic_resilience {
+    description: "Economic resilience gain from preparedness investment"
+    unit: "%"
+    derives_from: pandemic_gdp_risk
+    formula: 0.8 - pandemic_gdp_risk
+  }
+
+  impact preparedness_index {
+    description: "Composite pandemic preparedness score (0-100)"
+    unit: "index"
+    derives_from: genomic_surveillance_coverage, vaccine_response_time, icu_capacity_per_100k, health_workforce_density
+    formula: (genomic_surveillance_coverage * 0.3) + ((300 - vaccine_response_time) / 300 * 30) + (icu_capacity_per_100k / 15 * 20) + (health_workforce_density / 100 * 20)
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 10000
+    method: monte_carlo
+    seed: 2035
+    output: distribution
+    percentiles: [5, 10, 25, 50, 75, 90, 95]
+    convergence: 0.01
+    timeout: 30s
+  }
+}

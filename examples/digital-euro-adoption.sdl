@@ -1,0 +1,234 @@
+// ============================================================
+// SDL Example: Digital Euro Adoption 2030
+// ============================================================
+// A compact, didactic scenario exploring the rollout of the
+// ECB's Central Bank Digital Currency and its effects on
+// banking, privacy, and financial inclusion.
+// Designed as a first-read example for new SDL users.
+// ============================================================
+
+scenario "Digital Euro Adoption 2030" {
+  timeframe: 2025 -> 2032
+  resolution: yearly
+  confidence: 0.50
+  author: "Relatronica"
+  version: "1.0"
+  description: "Models the adoption trajectory of the Digital Euro
+                and its impact on traditional banking, financial
+                inclusion, and consumer behavior in the Eurozone"
+  tags: ["finance", "cbdc", "eurozone", "banking"]
+
+  // ── Assumptions ──
+
+  assumption ecb_launch_decision {
+    value: 0.85
+    source: "ECB Digital Euro project phase, 2025"
+    confidence: 0.7
+    uncertainty: beta(7, 2)
+  }
+
+  assumption privacy_regulation_strength {
+    value: 0.70
+    source: "EU Digital Euro Regulation proposal, 2024"
+    confidence: 0.6
+    uncertainty: beta(5, 3)
+  }
+
+  assumption holding_limit {
+    value: 3000 EUR
+    source: "ECB proposed individual holding cap"
+    confidence: 0.5
+    uncertainty: uniform(1000, 5000)
+  }
+
+  // ── Parameters ──
+
+  parameter merchant_incentive {
+    value: 0.2%
+    range: [0%, 0.5%]
+    description: "Fee discount for merchants accepting Digital Euro"
+  }
+
+  parameter offline_capability {
+    value: 0.6
+    range: [0.3, 1.0]
+    description: "Level of offline transaction support (0=none, 1=full)"
+  }
+
+  // ── Variables ──
+
+  variable wallet_adoption {
+    description: "Percentage of Eurozone adults with a Digital Euro wallet"
+    unit: "%"
+
+    2025: 0%
+    2026: 2%
+    2027: 8%
+    2028: 18%
+    2029: 32%
+    2030: 45%
+    2031: 55%
+    2032: 62%
+
+    depends_on: ecb_launch_decision, privacy_regulation_strength, offline_capability
+    model: logistic(k=0.8, midpoint=2029, max=75)
+    uncertainty: normal(±20%)
+    interpolation: spline
+  }
+
+  variable daily_transactions {
+    description: "Average daily Digital Euro transactions in millions"
+    unit: "millions"
+
+    2025: 0
+    2026: 0.5
+    2027: 3
+    2028: 12
+    2029: 35
+    2030: 70
+    2031: 110
+    2032: 150
+
+    depends_on: wallet_adoption, merchant_incentive
+    uncertainty: normal(±25%)
+    interpolation: spline
+  }
+
+  variable bank_branch_count {
+    description: "Number of bank branches in Eurozone (thousands)"
+    unit: "thousands"
+
+    2025: 125
+    2026: 122
+    2027: 118
+    2028: 112
+    2029: 105
+    2030: 97
+    2031: 90
+    2032: 84
+
+    depends_on: wallet_adoption
+    uncertainty: normal(±8%)
+    interpolation: linear
+  }
+
+  variable bank_deposits_shift {
+    description: "Percentage of retail deposits moved from banks to CBDC"
+    unit: "%"
+
+    2025: 0%
+    2026: 0.3%
+    2027: 1.2%
+    2028: 2.8%
+    2029: 4.5%
+    2030: 6.0%
+    2031: 7.2%
+    2032: 8.0%
+
+    depends_on: wallet_adoption, holding_limit
+    uncertainty: normal(±15%)
+    interpolation: linear
+  }
+
+  variable financial_inclusion_index {
+    description: "Financial inclusion score for underbanked populations (0-100)"
+    unit: "index"
+
+    2025: 62
+    2026: 63
+    2027: 66
+    2028: 70
+    2029: 74
+    2030: 78
+    2031: 81
+    2032: 84
+
+    depends_on: wallet_adoption, offline_capability
+    model: logistic(k=0.4, midpoint=2029, max=92)
+    uncertainty: normal(±10%)
+    interpolation: spline
+  }
+
+  // ── Branches ──
+
+  branch "Mass Adoption" when wallet_adoption > 50% and daily_transactions > 100 {
+    probability: 0.25
+
+    variable bank_deposits_shift {
+      2031: 10.0%
+      2032: 14.0%
+      uncertainty: normal(±20%)
+    }
+
+    variable bank_branch_count {
+      2031: 82
+      2032: 72
+      uncertainty: normal(±10%)
+    }
+  }
+
+  branch "Privacy Backlash" when privacy_regulation_strength < 0.4 {
+    probability: 0.15
+
+    variable wallet_adoption {
+      2029: 18%
+      2030: 22%
+      2031: 25%
+      2032: 28%
+      uncertainty: normal(±15%)
+    }
+
+    variable daily_transactions {
+      2030: 25
+      2031: 35
+      2032: 42
+      uncertainty: normal(±20%)
+    }
+  }
+
+  branch "Bank Run Scare" when bank_deposits_shift > 5% {
+    probability: 0.08
+
+    variable bank_deposits_shift {
+      2030: 12.0%
+      2031: 8.0%
+      2032: 6.5%
+      uncertainty: normal(±30%)
+    }
+  }
+
+  // ── Impacts ──
+
+  impact banking_disruption {
+    description: "Banking sector disruption index"
+    unit: "index"
+    derives_from: bank_branch_count, bank_deposits_shift
+    formula: (bank_deposits_shift * 10) + ((125 - bank_branch_count) / 125 * 100)
+  }
+
+  impact inclusion_gain {
+    description: "Net gain in financial inclusion from Digital Euro"
+    unit: "points"
+    derives_from: financial_inclusion_index
+    formula: financial_inclusion_index - 62
+  }
+
+  impact digital_payment_share {
+    description: "Digital Euro share of total retail payments"
+    unit: "%"
+    derives_from: daily_transactions
+    formula: daily_transactions / 850 * 100
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 5000
+    method: monte_carlo
+    seed: 2026
+    output: distribution
+    percentiles: [5, 25, 50, 75, 95]
+    convergence: 0.02
+    timeout: 20s
+  }
+}

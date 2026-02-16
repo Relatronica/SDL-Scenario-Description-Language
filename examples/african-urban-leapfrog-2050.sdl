@@ -1,0 +1,375 @@
+// ============================================================
+// SDL Example: African Urbanization & Leapfrog 2050
+// ============================================================
+// Models the unprecedented urbanization wave across Sub-Saharan
+// Africa and the potential for technological leapfrogging in
+// finance, energy, and infrastructure.
+// Demonstrates temporal records, latin_hypercube sampling,
+// and exponential growth models.
+// ============================================================
+
+scenario "African Urban Leapfrog 2050" {
+  timeframe: 2025 -> 2055
+  resolution: yearly
+  confidence: 0.35
+  author: "Relatronica"
+  version: "1.0"
+  description: "Explores Africa's urbanization megashift and the 
+                potential for leapfrogging traditional development 
+                stages through mobile tech, solar energy, and 
+                digital finance"
+  tags: ["africa", "urbanization", "leapfrog", "fintech", "solar", "infrastructure"]
+
+  // ── Assumptions ──
+
+  assumption population_growth_rate {
+    value: 2.4%
+    source: "UN World Population Prospects 2024, Sub-Saharan Africa"
+    confidence: 0.7
+    uncertainty: normal(±12%)
+
+    bind {
+      source: "https://population.un.org/wpp/api/ssa/growth-rate"
+      refresh: yearly
+      field: "annual_growth_rate_pct"
+      fallback: 2.4
+    }
+  }
+
+  assumption global_climate_finance {
+    value: 15B USD
+    source: "UNFCCC climate finance flows to Africa, 2024"
+    confidence: 0.3
+    uncertainty: lognormal(2.7, 0.5)
+  }
+
+  assumption mobile_penetration_growth {
+    value: 5.5%
+    source: "GSMA Mobile Economy Sub-Saharan Africa, 2024"
+    confidence: 0.6
+    uncertainty: normal(±20%)
+  }
+
+  assumption governance_quality_index {
+    value: 0.42
+    source: "Mo Ibrahim Index of African Governance, 2024"
+    confidence: 0.5
+    uncertainty: beta(4, 5)
+  }
+
+  assumption fdi_inflow {
+    value: 45B USD
+    source: "UNCTAD World Investment Report, Africa FDI 2024"
+    confidence: 0.4
+    uncertainty: lognormal(3.8, 0.4)
+  }
+
+  // ── Parameters ──
+
+  parameter infrastructure_spend_gdp {
+    value: 3.5%
+    range: [1.5%, 8%]
+    description: "Infrastructure spending as % of GDP (current African average)"
+  }
+
+  parameter renewable_subsidy_rate {
+    value: 20%
+    range: [5%, 45%]
+    description: "Average government subsidy on off-grid solar installations"
+  }
+
+  parameter digital_literacy_investment {
+    value: 2B USD
+    range: [0.5B USD, 8B USD]
+    description: "Annual investment in digital skills and literacy programs"
+  }
+
+  // ── Variables ──
+
+  variable urban_population {
+    description: "Sub-Saharan Africa urban population"
+    unit: "millions"
+
+    2025: 590
+    2030: 730
+    2035: 880
+    2040: 1050
+    2045: 1220
+    2050: 1400
+    2055: 1560
+
+    depends_on: population_growth_rate
+    model: exponential(rate=0.035, base=590000000)
+    uncertainty: normal(±8%)
+    interpolation: spline
+  }
+
+  variable mobile_money_users {
+    description: "Active mobile money accounts in Sub-Saharan Africa"
+    unit: "millions"
+
+    2025: 220
+    2028: 310
+    2030: 400
+    2033: 520
+    2035: 640
+    2040: 850
+    2045: 1050
+    2050: 1200
+    2055: 1350
+
+    depends_on: mobile_penetration_growth, urban_population, governance_quality_index
+    model: logistic(k=0.12, midpoint=2038, max=1500)
+    uncertainty: normal(±18%)
+    interpolation: spline
+  }
+
+  variable solar_off_grid_capacity {
+    description: "Installed off-grid solar capacity"
+    unit: "GW"
+
+    2025: 6
+    2028: 12
+    2030: 20
+    2033: 35
+    2035: 52
+    2040: 95
+    2045: 140
+    2050: 185
+    2055: 220
+
+    depends_on: global_climate_finance, renewable_subsidy_rate, fdi_inflow
+    model: logistic(k=0.14, midpoint=2038, max=280)
+    uncertainty: normal(±22%)
+    interpolation: spline
+  }
+
+  variable gdp_per_capita {
+    description: "Sub-Saharan Africa average GDP per capita (PPP)"
+    unit: "USD"
+
+    2025: 3800
+    2030: 4400
+    2035: 5200
+    2040: 6300
+    2045: 7600
+    2050: 9200
+    2055: 11000
+
+    depends_on: urban_population, mobile_money_users, governance_quality_index, fdi_inflow
+    model: exponential(rate=0.035, base=3800)
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  variable electrification_rate {
+    description: "Percentage of population with electricity access"
+    unit: "%"
+
+    2025: 50%
+    2028: 55%
+    2030: 60%
+    2033: 67%
+    2035: 73%
+    2040: 82%
+    2045: 88%
+    2050: 93%
+    2055: 96%
+
+    depends_on: solar_off_grid_capacity, infrastructure_spend_gdp
+    model: logistic(k=0.1, midpoint=2035, max=99)
+    uncertainty: normal(±10%)
+    interpolation: spline
+  }
+
+  variable internet_penetration {
+    description: "Percentage of population with internet access"
+    unit: "%"
+
+    2025: 37%
+    2028: 45%
+    2030: 52%
+    2033: 61%
+    2035: 68%
+    2040: 78%
+    2045: 85%
+    2050: 90%
+    2055: 93%
+
+    depends_on: mobile_penetration_growth, urban_population, digital_literacy_investment
+    model: logistic(k=0.12, midpoint=2033, max=96)
+    uncertainty: normal(±12%)
+    interpolation: spline
+  }
+
+  variable formal_employment_rate {
+    description: "Percentage of urban workers in formal employment"
+    unit: "%"
+
+    2025: 25%
+    2030: 28%
+    2035: 33%
+    2040: 39%
+    2045: 45%
+    2050: 51%
+    2055: 56%
+
+    depends_on: gdp_per_capita, mobile_money_users, governance_quality_index
+    uncertainty: normal(±18%)
+    interpolation: linear
+  }
+
+  variable infrastructure_gap_index {
+    description: "Infrastructure gap index (100=max deficit, 0=fully developed)"
+    unit: "index"
+
+    2025: 78
+    2030: 72
+    2035: 64
+    2040: 55
+    2045: 46
+    2050: 38
+    2055: 31
+
+    depends_on: infrastructure_spend_gdp, fdi_inflow, urban_population
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  // ── Branches ──
+
+  branch "Digital Leapfrog" when mobile_money_users > 800 and internet_penetration > 75% {
+    probability: 0.28
+
+    variable gdp_per_capita {
+      2040: 7500
+      2045: 9800
+      2050: 12500
+      2055: 15500
+      uncertainty: normal(±18%)
+    }
+
+    variable formal_employment_rate {
+      2040: 45%
+      2045: 55%
+      2050: 63%
+      uncertainty: normal(±15%)
+    }
+  }
+
+  branch "Urban Trap" when infrastructure_gap_index > 65 and urban_population > 1000 {
+    probability: 0.25
+
+    variable gdp_per_capita {
+      2040: 5200
+      2045: 5800
+      2050: 6500
+      uncertainty: normal(±20%)
+    }
+
+    variable formal_employment_rate {
+      2040: 30%
+      2045: 32%
+      2050: 35%
+      uncertainty: normal(±15%)
+    }
+
+    variable infrastructure_gap_index {
+      2040: 65
+      2045: 60
+      2050: 56
+      uncertainty: normal(±12%)
+    }
+  }
+
+  branch "Climate Shock Migration" when global_climate_finance < 8B {
+    probability: 0.20
+
+    variable urban_population {
+      2035: 950
+      2040: 1180
+      2045: 1400
+      2050: 1600
+      uncertainty: normal(±12%)
+    }
+
+    variable infrastructure_gap_index {
+      2035: 72
+      2040: 68
+      2045: 65
+      uncertainty: normal(±15%)
+    }
+  }
+
+  branch "Governance Breakthrough" when governance_quality_index > 0.6 {
+    probability: 0.18
+
+    variable fdi_inflow {
+      2030: 65B
+      2035: 90B
+      2040: 120B
+      uncertainty: lognormal(4.2, 0.3)
+    }
+
+    variable gdp_per_capita {
+      2035: 6000
+      2040: 8000
+      2045: 10500
+      2050: 13500
+      uncertainty: normal(±15%)
+    }
+  }
+
+  // ── Impacts ──
+
+  impact leapfrog_index {
+    description: "Digital leapfrog progress (composite of fintech + energy + connectivity)"
+    unit: "index"
+    derives_from: mobile_money_users, electrification_rate, internet_penetration
+    formula: (mobile_money_users / 1500 * 33) + (electrification_rate * 0.33) + (internet_penetration * 0.34)
+  }
+
+  impact urban_quality_of_life {
+    description: "Urban quality of life index"
+    unit: "index"
+    derives_from: electrification_rate, formal_employment_rate, infrastructure_gap_index
+    formula: (electrification_rate * 0.3) + (formal_employment_rate * 0.4) + ((100 - infrastructure_gap_index) * 0.3)
+  }
+
+  impact economic_convergence {
+    description: "GDP per capita as % of global average (approx $18,000 in 2025)"
+    unit: "%"
+    derives_from: gdp_per_capita
+    formula: gdp_per_capita / 18000 * 100
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 8000
+    method: latin_hypercube
+    seed: 2050
+    output: distribution
+    percentiles: [5, 10, 25, 50, 75, 90, 95]
+    convergence: 0.01
+    timeout: 40s
+  }
+
+  // ── Calibration ──
+
+  calibrate urban_population {
+    historical: "https://population.un.org/wup/api/ssa/urban/2000-2025"
+    method: bayesian_update
+    window: 10y
+    prior: normal(±10%)
+    update_frequency: yearly
+  }
+
+  calibrate electrification_rate {
+    historical: "https://trackingsdg7.esmap.org/api/ssa/electricity-access/2010-2025"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±12%)
+    update_frequency: yearly
+  }
+}
