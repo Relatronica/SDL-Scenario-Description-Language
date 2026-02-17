@@ -17,6 +17,11 @@ scenario "Digital Euro Adoption 2030" {
                 and its impact on traditional banking, financial
                 inclusion, and consumer behavior in the Eurozone"
   tags: ["finance", "cbdc", "eurozone", "banking"]
+  subtitle: "Adozione CBDC, banche e inclusione finanziaria"
+  category: economia
+  icon: "💶"
+  color: "#f59e0b"
+  difficulty: base
 
   // ── Assumptions ──
 
@@ -46,12 +51,24 @@ scenario "Digital Euro Adoption 2030" {
   parameter merchant_incentive {
     value: 0.2%
     range: [0%, 0.5%]
+    label: "Incentivo commercianti"
+    unit: "%"
+    step: 0.05%
+    source: "ECB Digital Euro project 2025"
+    format: "{value}%"
+    control: slider
     description: "Fee discount for merchants accepting Digital Euro"
   }
 
   parameter offline_capability {
     value: 0.6
     range: [0.3, 1.0]
+    label: "Capacità offline"
+    unit: "indice"
+    step: 0.1
+    source: "Requisiti tecnici BCE"
+    format: "{value}"
+    control: slider
     description: "Level of offline transaction support (0=none, 1=full)"
   }
 
@@ -60,6 +77,9 @@ scenario "Digital Euro Adoption 2030" {
   variable wallet_adoption {
     description: "Percentage of Eurozone adults with a Digital Euro wallet"
     unit: "%"
+    label: "Adozione wallet"
+    icon: "📱"
+    color: "#3b82f6"
 
     2025: 0%
     2026: 2%
@@ -79,6 +99,9 @@ scenario "Digital Euro Adoption 2030" {
   variable daily_transactions {
     description: "Average daily Digital Euro transactions in millions"
     unit: "millions"
+    label: "Transazioni giornaliere"
+    icon: "💳"
+    color: "#10b981"
 
     2025: 0
     2026: 0.5
@@ -97,6 +120,9 @@ scenario "Digital Euro Adoption 2030" {
   variable bank_branch_count {
     description: "Number of bank branches in Eurozone (thousands)"
     unit: "thousands"
+    label: "Filiali bancarie"
+    icon: "🏦"
+    color: "#ef4444"
 
     2025: 125
     2026: 122
@@ -115,6 +141,9 @@ scenario "Digital Euro Adoption 2030" {
   variable bank_deposits_shift {
     description: "Percentage of retail deposits moved from banks to CBDC"
     unit: "%"
+    label: "Shift depositi"
+    icon: "↗"
+    color: "#f59e0b"
 
     2025: 0%
     2026: 0.3%
@@ -133,6 +162,9 @@ scenario "Digital Euro Adoption 2030" {
   variable financial_inclusion_index {
     description: "Financial inclusion score for underbanked populations (0-100)"
     unit: "index"
+    label: "Inclusione finanziaria"
+    icon: "🤝"
+    color: "#8b5cf6"
 
     2025: 62
     2026: 63
@@ -202,6 +234,9 @@ scenario "Digital Euro Adoption 2030" {
   impact banking_disruption {
     description: "Banking sector disruption index"
     unit: "index"
+    label: "Disruption bancaria"
+    icon: "⚡"
+    color: "#ef4444"
     derives_from: bank_branch_count, bank_deposits_shift
     formula: (bank_deposits_shift * 10) + ((125 - bank_branch_count) / 125 * 100)
   }
@@ -209,6 +244,9 @@ scenario "Digital Euro Adoption 2030" {
   impact inclusion_gain {
     description: "Net gain in financial inclusion from Digital Euro"
     unit: "points"
+    label: "Guadagno inclusione"
+    icon: "↑"
+    color: "#10b981"
     derives_from: financial_inclusion_index
     formula: financial_inclusion_index - 62
   }
@@ -216,6 +254,9 @@ scenario "Digital Euro Adoption 2030" {
   impact digital_payment_share {
     description: "Digital Euro share of total retail payments"
     unit: "%"
+    label: "Quota pagamenti digitali"
+    icon: "💶"
+    color: "#3b82f6"
     derives_from: daily_transactions
     formula: daily_transactions / 850 * 100
   }

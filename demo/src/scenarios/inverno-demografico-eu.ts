@@ -114,6 +114,9 @@ scenario "Inverno Demografico Europeo 2025-2060" {
   variable dependency_ratio {
     description: "Rapporto di dipendenza anziani (65+ / 15-64)"
     unit: "percentuale"
+    label: "Indice dipendenza"
+    icon: "⚖"
+    color: "#ef4444"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.dependency_ratio[i])}`).join('\n    ')}
     depends_on: working_age_pop
     uncertainty: normal(±8%)
@@ -123,6 +126,9 @@ scenario "Inverno Demografico Europeo 2025-2060" {
   variable pension_expenditure {
     description: "Spesa pensionistica pubblica (% PIL)"
     unit: "percentuale PIL"
+    label: "Spesa pensioni / PIL"
+    icon: "💰"
+    color: "#f59e0b"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.pension_expenditure[i])}`).join('\n    ')}
     depends_on: dependency_ratio, productivity_growth
     uncertainty: normal(±12%)
@@ -132,6 +138,9 @@ scenario "Inverno Demografico Europeo 2025-2060" {
   variable gdp_growth {
     description: "Tasso di crescita reale PIL EU-27"
     unit: "percentuale"
+    label: "Crescita PIL"
+    icon: "📈"
+    color: "#10b981"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.gdp_growth[i])}`).join('\n    ')}
     depends_on: working_age_pop, productivity_growth
     uncertainty: normal(±25%)
@@ -141,6 +150,9 @@ scenario "Inverno Demografico Europeo 2025-2060" {
   variable labor_shortage {
     description: "Indice carenza manodopera (2025=100)"
     unit: "indice"
+    label: "Carenza manodopera"
+    icon: "🔍"
+    color: "#8b5cf6"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.labor_shortage[i])}`).join('\n    ')}
     depends_on: working_age_pop, net_migration
     uncertainty: normal(±15%)
@@ -150,6 +162,9 @@ scenario "Inverno Demografico Europeo 2025-2060" {
   impact pressione_fiscale {
     description: "Aumento spesa pensionistica rispetto al 2025"
     unit: "punti % PIL"
+    label: "Pressione aggiuntiva"
+    icon: "↑"
+    color: "#ef4444"
     derives_from: pension_expenditure
     formula: pension_expenditure - 12.5
   }

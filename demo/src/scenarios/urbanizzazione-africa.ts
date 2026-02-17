@@ -87,15 +87,63 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
   author: "Relatronica — Citizen Lab"
   description: "L'onda di urbanizzazione africana e il potenziale di leapfrog tecnologico in finanza, energia e connettività"
   tags: ["africa", "urbanizzazione", "leapfrog", "fintech", "solare"]
+  subtitle: "Megacities, leapfrog e crescita 2025-2055"
+  category: "economia"
+  icon: "🌍"
+  color: "#f59e0b"
+  difficulty: "intermedio"
 
-  assumption pop_growth { value: ${((vals.pop_growth ?? 2.4) / 100).toFixed(3)}  source: "UN WPP 2024"  confidence: 0.7  uncertainty: normal(±12%) }
-  assumption climate_finance { value: ${(vals.climate_finance ?? 15) * 1e9}  source: "UNFCCC 2024"  confidence: 0.3  uncertainty: lognormal(2.7, 0.5) }
-  assumption governance { value: ${((vals.governance ?? 42) / 100).toFixed(2)}  source: "Mo Ibrahim Index 2024"  confidence: 0.5  uncertainty: beta(4, 5) }
-  assumption infra_spend { value: ${((vals.infra_spend ?? 3.5) / 100).toFixed(3)}  source: "AfDB Infrastructure Index"  confidence: 0.4  uncertainty: normal(±20%) }
+  parameter pop_growth {
+    label: "Crescita demografica"
+    value: ${((vals.pop_growth ?? 2.4) / 100).toFixed(3)}
+    range: [1.0, 3.5]
+    step: 0.1
+    unit: "%"
+    source: "UN WPP 2024"
+    format: "{value}%"
+    control: slider
+    description: "Tasso annuo di crescita della popolazione in Africa sub-sahariana"
+  }
+  parameter climate_finance {
+    label: "Finanza climatica"
+    value: ${(vals.climate_finance ?? 15) * 1e9}
+    range: [3, 50]
+    step: 1
+    unit: "miliardi $"
+    source: "UNFCCC 2024"
+    format: "{value} mld $"
+    control: slider
+    description: "Flussi annui di finanza climatica verso l'Africa in miliardi USD"
+  }
+  parameter governance {
+    label: "Qualità governance"
+    value: ${((vals.governance ?? 42) / 100).toFixed(2)}
+    range: [15, 80]
+    step: 5
+    unit: "indice"
+    source: "Mo Ibrahim Index 2024"
+    format: "{value}/100"
+    control: slider
+    description: "Indice di qualità della governance africana (0=fallimento, 100=eccellente)"
+  }
+  parameter infra_spend {
+    label: "Spesa infrastrutture"
+    value: ${((vals.infra_spend ?? 3.5) / 100).toFixed(3)}
+    range: [1, 10]
+    step: 0.5
+    unit: "% PIL"
+    source: "AfDB Infrastructure Index"
+    format: "{value}% PIL"
+    control: slider
+    description: "Spesa in infrastrutture come percentuale del PIL"
+  }
 
   variable urban_population {
     description: "Popolazione urbana Africa sub-sahariana"
     unit: "milioni"
+    label: "Popolazione urbana"
+    icon: "🏙"
+    color: "#3b82f6"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.urban_population[i])}`).join('\n    ')}
     depends_on: pop_growth
     uncertainty: normal(±8%)
@@ -105,6 +153,9 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
   variable mobile_money {
     description: "Account mobile money attivi"
     unit: "milioni"
+    label: "Mobile money"
+    icon: "📱"
+    color: "#10b981"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.mobile_money[i])}`).join('\n    ')}
     depends_on: pop_growth, governance
     uncertainty: normal(±18%)
@@ -114,6 +165,9 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
   variable solar_offgrid {
     description: "Capacità solare off-grid installata"
     unit: "GW"
+    label: "Solare off-grid"
+    icon: "☀"
+    color: "#f59e0b"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.solar_offgrid[i])}`).join('\n    ')}
     depends_on: climate_finance
     uncertainty: normal(±22%)
@@ -123,6 +177,9 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
   variable gdp_per_capita {
     description: "PIL pro capite medio (PPP)"
     unit: "USD"
+    label: "PIL pro capite"
+    icon: "💰"
+    color: "#8b5cf6"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.gdp_per_capita[i])}`).join('\n    ')}
     depends_on: urban_population, mobile_money, governance
     uncertainty: normal(±15%)
@@ -132,6 +189,9 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
   variable electrification {
     description: "Tasso di elettrificazione"
     unit: "percentuale"
+    label: "Elettrificazione"
+    icon: "⚡"
+    color: "#10b981"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.electrification[i])}`).join('\n    ')}
     depends_on: solar_offgrid, infra_spend
     uncertainty: normal(±10%)
@@ -141,6 +201,9 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
   variable infra_gap {
     description: "Gap infrastrutturale (100=massimo deficit)"
     unit: "indice"
+    label: "Gap infrastrutturale"
+    icon: "🏗"
+    color: "#ef4444"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.infra_gap[i])}`).join('\n    ')}
     depends_on: infra_spend
     uncertainty: normal(±15%)
@@ -150,6 +213,9 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
   impact indice_leapfrog {
     description: "Progresso leapfrog digitale (fintech + energia + connettività)"
     unit: "indice"
+    label: "Indice leapfrog"
+    icon: "🚀"
+    color: "#3b82f6"
     derives_from: mobile_money, electrification
     formula: (mobile_money / 1500 * 50) + (electrification * 0.5)
   }

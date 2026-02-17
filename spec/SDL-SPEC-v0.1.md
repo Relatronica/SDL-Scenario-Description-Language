@@ -63,6 +63,8 @@ fork        import      export        as           distribution
 normal      uniform     beta          triangular   lognormal
 linear      logistic    exponential   sigmoid      polynomial
 yearly      monthly     weekly        daily
+label       step        format        control      icon
+color       category    subtitle      difficulty
 ```
 
 ### 2.4 Identifiers
@@ -240,8 +242,15 @@ metadata       = "timeframe" ":" date "->" date
                | "author" ":" string
                | "version" ":" string
                | "description" ":" string
-               | "tags" ":" "[" string ( "," string )* "]" ;
-resolution_value = "yearly" | "monthly" | "weekly" | "daily" ;
+               | "tags" ":" "[" string ( "," string )* "]"
+               | "subtitle" ":" string
+               | "category" ":" category_value
+               | "icon" ":" string
+               | "color" ":" string
+               | "difficulty" ":" difficulty_value ;
+resolution_value  = "yearly" | "monthly" | "weekly" | "daily" ;
+category_value    = "tecnologia" | "economia" | "ambiente" | "societa" | "politica" ;
+difficulty_value  = "base" | "intermedio" | "avanzato" ;
 ```
 
 Example:
@@ -255,6 +264,11 @@ scenario "Green Transition Italy 2040" {
   tags: ["energy", "europe", "climate"]
   description: "Explores pathways for Italy's transition 
                 to carbon neutrality by 2040"
+  subtitle: "Renewables, emissions and employment to 2050"
+  category: ambiente
+  icon: "⚡"
+  color: "#10b981"
+  difficulty: intermedio
   
   // ... declarations ...
 }
@@ -272,15 +286,21 @@ variable_prop  = "depends_on" ":" qualified_id ( "," qualified_id )*
                | "uncertainty" ":" distribution
                | "unit" ":" string
                | "description" ":" string
-               | "interpolation" ":" interp_method ;
+               | "interpolation" ":" interp_method
+               | "label" ":" string
+               | "icon" ":" string
+               | "color" ":" string ;
 interp_method  = "linear" | "step" | "spline" ;
 ```
 
 Example:
 ```sdl
 variable renewable_share {
+  label: "Renewables Share"
   description: "Share of renewables in energy mix"
   unit: "%"
+  icon: "☀"
+  color: "#10b981"
   
   2025: 22%
   2030: 35%
@@ -332,23 +352,40 @@ assumption carbon_tax {
 
 ### 4.4 Parameter
 
-A configuration value that does not change over time within a simulation run, but can be varied across runs.
+A configuration value that does not change over time within a simulation run, but can be varied across runs. Parameters can carry interactive control metadata, enabling viewers to auto-generate UI controls.
 
 ```ebnf
 parameter_decl = "parameter" identifier "{" parameter_body "}" ;
 parameter_body = ( "value" ":" expr
                  | "range" ":" "[" expr "," expr "]"
-                 | "description" ":" string )* ;
+                 | "description" ":" string
+                 | "label" ":" string
+                 | "unit" ":" string
+                 | "step" ":" expr
+                 | "source" ":" string
+                 | "format" ":" string
+                 | "control" ":" control_type
+                 | "icon" ":" string
+                 | "color" ":" string )* ;
+control_type   = "slider" | "toggle" | "dropdown" | "input" ;
 ```
 
 Example:
 ```sdl
 parameter discount_rate {
+  label: "Social Discount Rate"
   value: 3.5%
   range: [2%, 6%]
+  step: 0.5
+  unit: "%"
+  source: "HM Treasury Green Book, 2024"
+  format: "{value}%"
+  control: slider
   description: "Social discount rate for cost-benefit analysis"
 }
 ```
+
+The interactive fields (`label`, `step`, `format`, `control`, `icon`, `color`) are optional — they serve as hints for rendering UIs from SDL files.
 
 ### 4.5 Branch
 
@@ -392,14 +429,20 @@ impact_decl    = "impact" identifier "{" impact_body "}" ;
 impact_body    = ( "derives_from" ":" qualified_id ( "," qualified_id )*
                  | "formula" ":" expr
                  | "unit" ":" string
-                 | "description" ":" string )* ;
+                 | "description" ":" string
+                 | "label" ":" string
+                 | "icon" ":" string
+                 | "color" ":" string )* ;
 ```
 
 Example:
 ```sdl
 impact employment_delta {
+  label: "Net Employment Change"
   description: "Net change in employment"
   unit: "jobs"
+  icon: "⊕"
+  color: "#3b82f6"
   derives_from: renewable_share, retraining_budget, automation_rate
   formula: (renewable_share * green_jobs_factor) 
            - (fossil_phase_out * displaced_workers)

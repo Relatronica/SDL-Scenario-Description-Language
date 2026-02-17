@@ -16,6 +16,11 @@ scenario "Global AI Governance 2030" {
                 labor displacement, and public trust across 
                 EU, US, and China"
   tags: ["ai", "governance", "labor", "global"]
+  subtitle: "Regolamentazione, lavoro e fiducia pubblica nell'AI"
+  category: tecnologia
+  icon: "🤖"
+  color: "#3b82f6"
+  difficulty: avanzato
 
   // ── Assumptions ──
 
@@ -52,12 +57,24 @@ scenario "Global AI Governance 2030" {
   parameter automation_adoption_rate {
     value: 12%
     range: [5%, 25%]
+    label: "Adozione automazione"
+    unit: "%"
+    step: 1%
+    source: "OECD AI adoption estimates 2025"
+    format: "{value}%"
+    control: slider
     description: "Annual rate of AI-driven automation adoption in workforce"
   }
 
   parameter regulatory_friction {
     value: 0.3
     range: [0.1, 0.8]
+    label: "Frizione regolatoria"
+    unit: "indice"
+    step: 0.05
+    source: "EU AI Act implementation tracker"
+    format: "{value}"
+    control: slider
     description: "How much regulation slows AI deployment (0=none, 1=full stop)"
   }
 
@@ -66,6 +83,9 @@ scenario "Global AI Governance 2030" {
   variable ai_capability_index {
     description: "Composite AI capability index (2025=100)"
     unit: "index"
+    label: "Indice capacità AI"
+    icon: "🧠"
+    color: "#8b5cf6"
 
     2025: 100
     2027: 180
@@ -83,6 +103,9 @@ scenario "Global AI Governance 2030" {
   variable jobs_displaced_eu {
     description: "Cumulative jobs displaced by AI in EU"
     unit: "millions"
+    label: "Posti persi (UE)"
+    icon: "⚠"
+    color: "#ef4444"
 
     2025: 0.5
     2027: 1.8
@@ -99,6 +122,9 @@ scenario "Global AI Governance 2030" {
   variable jobs_displaced_us {
     description: "Cumulative jobs displaced by AI in US"
     unit: "millions"
+    label: "Posti persi (USA)"
+    icon: "⚠"
+    color: "#ef4444"
 
     2025: 0.8
     2027: 2.5
@@ -115,6 +141,9 @@ scenario "Global AI Governance 2030" {
   variable jobs_created_ai {
     description: "New jobs created in AI-adjacent sectors globally"
     unit: "millions"
+    label: "Nuovi posti AI"
+    icon: "✦"
+    color: "#10b981"
 
     2025: 2.0
     2027: 4.5
@@ -131,6 +160,9 @@ scenario "Global AI Governance 2030" {
   variable public_trust_ai_eu {
     description: "Public trust in AI systems in EU (0-1)"
     unit: "index"
+    label: "Fiducia pubblica AI (UE)"
+    icon: "🤝"
+    color: "#3b82f6"
 
     2025: 0.42
     2027: 0.45
@@ -148,6 +180,9 @@ scenario "Global AI Governance 2030" {
   variable public_trust_ai_us {
     description: "Public trust in AI systems in US (0-1)"
     unit: "index"
+    label: "Fiducia pubblica AI (USA)"
+    icon: "🤝"
+    color: "#06b6d4"
 
     2025: 0.38
     2027: 0.36
@@ -164,6 +199,9 @@ scenario "Global AI Governance 2030" {
   variable ai_incident_rate {
     description: "Annual reported AI incidents (safety, bias, misuse)"
     unit: "incidents"
+    label: "Incidenti AI"
+    icon: "⚡"
+    color: "#f59e0b"
 
     2025: 450
     2027: 800
@@ -242,6 +280,9 @@ scenario "Global AI Governance 2030" {
   impact global_net_employment {
     description: "Net global employment effect of AI"
     unit: "millions"
+    label: "Bilancio netto occupazione"
+    icon: "⊕"
+    color: "#3b82f6"
     derives_from: jobs_created_ai, jobs_displaced_eu, jobs_displaced_us
     formula: jobs_created_ai - jobs_displaced_eu - jobs_displaced_us
   }
@@ -249,6 +290,9 @@ scenario "Global AI Governance 2030" {
   impact regulatory_divergence {
     description: "Gap between EU and US regulatory approaches"
     unit: "index"
+    label: "Divergenza regolatoria"
+    icon: "↔"
+    color: "#f59e0b"
     derives_from: eu_ai_act_enforcement, us_regulatory_stance
     formula: abs(eu_ai_act_enforcement - us_regulatory_stance)
   }
@@ -256,6 +300,9 @@ scenario "Global AI Governance 2030" {
   impact trust_gap {
     description: "Trust gap between EU and US citizens"
     unit: "index"
+    label: "Gap fiducia"
+    icon: "📊"
+    color: "#8b5cf6"
     derives_from: public_trust_ai_eu, public_trust_ai_us
     formula: public_trust_ai_eu - public_trust_ai_us
   }

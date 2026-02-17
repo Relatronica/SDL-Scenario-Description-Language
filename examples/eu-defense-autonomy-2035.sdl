@@ -17,6 +17,11 @@ scenario "European Defense Autonomy 2035" {
                 autonomy under shifting transatlantic relations, 
                 rising threat perceptions, and industrial constraints"
   tags: ["defense", "europe", "geopolitics", "nato", "industry"]
+  subtitle: "NATO, industria bellica e deterrenza europea"
+  category: politica
+  icon: "🛡"
+  color: "#ef4444"
+  difficulty: avanzato
 
   // ── Assumptions ──
 
@@ -60,18 +65,36 @@ scenario "European Defense Autonomy 2035" {
   parameter eu_defense_budget_target {
     value: 2.5%
     range: [1.5%, 4%]
+    label: "Obiettivo spesa difesa"
+    unit: "% PIL"
+    step: 0.1
+    source: "NATO Defence Expenditure Guidelines"
+    format: "{value}% PIL"
+    control: slider
     description: "Average EU member state defense spending target as % of GDP"
   }
 
   parameter joint_procurement_share {
     value: 18%
     range: [10%, 50%]
+    label: "Procurement congiunto"
+    unit: "%"
+    step: 5
+    source: "EDA Defence Data 2024"
+    format: "{value}%"
+    control: slider
     description: "Share of defense procurement done jointly through EU mechanisms"
   }
 
   parameter edirpa_budget {
     value: 1.5B EUR
     range: [0.5B EUR, 8B EUR]
+    label: "Budget EDIRPA"
+    unit: "miliardi €"
+    step: 0.5
+    source: "EU Defence Industry Reinforcement Act"
+    format: "{value} mld €"
+    control: slider
     description: "EU Defence Industry Reinforcement through common Procurement Act budget"
   }
 
@@ -80,6 +103,9 @@ scenario "European Defense Autonomy 2035" {
   variable avg_defense_spending_gdp {
     description: "Average EU member defense spending as % of GDP"
     unit: "%"
+    label: "Spesa difesa"
+    icon: "💰"
+    color: "#3b82f6"
 
     2025: 1.9%
     2027: 2.1%
@@ -97,6 +123,9 @@ scenario "European Defense Autonomy 2035" {
   variable ammunition_production_capacity {
     description: "EU annual ammunition production capacity index (2025=100)"
     unit: "index"
+    label: "Produzione munizioni"
+    icon: "🏭"
+    color: "#f59e0b"
 
     2025: 100
     2027: 130
@@ -115,6 +144,9 @@ scenario "European Defense Autonomy 2035" {
   variable us_equipment_dependency {
     description: "EU dependency on US defense equipment (% of total procurement)"
     unit: "%"
+    label: "Dipendenza USA"
+    icon: "🇺🇸"
+    color: "#ef4444"
 
     2025: 55%
     2027: 52%
@@ -132,6 +164,9 @@ scenario "European Defense Autonomy 2035" {
   variable rapid_deployment_capacity {
     description: "EU Rapid Deployment Capacity (troops deployable in 30 days)"
     unit: "thousands"
+    label: "Schieramento rapido"
+    icon: "⚔"
+    color: "#10b981"
 
     2025: 5
     2027: 12
@@ -150,6 +185,9 @@ scenario "European Defense Autonomy 2035" {
   variable interoperability_score {
     description: "EU forces interoperability score (0-100)"
     unit: "index"
+    label: "Interoperabilità"
+    icon: "🤝"
+    color: "#8b5cf6"
 
     2025: 35
     2027: 40
@@ -167,6 +205,9 @@ scenario "European Defense Autonomy 2035" {
   variable defense_industry_employment {
     description: "EU defense industry direct employment"
     unit: "thousands"
+    label: "Occupazione difesa"
+    icon: "👷"
+    color: "#10b981"
 
     2025: 470
     2027: 510
@@ -184,6 +225,9 @@ scenario "European Defense Autonomy 2035" {
   variable cyber_defense_readiness {
     description: "EU collective cyber defense readiness index (0-100)"
     unit: "index"
+    label: "Cyber difesa"
+    icon: "🔒"
+    color: "#8b5cf6"
 
     2025: 42
     2027: 50
@@ -308,6 +352,9 @@ scenario "European Defense Autonomy 2035" {
   impact strategic_autonomy_index {
     description: "Composite EU strategic defense autonomy score"
     unit: "index"
+    label: "Autonomia strategica"
+    icon: "🇪🇺"
+    color: "#3b82f6"
     derives_from: us_equipment_dependency, rapid_deployment_capacity, interoperability_score, cyber_defense_readiness
     formula: ((100 - us_equipment_dependency) * 0.25) + (rapid_deployment_capacity / 80 * 25) + (interoperability_score * 0.25) + (cyber_defense_readiness * 0.25)
   }
@@ -315,6 +362,9 @@ scenario "European Defense Autonomy 2035" {
   impact deterrence_credibility {
     description: "EU deterrence credibility index"
     unit: "index"
+    label: "Credibilità deterrenza"
+    icon: "🛡"
+    color: "#10b981"
     derives_from: avg_defense_spending_gdp, ammunition_production_capacity, rapid_deployment_capacity
     formula: (avg_defense_spending_gdp / 3 * 30) + (ammunition_production_capacity / 500 * 40) + (rapid_deployment_capacity / 80 * 30)
   }
@@ -322,6 +372,9 @@ scenario "European Defense Autonomy 2035" {
   impact industrial_sovereignty {
     description: "Defense industrial sovereignty score"
     unit: "index"
+    label: "Sovranità industriale"
+    icon: "🏭"
+    color: "#f59e0b"
     derives_from: us_equipment_dependency, defense_industry_employment, joint_procurement_share
     formula: ((100 - us_equipment_dependency) * 0.4) + (defense_industry_employment / 1000 * 30) + (joint_procurement_share * 0.3)
   }

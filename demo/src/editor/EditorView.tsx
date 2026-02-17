@@ -22,7 +22,7 @@ import { basicSetup } from 'codemirror';
 import { parse } from '@sdl/core/parser';
 import { validate } from '@sdl/core/validator';
 import { simulate } from '@sdl/engine/monte-carlo';
-import type { SimulationResult, ScenarioNode } from '@sdl/core/types';
+import type { SimulationResult, ScenarioNode, ParameterNode, ExpressionNode } from '@sdl/core/types';
 import { EDITOR_TEMPLATES, type SDLTemplate } from './templates';
 
 // ═══════════════════════════════════════════
@@ -109,6 +109,188 @@ function MiniFanChart({ data, label, color, unit }: {
         <span className="flex items-center gap-1.5"><span className="w-6 h-1.5 rounded-full" style={{ backgroundColor: color, opacity: 0.4 }} />50%</span>
         <span className="flex items-center gap-1.5"><span className="w-6 h-0.5 rounded-full" style={{ backgroundColor: color }} />Mediana</span>
       </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════
+// Parameter extraction from AST
+// ═══════════════════════════════════════════
+
+interface ParamDef {
+  name: string;
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  unit: string;
+  format: string;
+  description: string;
+  icon?: string;
+  color?: string;
+}
+
+function exprNum(expr: ExpressionNode | undefined | null): number {
+  if (!expr) return 0;
+  switch (expr.type) {
+    case 'NumberLiteral': return expr.value;
+    case 'PercentageLiteral': return expr.value;
+    case 'CurrencyLiteral': return expr.value;
+    default: return 0;
+  }
+}
+
+function extractParams(ast: ScenarioNode): ParamDef[] {
+  const out: ParamDef[] = [];
+  for (const decl of ast.declarations) {
+    if (decl.type !== 'Parameter') continue;
+    const p = decl as ParameterNode;
+    if (p.control !== 'slider') continue;
+
+    const value = exprNum(p.value);
+    const hasRange = !!p.range;
+    const min = hasRange ? exprNum(p.range!.min) : value * 0.1;
+    const max = hasRange ? exprNum(p.range!.max) : value * 3;
+    const step = p.step ? exprNum(p.step) : (max - min) / 100;
+
+    out.push({
+      name: p.name,
+      label: p.label ?? p.name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+      value,
+      min,
+      max,
+      step: step > 0 ? step : 1,
+      unit: p.unit ?? '',
+      format: p.format ?? '{value}',
+      description: p.description ?? '',
+      icon: p.icon,
+      color: p.color,
+    });
+  }
+  return out;
+}
+
+function applyOverrides(ast: ScenarioNode, overrides: Record<string, number>): ScenarioNode {
+  if (Object.keys(overrides).length === 0) return ast;
+  const newDecls = ast.declarations.map(decl => {
+    if (decl.type !== 'Parameter') return decl;
+    const p = decl as ParameterNode;
+    if (!(p.name in overrides)) return decl;
+    const nv = overrides[p.name];
+    let newExpr: ExpressionNode;
+    if (p.value?.type === 'PercentageLiteral') newExpr = { ...p.value, value: nv } as any;
+    else if (p.value?.type === 'CurrencyLiteral') newExpr = { ...p.value, value: nv } as any;
+    else newExpr = { type: 'NumberLiteral', value: nv, span: p.value?.span ?? { start: { line: 0, column: 0, offset: 0 }, end: { line: 0, column: 0, offset: 0 } } } as any;
+    return { ...p, value: newExpr, range: undefined };
+  });
+  return { ...ast, declarations: newDecls };
+}
+
+function smartFmt(n: number): string {
+  if (Math.abs(n) >= 1e9) return `${(n / 1e9).toFixed(1)}B`;
+  if (Math.abs(n) >= 1e6) return `${(n / 1e6).toFixed(1)}M`;
+  if (Math.abs(n) >= 1e3) return `${(n / 1e3).toFixed(1)}K`;
+  if (Number.isInteger(n)) return n.toString();
+  return n.toFixed(2);
+}
+
+function fmtParamVal(value: number, format: string, unit: string): string {
+  const s = format.replace('{value}', smartFmt(value));
+  if (s !== smartFmt(value)) return s;
+  return unit ? `${smartFmt(value)} ${unit}` : smartFmt(value);
+}
+
+// ═══════════════════════════════════════════
+// Parameter Sliders Panel
+// ═══════════════════════════════════════════
+
+function ParameterSliders({ params, overrides, onChange, onReset }: {
+  params: ParamDef[];
+  overrides: Record<string, number>;
+  onChange: (name: string, value: number) => void;
+  onReset: () => void;
+}) {
+  if (params.length === 0) return null;
+  const hasOverrides = Object.keys(overrides).length > 0;
+
+  return (
+    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden animate-fade-in">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800/60">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-cyan-500/15 flex items-center justify-center">
+            <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-xs font-semibold text-slate-200">Controlli interattivi</h3>
+            <p className="text-[10px] text-slate-500">{params.length} parametr{params.length > 1 ? 'i' : 'o'} con slider</p>
+          </div>
+        </div>
+        {hasOverrides && (
+          <button onClick={onReset} className="text-[10px] text-slate-500 hover:text-amber-400 transition-colors px-2 py-1 rounded">
+            Reset
+          </button>
+        )}
+      </div>
+
+      <div className="divide-y divide-slate-800/40">
+        {params.map(p => {
+          const curr = p.name in overrides ? overrides[p.name] : p.value;
+          const isModified = curr !== p.value;
+          const pct = ((curr - p.min) / (p.max - p.min)) * 100;
+
+          return (
+            <div key={p.name} className="group px-5 py-3 hover:bg-slate-800/30 transition-colors">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  {p.icon && <span className="text-sm shrink-0">{p.icon}</span>}
+                  <span className="text-xs font-medium text-slate-200 truncate">{p.label}</span>
+                  {isModified && <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />}
+                </div>
+                <span className={`text-xs font-mono tabular-nums ${isModified ? 'text-cyan-400 font-semibold' : 'text-slate-400'}`}>
+                  {fmtParamVal(curr, p.format, p.unit)}
+                </span>
+              </div>
+
+              <div className="relative mt-1">
+                <input type="range" min={p.min} max={p.max} step={p.step} value={curr}
+                  onChange={e => onChange(p.name, parseFloat(e.target.value))}
+                  className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, ${p.color ?? '#06b6d4'} 0%, ${p.color ?? '#06b6d4'} ${pct}%, rgb(51,65,85) ${pct}%, rgb(51,65,85) 100%)`,
+                    margin: 0,
+                  }} />
+              </div>
+
+              <div className="flex justify-between mt-1">
+                <span className="text-[9px] text-slate-600 font-mono">{smartFmt(p.min)}</span>
+                {isModified && (
+                  <button onClick={() => onChange(p.name, p.value)}
+                    className="text-[9px] text-slate-600 hover:text-cyan-400 transition-colors">
+                    default: {smartFmt(p.value)}
+                  </button>
+                )}
+                <span className="text-[9px] text-slate-600 font-mono">{smartFmt(p.max)}</span>
+              </div>
+
+              {p.description && (
+                <p className="text-[10px] text-slate-600 mt-1 hidden group-hover:block leading-tight">{p.description}</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {hasOverrides && (
+        <div className="px-5 py-2 border-t border-slate-800/60">
+          <p className="text-[10px] text-slate-500 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+            Valori modificati — la simulazione si aggiorna automaticamente
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -286,8 +468,12 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
   const [simRuns, setSimRuns] = useState(0);
   const [showTemplates, setShowTemplates] = useState(false);
   const [activeTab, setActiveTab] = useState<'editor' | 'results'>('editor');
+  const [paramOverrides, setParamOverrides] = useState<Record<string, number>>({});
 
   const parseTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Extract interactive parameters from AST
+  const params = useMemo<ParamDef[]>(() => (ast ? extractParams(ast) : []), [ast]);
 
   // Parse SDL source with debounce
   const parseSource = useCallback((src: string) => {
@@ -337,7 +523,7 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
     parseSource(source);
   }, []);
 
-  // Run simulation
+  // Run simulation (with parameter overrides applied)
   const handleSimulate = useCallback(() => {
     if (!ast) return;
     setIsSimulating(true);
@@ -345,7 +531,8 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
 
     setTimeout(() => {
       try {
-        const res = simulate(ast, { runs: 2000, seed: 42 });
+        const effectiveAst = applyOverrides(ast, paramOverrides);
+        const res = simulate(effectiveAst, { runs: 2000, seed: 42 });
         setResult(res);
         setSimElapsed(res.elapsedMs);
         setSimRuns(res.runs);
@@ -355,6 +542,47 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
         setIsSimulating(false);
       }
     }, 30);
+  }, [ast, paramOverrides]);
+
+  // Parameter change handlers
+  const autoSimTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const handleParamChange = useCallback((name: string, value: number) => {
+    setParamOverrides(prev => {
+      const next = { ...prev, [name]: value };
+      // Auto re-simulate after slider change (debounced)
+      if (ast) {
+        clearTimeout(autoSimTimerRef.current);
+        autoSimTimerRef.current = setTimeout(() => {
+          try {
+            const effectiveAst = applyOverrides(ast, next);
+            const res = simulate(effectiveAst, { runs: 2000, seed: 42 });
+            setResult(res);
+            setSimElapsed(res.elapsedMs);
+            setSimRuns(res.runs);
+          } catch (e) {
+            console.error('Simulazione auto fallita:', e);
+          }
+        }, 300);
+      }
+      return next;
+    });
+  }, [ast]);
+
+  const handleParamReset = useCallback(() => {
+    setParamOverrides({});
+    if (ast) {
+      setTimeout(() => {
+        try {
+          const res = simulate(ast, { runs: 2000, seed: 42 });
+          setResult(res);
+          setSimElapsed(res.elapsedMs);
+          setSimRuns(res.runs);
+        } catch (e) {
+          console.error('Simulazione reset fallita:', e);
+        }
+      }, 50);
+    }
   }, [ast]);
 
   // Load template
@@ -362,6 +590,7 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
     setCurrentTemplate(t);
     setSource(t.source);
     setResult(null);
+    setParamOverrides({});
     setShowTemplates(false);
     setActiveTab('editor');
     setTimeout(() => parseSource(t.source), 50);
@@ -385,6 +614,7 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
 
   const errorCount = diagnostics.filter(d => d.severity === 'error').length;
   const canSimulate = ast != null && errorCount === 0;
+  const hasOverrides = Object.keys(paramOverrides).length > 0;
 
   return (
     <div className="min-h-full animate-fade-in">
@@ -463,6 +693,12 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
                     <path d="M8 5v14l11-7z" />
                   </svg>
                   Simula
+                  {hasOverrides && result && (
+                    <span className="relative flex h-2 w-2 ml-0.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
+                    </span>
+                  )}
                 </>
               )}
             </button>
@@ -499,9 +735,9 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className={`grid grid-cols-1 gap-6 ${params.length > 0 ? 'lg:grid-cols-12' : 'lg:grid-cols-12'}`}>
           {/* Editor panel */}
-          <div className={`lg:col-span-6 space-y-4 ${activeTab !== 'editor' ? 'hidden lg:block' : ''}`}>
+          <div className={`${params.length > 0 ? 'lg:col-span-5' : 'lg:col-span-6'} space-y-4 ${activeTab !== 'editor' ? 'hidden lg:block' : ''}`}>
             <div className="flex items-center justify-between mb-1">
               <h2 className="text-lg font-bold text-white">Codice SDL</h2>
               <div className="flex items-center gap-2">
@@ -514,12 +750,15 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
               <CodeMirrorEditor value={source} onChange={handleSourceChange} />
             </div>
 
+            {/* Interactive parameter sliders */}
+            <ParameterSliders params={params} overrides={paramOverrides} onChange={handleParamChange} onReset={handleParamReset} />
+
             {/* Diagnostics */}
             <DiagnosticsPanel items={diagnostics} />
           </div>
 
           {/* Results panel */}
-          <div className={`lg:col-span-6 space-y-5 ${activeTab !== 'results' ? 'hidden lg:block' : ''}`}>
+          <div className={`${params.length > 0 ? 'lg:col-span-7' : 'lg:col-span-6'} space-y-5 ${activeTab !== 'results' ? 'hidden lg:block' : ''}`}>
             <div className="flex items-center justify-between mb-1">
               <h2 className="text-lg font-bold text-white">Risultati simulazione</h2>
               {isSimulating && (

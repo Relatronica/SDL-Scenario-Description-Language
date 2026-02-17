@@ -93,15 +93,63 @@ scenario "Mobilita Autonoma 2025-2045" {
   version: "1.0"
   description: "Adozione dei veicoli autonomi L4/L5 e impatti su sicurezza, citta, logistica e lavoro"
   tags: ["ai", "mobilita", "veicoli-autonomi", "citta", "logistica", "sicurezza"]
+  subtitle: "Veicoli senza conducente, città e logistica 2025-2045"
+  category: "tecnologia"
+  icon: "🚗"
+  color: "#06b6d4"
+  difficulty: "base"
 
-  assumption tech_readiness { value: ${(techReady / 100).toFixed(2)}  source: "SAE/RAND 2025"  confidence: 0.4  uncertainty: beta(5, 4) }
-  assumption regulatory_openness { value: ${(regOpen / 100).toFixed(2)}  source: "UNECE WP.29"  confidence: 0.3  uncertainty: beta(3, 6) }
-  assumption public_trust { value: ${(trust / 100).toFixed(2)}  source: "AAA/Eurobarometro 2025"  confidence: 0.5  uncertainty: beta(4, 5) }
-  assumption sensor_cost_reduction { value: ${(sensorCost / 100).toFixed(2)}  source: "Velodyne/Luminar"  confidence: 0.6  uncertainty: normal(±25%) }
+  parameter tech_readiness {
+    label: "Maturità tecnologica AV"
+    value: ${(techReady / 100).toFixed(2)}
+    range: [20, 95]
+    step: 5
+    unit: "indice"
+    source: "SAE/RAND 2025"
+    format: "{value}/100"
+    control: slider
+    description: "Livello di maturità della tecnologia autonoma L4/L5 (0=sperimentale, 100=affidabile)"
+  }
+  parameter regulatory_openness {
+    label: "Apertura regolatoria"
+    value: ${(regOpen / 100).toFixed(2)}
+    range: [10, 90]
+    step: 5
+    unit: "indice"
+    source: "UNECE WP.29"
+    format: "{value}/100"
+    control: slider
+    description: "Quanto velocemente i governi OCSE approvano framework per veicoli autonomi"
+  }
+  parameter public_trust {
+    label: "Fiducia pubblica"
+    value: ${(trust / 100).toFixed(2)}
+    range: [15, 85]
+    step: 5
+    unit: "%"
+    source: "AAA/Eurobarometro 2025"
+    format: "{value}%"
+    control: slider
+    description: "Percentuale della popolazione disposta a usare un veicolo senza conducente"
+  }
+  parameter sensor_cost_reduction {
+    label: "Riduzione costo sensori"
+    value: ${(sensorCost / 100).toFixed(2)}
+    range: [5, 40]
+    step: 1
+    unit: "%/anno"
+    source: "Velodyne/Luminar"
+    format: "{value}%/anno"
+    control: slider
+    description: "Riduzione percentuale annua del costo dei sensori LiDAR e suite AV"
+  }
 
   variable flotta_av {
     description: "Veicoli autonomi L4/L5 in circolazione (OCSE)"
     unit: "migliaia"
+    label: "Flotta AV"
+    icon: "🚗"
+    color: "#06b6d4"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.flotta_av[i])}`).join('\n    ')}
     depends_on: tech_readiness, regulatory_openness, sensor_cost_reduction
     uncertainty: lognormal(7, 0.5)
@@ -111,6 +159,9 @@ scenario "Mobilita Autonoma 2025-2045" {
   variable ride_hailing_av {
     description: "Quota veicoli autonomi sul ride-hailing totale"
     unit: "percentuale"
+    label: "Ride-hailing AV"
+    icon: "📱"
+    color: "#8b5cf6"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.ride_hailing_av[i])}`).join('\n    ')}
     depends_on: flotta_av, public_trust, regulatory_openness
     uncertainty: normal(±20%)
@@ -120,6 +171,9 @@ scenario "Mobilita Autonoma 2025-2045" {
   variable morti_stradali_ocse {
     description: "Morti in incidenti stradali OCSE all'anno"
     unit: "migliaia"
+    label: "Morti stradali"
+    icon: "⚠"
+    color: "#ef4444"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.morti_stradali_ocse[i])}`).join('\n    ')}
     depends_on: flotta_av, tech_readiness
     uncertainty: normal(±12%)
@@ -138,6 +192,9 @@ scenario "Mobilita Autonoma 2025-2045" {
   variable merci_autonome {
     description: "Quota merci long-haul trasportate da camion autonomi"
     unit: "percentuale"
+    label: "Merci autonome"
+    icon: "🚛"
+    color: "#f59e0b"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.merci_autonome[i])}`).join('\n    ')}
     depends_on: tech_readiness, regulatory_openness
     uncertainty: normal(±22%)
@@ -156,6 +213,9 @@ scenario "Mobilita Autonoma 2025-2045" {
   impact vite_salvate {
     description: "Vite salvate annualmente rispetto al 2025"
     unit: "migliaia"
+    label: "Vite salvate"
+    icon: "❤"
+    color: "#10b981"
     derives_from: morti_stradali_ocse
     formula: 95 - morti_stradali_ocse
   }
@@ -163,6 +223,9 @@ scenario "Mobilita Autonoma 2025-2045" {
   impact spazio_urbano_liberato {
     description: "Spazio urbano liberato dai parcheggi (0-100)"
     unit: "indice"
+    label: "Spazio urbano liberato"
+    icon: "🏙"
+    color: "#3b82f6"
     derives_from: domanda_parcheggi
     formula: 100 - domanda_parcheggi
   }
@@ -170,6 +233,9 @@ scenario "Mobilita Autonoma 2025-2045" {
   impact autisti_spostati {
     description: "Autisti spostati rispetto al 2025"
     unit: "milioni"
+    label: "Autisti spostati"
+    icon: "👷"
+    color: "#ef4444"
     derives_from: autisti_occupati
     formula: 6.5 - autisti_occupati
   }

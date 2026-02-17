@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
 import {
   Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Line, ComposedChart,
@@ -13,6 +13,8 @@ import {
 import { EDITOR_TEMPLATES } from './editor/templates';
 import EditorView from './editor/EditorView';
 import GuideView, { GUIDE_SECTIONS, type GuideSectionId } from './guide/GuideView';
+
+const CausalGraph = lazy(() => import('./components/CausalGraph'));
 
 // ═══════════════════════════════════════════
 // Utility Helpers
@@ -170,13 +172,9 @@ interface SidebarProps {
 }
 
 function Sidebar({ mode, selectedId, editorTemplateId, guideSectionId, onSelect, onEditorSelect, onGuideSelect, isOpen, onClose }: SidebarProps) {
-  const [expandedCategories, setExpandedCategories] = useState<Set<ScenarioCategory>>(() => {
-    const all = new Set<ScenarioCategory>();
-    for (const s of SCENARIOS) all.add(s.meta.category);
-    return all;
-  });
-  const [editorExpanded, setEditorExpanded] = useState(true);
-  const [guideExpanded, setGuideExpanded] = useState(true);
+  const [expandedCategories, setExpandedCategories] = useState<Set<ScenarioCategory>>(new Set());
+  const [editorExpanded, setEditorExpanded] = useState(false);
+  const [guideExpanded, setGuideExpanded] = useState(false);
 
   const grouped = useMemo(() => {
     const map = new Map<ScenarioCategory, ScenarioDefinition[]>();
@@ -561,6 +559,7 @@ function ScenarioView({ scenario }: { scenario: ScenarioDefinition }) {
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [isSimulating, setIsSimulating] = useState(false);
   const [showSDL, setShowSDL] = useState(false);
+  const [showGraph, setShowGraph] = useState(false);
   const [showMethodology, setShowMethodology] = useState(false);
   const [simElapsed, setSimElapsed] = useState(0);
   const [simRuns, setSimRuns] = useState(0);
@@ -702,8 +701,29 @@ function ScenarioView({ scenario }: { scenario: ScenarioDefinition }) {
           </div>
         </div>
 
-        {/* Transparency */}
+        {/* Causal Graph + Transparency */}
         <div className="mt-12 space-y-4">
+          {/* Causal Graph */}
+          <div className="border border-slate-800 rounded-2xl overflow-hidden">
+            <button onClick={() => setShowGraph(!showGraph)} className="w-full flex items-center justify-between px-6 py-4 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
+              <div className="flex items-center gap-3">
+                <span className="text-blue-400/70">🔗</span>
+                <span className="text-sm font-semibold text-slate-300">Grafo causale</span>
+                <span className="text-[10px] text-slate-600 bg-slate-800 px-2 py-0.5 rounded-full">interattivo</span>
+              </div>
+              <svg className={`w-4 h-4 text-slate-500 transition-transform ${showGraph ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            </button>
+            {showGraph && (
+              <div className="px-2 py-3 bg-slate-950/50 animate-fade-in">
+                <p className="text-[11px] text-slate-500 mb-3 px-4">Mappa interattiva delle dipendenze causali tra variabili. Trascina per esplorare, zoom con la rotella.</p>
+                <Suspense fallback={<div className="h-[500px] flex items-center justify-center"><div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" /></div>}>
+                  <CausalGraph sdlSource={sdlSource} />
+                </Suspense>
+              </div>
+            )}
+          </div>
+
+          {/* Methodology */}
           <div className="border border-slate-800 rounded-2xl overflow-hidden">
             <button onClick={() => setShowMethodology(!showMethodology)} className="w-full flex items-center justify-between px-6 py-4 bg-slate-900/40 hover:bg-slate-900/60 transition-colors">
               <div className="flex items-center gap-3"><span className="text-slate-500">&#9432;</span><span className="text-sm font-semibold text-slate-300">Metodologia e trasparenza</span></div>

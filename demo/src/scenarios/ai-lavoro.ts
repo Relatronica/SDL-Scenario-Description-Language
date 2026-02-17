@@ -89,15 +89,63 @@ scenario "AI e Lavoro in Italia 2025-2035" {
   version: "1.0"
   description: "Simulazione dell'impatto dell'AI sul mercato del lavoro italiano"
   tags: ["italia", "ai", "lavoro", "automazione", "formazione"]
+  subtitle: "Automazione, occupazione e competenze 2025-2035"
+  category: "tecnologia"
+  icon: "🤖"
+  color: "#3b82f6"
+  difficulty: "base"
 
-  assumption ai_adoption_rate { value: ${adoption}%  source: "ISTAT Imprese e ICT, 2024"  confidence: 0.6  uncertainty: normal(±20%) }
-  assumption training_investment { value: ${training * 1e9}  source: "PNRR + Fondi FSE+"  confidence: 0.5  uncertainty: normal(±15%) }
-  assumption regulation_level { value: ${(regulation / 100).toFixed(2)}  source: "EU AI Act, AgID"  confidence: 0.5  uncertainty: beta(5, 5) }
-  assumption tech_progress { value: ${(techProgress / 100).toFixed(2)}  source: "Epoch AI"  confidence: 0.55  uncertainty: normal(±25%) }
+  parameter ai_adoption_rate {
+    label: "Velocità di adozione AI"
+    value: ${adoption}
+    range: [3, 35]
+    step: 1
+    unit: "%"
+    source: "ISTAT Imprese e ICT, 2024; OECD AI adoption estimates"
+    format: "{value}%"
+    control: slider
+    description: "Percentuale annua di aziende italiane che adottano sistemi AI nei processi produttivi"
+  }
+  parameter training_investment {
+    label: "Investimento in riqualificazione"
+    value: ${training * 1e9}
+    range: [1, 25]
+    step: 0.5
+    unit: "miliardi €"
+    source: "PNRR Componente M1C1 Digitalizzazione; Fondi europei FSE+"
+    format: "{value} mld €"
+    control: slider
+    description: "Spesa pubblica + privata annua per formazione digitale e riconversione professionale"
+  }
+  parameter regulation_level {
+    label: "Livello di regolamentazione AI"
+    value: ${(regulation / 100).toFixed(2)}
+    range: [0, 100]
+    step: 5
+    unit: "%"
+    source: "EU AI Act (Reg. 2024/1689); AgID linee guida AI nella PA"
+    format: "{value}%"
+    control: slider
+    description: "Intensità della regolamentazione: 0 = nessuna, 100 = restrizioni massime (stile EU AI Act pieno)"
+  }
+  parameter tech_progress {
+    label: "Velocità progresso AI"
+    value: ${(techProgress / 100).toFixed(2)}
+    range: [5, 50]
+    step: 1
+    unit: "fattore"
+    source: "Epoch AI compute tracking; Our World in Data AI index"
+    format: "{value}"
+    control: slider
+    description: "Quanto velocemente migliorano le capacità AI (crescita potenza di calcolo e modelli)"
+  }
 
   variable posti_lavoro_a_rischio {
+    label: "Posti di lavoro a rischio"
     description: "Posti di lavoro a rischio automazione"
     unit: "milioni"
+    icon: "⚠"
+    color: "#ef4444"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.posti_lavoro_a_rischio[i])}`).join('\n    ')}
     depends_on: ai_adoption_rate, tech_progress, regulation_level
     uncertainty: normal(±18%)
@@ -105,8 +153,11 @@ scenario "AI e Lavoro in Italia 2025-2035" {
   }
 
   variable nuovi_posti_digitali {
+    label: "Nuovi posti digitali"
     description: "Nuovi posti di lavoro digitali"
     unit: "milioni"
+    icon: "✦"
+    color: "#10b981"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.nuovi_posti_digitali[i])}`).join('\n    ')}
     depends_on: training_investment, ai_adoption_rate
     uncertainty: normal(±20%)
@@ -114,8 +165,11 @@ scenario "AI e Lavoro in Italia 2025-2035" {
   }
 
   variable indice_competenze_digitali {
+    label: "Competenze digitali"
     description: "Indice competenze digitali DESI (0-100)"
     unit: "indice"
+    icon: "◈"
+    color: "#8b5cf6"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.indice_competenze_digitali[i])}`).join('\n    ')}
     depends_on: training_investment
     uncertainty: normal(±10%)
@@ -123,8 +177,11 @@ scenario "AI e Lavoro in Italia 2025-2035" {
   }
 
   variable impatto_pil {
+    label: "Impatto sul PIL"
     description: "Contributo AI al PIL italiano"
     unit: "miliardi EUR"
+    icon: "◆"
+    color: "#f59e0b"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.impatto_pil[i])}`).join('\n    ')}
     depends_on: ai_adoption_rate, nuovi_posti_digitali, indice_competenze_digitali
     uncertainty: normal(±22%)
@@ -132,8 +189,11 @@ scenario "AI e Lavoro in Italia 2025-2035" {
   }
 
   impact bilancio_netto_occupazione {
+    label: "Bilancio netto occupazione"
     description: "Bilancio netto: nuovi posti meno posti a rischio"
     unit: "milioni"
+    icon: "⊕"
+    color: "#3b82f6"
     derives_from: nuovi_posti_digitali, posti_lavoro_a_rischio
     formula: nuovi_posti_digitali - posti_lavoro_a_rischio
   }

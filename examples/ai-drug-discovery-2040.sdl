@@ -19,6 +19,11 @@ scenario "AI-Driven Drug Discovery 2040" {
                 and the evolving relationship between AI diagnostics 
                 and human medical practice"
   tags: ["ai", "health", "pharma", "drug-discovery", "diagnostics"]
+  subtitle: "Pharma, diagnostica e malattie rare con l'AI"
+  category: tecnologia
+  icon: "💊"
+  color: "#10b981"
+  difficulty: intermedio
 
   // ── Assumptions ──
 
@@ -69,18 +74,36 @@ scenario "AI-Driven Drug Discovery 2040" {
   parameter ai_rd_adoption_rate {
     value: 18%
     range: [8%, 45%]
+    label: "Adozione AI in R&D"
+    unit: "%"
+    step: 1
+    source: "Nature Biotechnology AI in Drug Discovery surveys"
+    format: "{value}%"
+    control: slider
     description: "Percentage of pharma R&D pipeline using AI at any stage"
   }
 
   parameter clinical_trial_digitization {
     value: 0.30
     range: [0.10, 0.80]
+    label: "Digitalizzazione trial clinici"
+    unit: "indice"
+    step: 0.05
+    source: "Deloitte Clinical Trial Trends 2025"
+    format: "{value}"
+    control: slider
     description: "Degree of clinical trial process digitization and AI integration"
   }
 
   parameter open_science_factor {
     value: 0.35
     range: [0.10, 0.70]
+    label: "Fattore open science"
+    unit: "indice"
+    step: 0.05
+    source: "Nature Open Science tracker"
+    format: "{value}"
+    control: slider
     description: "Degree of open data/model sharing in AI drug discovery"
   }
 
@@ -89,6 +112,9 @@ scenario "AI-Driven Drug Discovery 2040" {
   variable ai_assisted_drug_approvals {
     description: "Annual FDA+EMA drug approvals where AI played a substantial role"
     unit: "drugs"
+    label: "Farmaci AI approvati"
+    icon: "💊"
+    color: "#10b981"
 
     2025: 8
     2027: 14
@@ -109,6 +135,9 @@ scenario "AI-Driven Drug Discovery 2040" {
   variable preclinical_to_approval_time {
     description: "Average time from preclinical candidate to regulatory approval"
     unit: "years"
+    label: "Tempo approvazione"
+    icon: "⏱"
+    color: "#3b82f6"
 
     2025: 10.5
     2027: 9.8
@@ -129,6 +158,9 @@ scenario "AI-Driven Drug Discovery 2040" {
   variable drug_development_cost {
     description: "Average cost to develop a new drug (from discovery to market)"
     unit: "B USD"
+    label: "Costo sviluppo"
+    icon: "💰"
+    color: "#f59e0b"
 
     2025: 2.3
     2027: 2.1
@@ -149,6 +181,9 @@ scenario "AI-Driven Drug Discovery 2040" {
   variable clinical_trial_success_rate {
     description: "Phase I to approval success rate for AI-assisted drugs"
     unit: "%"
+    label: "Successo clinico"
+    icon: "📊"
+    color: "#8b5cf6"
 
     2025: 12%
     2027: 14%
@@ -169,6 +204,9 @@ scenario "AI-Driven Drug Discovery 2040" {
   variable ai_diagnostic_accuracy {
     description: "Average accuracy of AI diagnostic systems vs specialist physicians"
     unit: "index"
+    label: "Accuratezza diagnostica"
+    icon: "🎯"
+    color: "#10b981"
 
     2025: 0.87
     2027: 0.89
@@ -189,6 +227,9 @@ scenario "AI-Driven Drug Discovery 2040" {
   variable radiologist_workforce_change {
     description: "Change in radiology workforce demand relative to 2025 baseline"
     unit: "%"
+    label: "Forza lavoro radiologi"
+    icon: "👩‍⚕"
+    color: "#ef4444"
 
     2025: 100%
     2027: 98%
@@ -208,6 +249,9 @@ scenario "AI-Driven Drug Discovery 2040" {
   variable rare_disease_ai_candidates {
     description: "AI-identified drug candidates targeting rare diseases (cumulative)"
     unit: "candidates"
+    label: "Candidati malattie rare"
+    icon: "🧬"
+    color: "#8b5cf6"
 
     2025: 120
     2027: 200
@@ -228,6 +272,9 @@ scenario "AI-Driven Drug Discovery 2040" {
   variable ai_safety_incidents_pharma {
     description: "Annual reported AI-related safety incidents in pharma (misidentified targets, biased trials)"
     unit: "incidents"
+    label: "Incidenti AI pharma"
+    icon: "⚠"
+    color: "#ef4444"
 
     2025: 15
     2027: 30
@@ -345,6 +392,9 @@ scenario "AI-Driven Drug Discovery 2040" {
   impact rd_productivity_gain {
     description: "R&D productivity gain: AI-assisted drugs approved per billion USD development cost"
     unit: "drugs/B USD"
+    label: "Produttività R&D"
+    icon: "📈"
+    color: "#10b981"
     derives_from: ai_assisted_drug_approvals, drug_development_cost
     formula: ai_assisted_drug_approvals / drug_development_cost
   }
@@ -352,6 +402,9 @@ scenario "AI-Driven Drug Discovery 2040" {
   impact time_to_patient {
     description: "Years saved per drug reaching patients compared to 2025 baseline"
     unit: "years"
+    label: "Tempo al paziente"
+    icon: "⏱"
+    color: "#3b82f6"
     derives_from: preclinical_to_approval_time
     formula: 10.5 - preclinical_to_approval_time
   }
@@ -359,6 +412,9 @@ scenario "AI-Driven Drug Discovery 2040" {
   impact rare_disease_hope_index {
     description: "Progress in addressing rare diseases (% of 7000 known rare diseases with AI candidates)"
     unit: "%"
+    label: "Indice speranza malattie rare"
+    icon: "🧬"
+    color: "#8b5cf6"
     derives_from: rare_disease_ai_candidates
     formula: rare_disease_ai_candidates / 7000 * 100
   }
@@ -366,6 +422,9 @@ scenario "AI-Driven Drug Discovery 2040" {
   impact diagnostic_parity {
     description: "AI diagnostic accuracy relative to human specialists (1.0 = parity)"
     unit: "ratio"
+    label: "Parità diagnostica"
+    icon: "⚖"
+    color: "#f59e0b"
     derives_from: ai_diagnostic_accuracy
     formula: ai_diagnostic_accuracy / 0.92
   }

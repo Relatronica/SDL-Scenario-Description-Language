@@ -13,9 +13,11 @@
     "@codemirror/state": "^6.5.4",
     "@codemirror/theme-one-dark": "^6.1.3",
     "@codemirror/view": "^6.39.14",
+    "@dagrejs/dagre": "^2.0.4",
     "codemirror": "^6.0.2",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
+    "reactflow": "^11.11.4",
     "recharts": "^2.12.0"
   },
   "devDependencies": {

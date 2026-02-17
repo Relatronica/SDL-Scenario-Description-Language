@@ -108,6 +108,17 @@ const KEYWORDS: Record<string, TokenType> = {
   formula: TokenType.Formula,
   compose: TokenType.Compose,
 
+  // Interactive / presentation keywords
+  label: TokenType.Label,
+  step: TokenType.Step,
+  format: TokenType.Format,
+  control: TokenType.Control,
+  icon: TokenType.Icon,
+  color: TokenType.Color,
+  category: TokenType.Category,
+  subtitle: TokenType.Subtitle,
+  difficulty: TokenType.Difficulty,
+
   // Simulation methods
   monte_carlo: TokenType.MonteCarlo,
   latin_hypercube: TokenType.LatinHypercube,

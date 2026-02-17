@@ -87,15 +87,63 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
   author: "Relatronica — Citizen Lab"
   description: "Traiettorie dell'autonomia strategica difensiva europea: relazioni transatlantiche, percezione minaccia, capacità industriale"
   tags: ["difesa", "europa", "geopolitica", "NATO", "industria"]
+  subtitle: "NATO, industria e deterrenza 2025-2038"
+  category: "politica"
+  icon: "🛡"
+  color: "#ef4444"
+  difficulty: "avanzato"
 
-  assumption us_commitment { value: ${((vals.us_commitment ?? 65) / 100).toFixed(2)}  source: "US Congressional NATO support, 2025"  confidence: 0.25  uncertainty: beta(3, 3) }
-  assumption threat_level { value: ${((vals.threat_level ?? 70) / 100).toFixed(2)}  source: "EU INTCEN assessment, 2025"  confidence: 0.3  uncertainty: beta(5, 3) }
-  assumption eu_cohesion { value: ${((vals.eu_cohesion ?? 55) / 100).toFixed(2)}  source: "European Council CFSP, 2024"  confidence: 0.35  uncertainty: beta(4, 4) }
-  assumption defense_budget { value: ${((vals.defense_budget ?? 2.5) / 100).toFixed(3)}  source: "NATO Guidelines"  confidence: 0.5  uncertainty: normal(±15%) }
+  parameter us_commitment {
+    label: "Impegno USA/NATO"
+    value: ${((vals.us_commitment ?? 65) / 100).toFixed(2)}
+    range: [10, 100]
+    step: 5
+    unit: "%"
+    source: "US Congressional NATO support, 2025"
+    format: "{value}%"
+    control: slider
+    description: "Livello di impegno degli Stati Uniti verso la NATO e la difesa europea"
+  }
+  parameter threat_level {
+    label: "Livello minaccia russa"
+    value: ${((vals.threat_level ?? 70) / 100).toFixed(2)}
+    range: [20, 100]
+    step: 5
+    unit: "%"
+    source: "EU INTCEN assessment, 2025"
+    format: "{value}%"
+    control: slider
+    description: "Percezione della minaccia russa secondo le intelligence europee"
+  }
+  parameter eu_cohesion {
+    label: "Coesione politica UE"
+    value: ${((vals.eu_cohesion ?? 55) / 100).toFixed(2)}
+    range: [15, 90]
+    step: 5
+    unit: "%"
+    source: "European Council CFSP, 2024"
+    format: "{value}%"
+    control: slider
+    description: "Tasso di unanimità del Consiglio Europeo sulle decisioni PESC"
+  }
+  parameter defense_budget {
+    label: "Obiettivo spesa difesa"
+    value: ${vals.defense_budget ?? 2.5}
+    range: [1.5, 4.5]
+    step: 0.1
+    unit: "% PIL"
+    source: "NATO Guidelines"
+    format: "{value}% PIL"
+    control: slider
+    description: "Obiettivo medio di spesa per la difesa dei membri UE in percentuale del PIL"
+  }
 
   variable defense_spending {
     description: "Spesa difesa media UE (% PIL)"
     unit: "percentuale PIL"
+    label: "Spesa difesa"
+    icon: "💰"
+    color: "#3b82f6"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.defense_spending[i])}`).join('\n    ')}
     depends_on: threat_level, us_commitment, defense_budget
     uncertainty: normal(±15%)
@@ -105,6 +153,9 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
   variable ammo_production {
     description: "Capacità produzione munizioni UE (2025=100)"
     unit: "indice"
+    label: "Produzione munizioni"
+    icon: "🏭"
+    color: "#f59e0b"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.ammo_production[i])}`).join('\n    ')}
     depends_on: defense_spending
     uncertainty: normal(±20%)
@@ -114,6 +165,9 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
   variable us_dependency {
     description: "Dipendenza da equipaggiamento USA (% procurement)"
     unit: "percentuale"
+    label: "Dipendenza USA"
+    icon: "🇺🇸"
+    color: "#ef4444"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.us_dependency[i])}`).join('\n    ')}
     depends_on: us_commitment, eu_cohesion
     uncertainty: normal(±12%)
@@ -123,6 +177,9 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
   variable rapid_deployment {
     description: "Capacità di schieramento rapido (truppe in 30 giorni)"
     unit: "migliaia"
+    label: "Schieramento rapido"
+    icon: "⚔"
+    color: "#10b981"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.rapid_deployment[i])}`).join('\n    ')}
     depends_on: defense_spending, eu_cohesion
     uncertainty: normal(±25%)
@@ -132,6 +189,9 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
   variable cyber_readiness {
     description: "Prontezza cyber-difesa collettiva UE (0-100)"
     unit: "indice"
+    label: "Cyber difesa"
+    icon: "🔒"
+    color: "#8b5cf6"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.cyber_readiness[i])}`).join('\n    ')}
     depends_on: defense_spending
     uncertainty: normal(±18%)
@@ -141,6 +201,9 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
   variable defense_employment {
     description: "Occupazione industria difesa UE"
     unit: "migliaia"
+    label: "Occupazione difesa"
+    icon: "👷"
+    color: "#10b981"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.defense_employment[i])}`).join('\n    ')}
     depends_on: defense_spending, ammo_production
     uncertainty: normal(±12%)
@@ -150,6 +213,9 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
   impact autonomia_strategica {
     description: "Indice composito autonomia difensiva UE"
     unit: "indice"
+    label: "Autonomia strategica"
+    icon: "🇪🇺"
+    color: "#3b82f6"
     derives_from: us_dependency, rapid_deployment, cyber_readiness
     formula: ((100 - us_dependency) * 0.33) + (rapid_deployment / 80 * 33) + (cyber_readiness * 0.34)
   }

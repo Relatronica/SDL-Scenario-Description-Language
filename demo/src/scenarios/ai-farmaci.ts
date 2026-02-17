@@ -91,11 +91,56 @@ scenario "AI e Scoperta Farmaci 2025-2042" {
   version: "1.0"
   description: "Impatto dell'AI sulla scoperta farmaci: tempi, costi, successo clinico e malattie rare"
   tags: ["ai", "salute", "farmaci", "pharma", "diagnostica"]
+  subtitle: "Pharma, diagnostica e malattie rare 2025-2042"
+  category: "tecnologia"
+  icon: "💊"
+  color: "#10b981"
+  difficulty: "intermedio"
 
-  assumption ai_biomedical_capability { value: ${(aiCap / 100).toFixed(2)}  source: "AlphaFold/BioNeMo 2025"  confidence: 0.5  uncertainty: beta(5, 4) }
-  assumption pharma_rd_spend { value: ${rdSpend}  source: "EFPIA/PhRMA 2025"  confidence: 0.7  uncertainty: normal(±12%) }
-  assumption regulatory_readiness { value: ${(regReady / 100).toFixed(2)}  source: "FDA/EMA 2025"  confidence: 0.4  uncertainty: beta(3, 4) }
-  assumption open_science { value: ${(openSci / 100).toFixed(2)}  source: "Open Targets, UK Biobank"  confidence: 0.5  uncertainty: beta(4, 5) }
+  parameter ai_biomedical_capability {
+    label: "Capacità AI biomedica"
+    value: ${(aiCap / 100).toFixed(2)}
+    range: [20, 95]
+    step: 5
+    unit: "indice"
+    source: "AlphaFold/BioNeMo benchmarks; Nature Biotech reviews 2025"
+    format: "{value}/100"
+    control: slider
+    description: "Livello di maturità dei modelli AI per biologia e chimica (0=base, 100=superintelligenza biomedica)"
+  }
+  parameter pharma_rd_spend {
+    label: "Investimento R&D pharma"
+    value: ${rdSpend}
+    range: [150, 450]
+    step: 10
+    unit: "miliardi $"
+    source: "EFPIA/PhRMA Global R&D Spending Report 2025"
+    format: "{value} mld $"
+    control: slider
+    description: "Spesa globale annua in ricerca e sviluppo farmaceutico"
+  }
+  parameter regulatory_readiness {
+    label: "Prontezza regolatoria (FDA/EMA)"
+    value: ${(regReady / 100).toFixed(2)}
+    range: [10, 90]
+    step: 5
+    unit: "indice"
+    source: "FDA AI/ML Action Plan; EMA AI Reflection Paper 2025"
+    format: "{value}/100"
+    control: slider
+    description: "Quanto velocemente le agenzie regolatorie adattano i processi all'AI (0=lento, 100=rapido)"
+  }
+  parameter open_science {
+    label: "Apertura dati biomedici"
+    value: ${(openSci / 100).toFixed(2)}
+    range: [10, 80]
+    step: 5
+    unit: "indice"
+    source: "UK Biobank, All of Us, Open Targets; Nature Open Science tracker"
+    format: "{value}/100"
+    control: slider
+    description: "Grado di condivisione aperta dei dati e modelli nel settore (0=chiuso, 100=completamente aperto)"
+  }
 
   variable approvazioni_ai {
     description: "Farmaci approvati con ruolo sostanziale dell'AI (FDA+EMA/anno)"
@@ -143,8 +188,11 @@ scenario "AI e Scoperta Farmaci 2025-2042" {
   }
 
   impact anni_risparmiati {
+    label: "Anni risparmiati"
     description: "Anni risparmiati per farmaco rispetto al baseline 2025"
     unit: "anni"
+    icon: "⚡"
+    color: "#06b6d4"
     derives_from: tempo_approvazione
     formula: 10.5 - tempo_approvazione
   }

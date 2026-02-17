@@ -83,15 +83,63 @@ scenario "Sovranita Digitale Europea 2025-2035" {
   author: "Relatronica — Citizen Lab"
   description: "L'Europa puo' costruire una propria autonomia tecnologica? Cloud, dati, open source e regolamentazione"
   tags: ["europa", "sovranita", "cloud", "dati", "open-source", "regolamentazione"]
+  subtitle: "Cloud, dati e autonomia tecnologica 2025-2035"
+  category: "politica"
+  icon: "🛡"
+  color: "#ef4444"
+  difficulty: "avanzato"
 
-  assumption eu_cloud_investment { value: ${vals.eu_cloud_investment ?? 10}  source: "IPCEI Cloud, Gaia-X"  confidence: 0.45  uncertainty: normal(±25%) }
-  assumption data_localization { value: ${((vals.data_localization ?? 20) / 100).toFixed(2)}  source: "ENISA 2024"  confidence: 0.4  uncertainty: normal(±30%) }
-  assumption open_source_adoption { value: ${((vals.open_source_adoption ?? 25) / 100).toFixed(2)}  source: "OSOR EU 2024"  confidence: 0.5  uncertainty: normal(±20%) }
-  assumption digital_regulation_strength { value: ${((vals.digital_regulation_strength ?? 55) / 100).toFixed(2)}  source: "DG CONNECT"  confidence: 0.5  uncertainty: beta(5, 4) }
+  parameter eu_cloud_investment {
+    label: "Investimento in cloud EU"
+    value: ${vals.eu_cloud_investment ?? 10}
+    range: [2, 40]
+    step: 1
+    unit: "miliardi €"
+    source: "IPCEI Cloud, Gaia-X"
+    format: "{value} mld €"
+    control: slider
+    description: "Investimento annuo in infrastruttura cloud e data center europei"
+  }
+  parameter data_localization {
+    label: "Localizzazione dati"
+    value: ${((vals.data_localization ?? 20) / 100).toFixed(2)}
+    range: [10, 90]
+    step: 5
+    unit: "%"
+    source: "ENISA 2024"
+    format: "{value}%"
+    control: slider
+    description: "Percentuale di dati europei processati su infrastrutture europee"
+  }
+  parameter open_source_adoption {
+    label: "Adozione open source nella PA"
+    value: ${((vals.open_source_adoption ?? 25) / 100).toFixed(2)}
+    range: [5, 80]
+    step: 5
+    unit: "%"
+    source: "OSOR EU 2024"
+    format: "{value}%"
+    control: slider
+    description: "Percentuale di PA europee che usano software open source per sistemi critici"
+  }
+  parameter digital_regulation_strength {
+    label: "Forza regolamentazione digitale"
+    value: ${((vals.digital_regulation_strength ?? 55) / 100).toFixed(2)}
+    range: [10, 100]
+    step: 5
+    unit: "indice"
+    source: "DG CONNECT"
+    format: "{value}/100"
+    control: slider
+    description: "Intensità dell'applicazione di DSA, DMA, AI Act, Data Act"
+  }
 
   variable indice_sovranita_digitale {
     description: "Indice composito di sovranita digitale EU (0-100)"
     unit: "indice"
+    label: "Sovranità digitale"
+    icon: "🛡"
+    color: "#3b82f6"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.indice_sovranita_digitale[i])}`).join('\n    ')}
     depends_on: eu_cloud_investment, data_localization, open_source_adoption, digital_regulation_strength
     uncertainty: normal(±18%)
@@ -101,6 +149,9 @@ scenario "Sovranita Digitale Europea 2025-2035" {
   variable dipendenza_big_tech {
     description: "Dipendenza da Big Tech extra-UE per servizi digitali critici"
     unit: "percentuale"
+    label: "Dipendenza Big Tech"
+    icon: "⛓"
+    color: "#ef4444"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.dipendenza_big_tech[i])}`).join('\n    ')}
     depends_on: eu_cloud_investment, data_localization, open_source_adoption
     uncertainty: normal(±15%)
@@ -110,6 +161,9 @@ scenario "Sovranita Digitale Europea 2025-2035" {
   variable mercato_cloud_eu {
     description: "Fatturato annuo dei provider cloud europei"
     unit: "miliardi EUR"
+    label: "Cloud EU"
+    icon: "☁"
+    color: "#f59e0b"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.mercato_cloud_eu[i])}`).join('\n    ')}
     depends_on: eu_cloud_investment, data_localization
     uncertainty: normal(±22%)
@@ -119,6 +173,9 @@ scenario "Sovranita Digitale Europea 2025-2035" {
   variable posti_lavoro_tech_eu {
     description: "Occupati nel settore tech europeo (non Big Tech)"
     unit: "milioni"
+    label: "Lavoro tech EU"
+    icon: "💻"
+    color: "#8b5cf6"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.posti_lavoro_tech_eu[i])}`).join('\n    ')}
     depends_on: eu_cloud_investment, open_source_adoption
     uncertainty: normal(±20%)
@@ -128,6 +185,9 @@ scenario "Sovranita Digitale Europea 2025-2035" {
   impact guadagno_sovranita {
     description: "Guadagno di sovranita digitale rispetto al 2025"
     unit: "punti indice"
+    label: "Guadagno sovranità"
+    icon: "↑"
+    color: "#10b981"
     derives_from: indice_sovranita_digitale
     formula: indice_sovranita_digitale - 22
   }

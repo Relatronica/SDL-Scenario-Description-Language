@@ -18,6 +18,11 @@ scenario "Water Scarcity Mediterranean 2040" {
                 modeling rainfall decline, agricultural adaptation, 
                 desalination capacity, and geopolitical water tensions"
   tags: ["water", "climate", "agriculture", "mediterranean", "infrastructure"]
+  subtitle: "Acqua, agricoltura e conflitti nel bacino del Mediterraneo"
+  category: ambiente
+  icon: "💧"
+  color: "#10b981"
+  difficulty: avanzato
 
   // ── Assumptions ──
 
@@ -79,6 +84,12 @@ scenario "Water Scarcity Mediterranean 2040" {
   parameter infrastructure_investment {
     value: 8B EUR
     range: [3B EUR, 25B EUR]
+    label: "Investimento infrastrutture idriche"
+    unit: "miliardi €"
+    step: 1
+    source: "EU Water Framework Directive"
+    format: "{value} mld €"
+    control: slider
     description: "Annual EU + national investment in water infrastructure"
   }
 
@@ -291,6 +302,9 @@ scenario "Water Scarcity Mediterranean 2040" {
   impact food_security_risk {
     description: "Food security risk from agricultural decline"
     unit: "index"
+    label: "Rischio alimentare"
+    icon: "🍽"
+    color: "#ef4444"
     derives_from: agricultural_output_index
     formula: 100 - agricultural_output_index
   }
@@ -298,6 +312,9 @@ scenario "Water Scarcity Mediterranean 2040" {
   impact infrastructure_gap {
     description: "Gap between desalination capacity and water demand"
     unit: "million m³/day"
+    label: "Gap infrastrutturale"
+    icon: "🏗"
+    color: "#f59e0b"
     derives_from: desalination_capacity, population_at_water_risk
     formula: (population_at_water_risk * 0.15) - desalination_capacity
   }
@@ -305,6 +322,9 @@ scenario "Water Scarcity Mediterranean 2040" {
   impact adaptation_effectiveness {
     description: "Overall adaptation effectiveness score"
     unit: "index"
+    label: "Efficacia adattamento"
+    icon: "🛡"
+    color: "#10b981"
     derives_from: water_stress_index, desalination_capacity, ecosystem_health
     formula: (desalination_capacity / 55 * 40) + (ecosystem_health / 58 * 30) + ((100 - water_stress_index) / 58 * 30)
   }

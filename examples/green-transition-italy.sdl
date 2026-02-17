@@ -15,6 +15,11 @@ scenario "Green Transition Italy 2040" {
   description: "Models Italy's path to carbon neutrality under 
                 different policy and market scenarios"
   tags: ["energy", "italy", "climate", "employment"]
+  subtitle: "Rinnovabili, emissioni e costi verso la neutralità carbonica"
+  category: ambiente
+  icon: "⚡"
+  color: "#10b981"
+  difficulty: intermedio
 
   // ── Assumptions ──
 
@@ -62,17 +67,33 @@ scenario "Green Transition Italy 2040" {
   parameter retraining_budget {
     value: 3B EUR
     range: [1B EUR, 8B EUR]
+    label: "Budget riqualificazione"
+    unit: "miliardi €"
+    step: 0.5
+    source: "PNRR, fondi europei FSE+"
+    format: "{value} mld €"
+    control: slider
     description: "Annual government budget for workforce retraining programs"
   }
 
   parameter subsidy_rate {
     value: 30%
     range: [10%, 50%]
+    label: "Incentivo rinnovabili"
+    unit: "%"
+    step: 5%
+    source: "GSE Rapporto Statistico 2024"
+    format: "{value}%"
+    control: slider
     description: "Percentage subsidy on renewable energy installations"
   }
 
   parameter cost_per_retrained_worker {
     value: 15000 EUR
+    label: "Costo per lavoratore riqualificato"
+    unit: "EUR"
+    source: "ANPAL studi occupazione verde"
+    format: "{value} €"
     description: "Average cost to retrain one worker for the green economy"
   }
 
@@ -81,6 +102,9 @@ scenario "Green Transition Italy 2040" {
   variable renewable_share {
     description: "Share of renewables in Italy's energy mix"
     unit: "%"
+    label: "Quota rinnovabili"
+    icon: "☀"
+    color: "#10b981"
 
     2025: 22%
     2028: 30%
@@ -99,6 +123,9 @@ scenario "Green Transition Italy 2040" {
   variable solar_capacity {
     description: "Installed solar PV capacity"
     unit: "GW"
+    label: "Capacità solare"
+    icon: "🌞"
+    color: "#f59e0b"
 
     2025: 30
     2030: 55
@@ -114,6 +141,9 @@ scenario "Green Transition Italy 2040" {
   variable wind_capacity {
     description: "Installed wind capacity (onshore + offshore)"
     unit: "GW"
+    label: "Capacità eolica"
+    icon: "💨"
+    color: "#3b82f6"
 
     2025: 13
     2030: 22
@@ -129,6 +159,9 @@ scenario "Green Transition Italy 2040" {
   variable fossil_employment {
     description: "Workers employed in fossil fuel sector"
     unit: "thousands"
+    label: "Occupazione fossile"
+    icon: "⛏"
+    color: "#ef4444"
 
     2025: 45
     2030: 35
@@ -144,6 +177,9 @@ scenario "Green Transition Italy 2040" {
   variable green_employment {
     description: "Workers employed in green energy sector"
     unit: "thousands"
+    label: "Occupazione verde"
+    icon: "♻"
+    color: "#10b981"
 
     2025: 80
     2030: 120
@@ -159,6 +195,9 @@ scenario "Green Transition Italy 2040" {
   variable co2_emissions {
     description: "Annual CO2 emissions"
     unit: "MtCO2"
+    label: "Emissioni CO₂"
+    icon: "☁"
+    color: "#ef4444"
 
     2025: 320
     2030: 250
@@ -174,6 +213,9 @@ scenario "Green Transition Italy 2040" {
   variable energy_cost_index {
     description: "Consumer energy cost index (2025 = 100)"
     unit: "index"
+    label: "Costo energia"
+    icon: "🏠"
+    color: "#f59e0b"
 
     2025: 100
     2030: 108
@@ -245,6 +287,9 @@ scenario "Green Transition Italy 2040" {
   impact net_employment {
     description: "Net employment change from energy transition"
     unit: "thousands"
+    label: "Bilancio netto occupazione"
+    icon: "⊕"
+    color: "#3b82f6"
     derives_from: green_employment, fossil_employment
     formula: green_employment - fossil_employment
   }
@@ -252,6 +297,9 @@ scenario "Green Transition Italy 2040" {
   impact carbon_neutrality_progress {
     description: "Progress toward carbon neutrality (% reduction from 2025)"
     unit: "%"
+    label: "Progresso carbon neutrality"
+    icon: "🎯"
+    color: "#10b981"
     derives_from: co2_emissions
     formula: (320 - co2_emissions) / 320 * 100
   }
@@ -259,6 +307,9 @@ scenario "Green Transition Italy 2040" {
   impact energy_affordability {
     description: "Energy affordability index (inverse of cost)"
     unit: "index"
+    label: "Accessibilità energia"
+    icon: "💰"
+    color: "#f59e0b"
     derives_from: energy_cost_index
     formula: 10000 / energy_cost_index
   }

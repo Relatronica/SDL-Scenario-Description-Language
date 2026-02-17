@@ -155,3 +155,46 @@
 .codemirror-container .cm-tooltip-autocomplete > ul > li[aria-selected] {
   background: rgba(59, 130, 246, 0.15);
 }
+
+/* ── Editor slider styling ── */
+
+input[type="range"].appearance-none::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid rgb(6, 182, 212);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="range"].appearance-none::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.4);
+}
+
+input[type="range"].appearance-none::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid rgb(6, 182, 212);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+input[type="range"].appearance-none::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+}
+
+input[type="range"].appearance-none:focus {
+  outline: none;
+}
+
+input[type="range"].appearance-none:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.25);
+}

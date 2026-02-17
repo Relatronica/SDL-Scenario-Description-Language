@@ -89,15 +89,66 @@ scenario "Euro Digitale — Adozione CBDC 2025-2032" {
   author: "Relatronica — Citizen Lab"
   description: "Simulazione dell'adozione dell'Euro Digitale e impatto su banche, inclusione e depositi"
   tags: ["finanza", "cbdc", "eurozona", "banche", "inclusione"]
+  subtitle: "Adozione CBDC, banche e inclusione 2025-2032"
+  category: economia
+  icon: "💶"
+  color: "#f59e0b"
+  difficulty: base
 
-  assumption ecb_commitment { value: ${(ecb / 100).toFixed(2)}  source: "ECB Digital Euro project, 2025"  confidence: 0.7  uncertainty: beta(7, 2) }
-  assumption privacy_level { value: ${(privacy / 100).toFixed(2)}  source: "EU Digital Euro Regulation, 2024"  confidence: 0.6  uncertainty: beta(5, 3) }
-  assumption holding_limit { value: ${limit}  source: "BCE proposta limite individuale"  confidence: 0.5  uncertainty: uniform(${Math.max(500, limit - 1500)}, ${limit + 2000}) }
-  assumption offline_capability { value: ${(offline / 100).toFixed(2)}  source: "Requisiti tecnici BCE"  confidence: 0.5  uncertainty: beta(5, 4) }
+  parameter ecb_commitment {
+    label: "Impegno BCE"
+    value: ${(ecb / 100).toFixed(2)}
+    range: [0.20, 1.0]
+    step: 0.05
+    unit: "%"
+    source: "ECB Digital Euro project, fase di preparazione 2025"
+    format: "{value}%"
+    control: slider
+    description: "Probabilità e decisione della BCE di lanciare l'Euro Digitale"
+  }
+
+  parameter privacy_level {
+    label: "Tutela privacy"
+    value: ${(privacy / 100).toFixed(2)}
+    range: [0.10, 1.0]
+    step: 0.05
+    unit: "%"
+    source: "EU Digital Euro Regulation proposal, 2024"
+    format: "{value}%"
+    control: slider
+    description: "Livello di privacy garantito nelle transazioni"
+  }
+
+  parameter holding_limit {
+    label: "Limite di detenzione"
+    value: ${limit}
+    range: [500, 10000]
+    step: 500
+    unit: "€"
+    source: "ECB proposta di limite individuale, 2025"
+    format: "{value} €"
+    control: slider
+    description: "Importo massimo detenibile in Euro Digitale per persona"
+  }
+
+  parameter offline_capability {
+    label: "Capacità offline"
+    value: ${(offline / 100).toFixed(2)}
+    range: [0.10, 1.0]
+    step: 0.05
+    unit: "%"
+    source: "Requisiti tecnici BCE per offline payments"
+    format: "{value}%"
+    control: slider
+    description: "Livello di supporto per pagamenti offline senza connessione internet"
+  }
 
   variable wallet_adoption {
+    label: "Adozione wallet"
     description: "Percentuale adulti eurozona con wallet Euro Digitale"
     unit: "percentuale"
+    icon: "📱"
+    color: "#3b82f6"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.wallet_adoption[i])}`).join('\n    ')}
     depends_on: ecb_commitment, privacy_level, offline_capability
     uncertainty: normal(±20%)
@@ -105,8 +156,11 @@ scenario "Euro Digitale — Adozione CBDC 2025-2032" {
   }
 
   variable daily_transactions {
+    label: "Transazioni giornaliere"
     description: "Transazioni giornaliere medie in milioni"
     unit: "milioni"
+    icon: "💳"
+    color: "#10b981"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.daily_transactions[i])}`).join('\n    ')}
     depends_on: wallet_adoption
     uncertainty: normal(±25%)
@@ -114,8 +168,11 @@ scenario "Euro Digitale — Adozione CBDC 2025-2032" {
   }
 
   variable bank_branch_count {
+    label: "Filiali bancarie"
     description: "Filiali bancarie nell'eurozona (migliaia)"
     unit: "migliaia"
+    icon: "🏦"
+    color: "#ef4444"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.bank_branch_count[i])}`).join('\n    ')}
     depends_on: wallet_adoption
     uncertainty: normal(±8%)
@@ -123,8 +180,11 @@ scenario "Euro Digitale — Adozione CBDC 2025-2032" {
   }
 
   variable bank_deposits_shift {
+    label: "Shift depositi"
     description: "Depositi retail migrati da banche a CBDC (%)"
     unit: "percentuale"
+    icon: "↗"
+    color: "#f59e0b"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.bank_deposits_shift[i])}`).join('\n    ')}
     depends_on: wallet_adoption, holding_limit
     uncertainty: normal(±15%)
@@ -132,8 +192,11 @@ scenario "Euro Digitale — Adozione CBDC 2025-2032" {
   }
 
   variable financial_inclusion {
+    label: "Inclusione finanziaria"
     description: "Indice inclusione finanziaria (0-100)"
     unit: "indice"
+    icon: "🤝"
+    color: "#8b5cf6"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.financial_inclusion[i])}`).join('\n    ')}
     depends_on: wallet_adoption, offline_capability
     uncertainty: normal(±10%)
@@ -141,15 +204,21 @@ scenario "Euro Digitale — Adozione CBDC 2025-2032" {
   }
 
   impact disruption_bancaria {
+    label: "Disruption bancaria"
     description: "Indice di disruption del settore bancario"
     unit: "indice"
+    icon: "⚡"
+    color: "#ef4444"
     derives_from: bank_deposits_shift, bank_branch_count
     formula: (bank_deposits_shift * 10) + ((125 - bank_branch_count) / 125 * 100)
   }
 
   impact guadagno_inclusione {
+    label: "Guadagno inclusione"
     description: "Guadagno netto in inclusione finanziaria"
     unit: "punti"
+    icon: "↑"
+    color: "#10b981"
     derives_from: financial_inclusion
     formula: financial_inclusion - 62
   }

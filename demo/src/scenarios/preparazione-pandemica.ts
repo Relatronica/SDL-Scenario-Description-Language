@@ -85,15 +85,63 @@ scenario "Preparazione Pandemica Globale 2025-2040" {
   author: "Relatronica — Citizen Lab"
   description: "Sorveglianza genomica, velocità vaccini, AMR e impatto economico delle pandemie"
   tags: ["salute", "pandemia", "globale", "biosicurezza", "AMR"]
+  subtitle: "Sorveglianza, vaccini e AMR 2025-2040"
+  category: "societa"
+  icon: "🦠"
+  color: "#8b5cf6"
+  difficulty: "intermedio"
 
-  assumption surveillance_coverage { value: ${(vals.surveillance_coverage ?? 35) / 100}  source: "WHO 2024"  confidence: 0.5  uncertainty: normal(±20%) }
-  assumption vaccine_investment { value: ${(vals.vaccine_investment ?? 8) * 1e9}  source: "CEPI + G20 Pandemic Fund"  confidence: 0.4  uncertainty: normal(±25%) }
-  assumption amr_control { value: ${((vals.amr_control ?? 40) / 100).toFixed(2)}  source: "WHO AMR Action Plan"  confidence: 0.4  uncertainty: beta(4, 5) }
-  assumption health_funding { value: ${(vals.health_funding ?? 31) * 1e9}  source: "G20 + bilaterale, 2025"  confidence: 0.4  uncertainty: lognormal(3.4, 0.4) }
+  parameter surveillance_coverage {
+    label: "Copertura sorveglianza"
+    value: ${(vals.surveillance_coverage ?? 35) / 100}
+    range: [10, 85]
+    step: 5
+    unit: "%"
+    source: "WHO 2024"
+    format: "{value}%"
+    control: slider
+    description: "Percentuale della popolazione mondiale coperta da sorveglianza genomica dei patogeni"
+  }
+  parameter vaccine_investment {
+    label: "Investimenti vaccini"
+    value: ${(vals.vaccine_investment ?? 8) * 1e9}
+    range: [2, 30]
+    step: 1
+    unit: "miliardi $"
+    source: "CEPI + G20 Pandemic Fund"
+    format: "{value} mld $"
+    control: slider
+    description: "Investimento annuo globale in piattaforme vaccinali rapide (miliardi USD)"
+  }
+  parameter amr_control {
+    label: "Contrasto AMR"
+    value: ${((vals.amr_control ?? 40) / 100).toFixed(2)}
+    range: [10, 100]
+    step: 5
+    unit: "%"
+    source: "WHO AMR Action Plan"
+    format: "{value}%"
+    control: slider
+    description: "Livello di investimento nel contrasto alla resistenza antimicrobica (0=minimo, 100=massimo)"
+  }
+  parameter health_funding {
+    label: "Fondi sicurezza sanitaria"
+    value: ${(vals.health_funding ?? 31) * 1e9}
+    range: [10, 80]
+    step: 5
+    unit: "miliardi $"
+    source: "G20 + bilaterale, 2025"
+    format: "{value} mld $"
+    control: slider
+    description: "Finanziamento annuo globale per la sicurezza sanitaria in miliardi USD"
+  }
 
   variable genomic_surveillance {
     description: "Copertura sorveglianza genomica globale"
     unit: "percentuale"
+    label: "Sorveglianza genomica"
+    icon: "🔬"
+    color: "#3b82f6"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.genomic_surveillance[i])}`).join('\n    ')}
     depends_on: surveillance_coverage, health_funding
     uncertainty: normal(±18%)
@@ -103,6 +151,9 @@ scenario "Preparazione Pandemica Globale 2025-2040" {
   variable vaccine_response_time {
     description: "Giorni da identificazione patogeno a vaccino su scala"
     unit: "giorni"
+    label: "Tempo risposta vaccino"
+    icon: "💉"
+    color: "#10b981"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.vaccine_response_time[i])}`).join('\n    ')}
     depends_on: vaccine_investment
     uncertainty: normal(±20%)
@@ -112,6 +163,9 @@ scenario "Preparazione Pandemica Globale 2025-2040" {
   variable amr_deaths {
     description: "Decessi annuali per resistenza antimicrobica (milioni)"
     unit: "milioni"
+    label: "Decessi AMR"
+    icon: "☠"
+    color: "#ef4444"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.amr_deaths[i])}`).join('\n    ')}
     depends_on: amr_control
     uncertainty: lognormal(0.1, 0.3)
@@ -121,6 +175,9 @@ scenario "Preparazione Pandemica Globale 2025-2040" {
   variable pandemic_gdp_risk {
     description: "Perdita PIL attesa annua da rischio pandemico (%)"
     unit: "percentuale"
+    label: "Rischio PIL pandemico"
+    icon: "📉"
+    color: "#f59e0b"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.pandemic_gdp_risk[i])}`).join('\n    ')}
     depends_on: genomic_surveillance, vaccine_response_time
     uncertainty: lognormal(-1.2, 0.6)
@@ -130,6 +187,9 @@ scenario "Preparazione Pandemica Globale 2025-2040" {
   variable detection_time {
     description: "Giorni medi per rilevare un nuovo focolaio"
     unit: "giorni"
+    label: "Tempo rilevamento"
+    icon: "⏱"
+    color: "#8b5cf6"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.detection_time[i])}`).join('\n    ')}
     depends_on: genomic_surveillance
     uncertainty: lognormal(2.5, 0.5)
@@ -139,6 +199,9 @@ scenario "Preparazione Pandemica Globale 2025-2040" {
   impact indice_preparazione {
     description: "Score composito di preparazione pandemica (0-100)"
     unit: "indice"
+    label: "Indice preparazione"
+    icon: "🛡"
+    color: "#10b981"
     derives_from: genomic_surveillance, vaccine_response_time
     formula: (genomic_surveillance * 0.5) + ((300 - vaccine_response_time) / 300 * 50)
   }

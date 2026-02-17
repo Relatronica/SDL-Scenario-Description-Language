@@ -29,6 +29,11 @@ SDL makes computational foresight accessible to everyone: policy makers, researc
 scenario "My First Scenario" {
   timeframe: 2025 -> 2035
   resolution: yearly
+  subtitle: "An interactive demographic projection"
+  category: societa
+  icon: "👥"
+  color: "#3b82f6"
+  difficulty: base
 
   assumption growth_rate {
     value: 3.5%
@@ -36,7 +41,22 @@ scenario "My First Scenario" {
     source: "World Bank, 2024"
   }
 
+  parameter investment_level {
+    label: "Investment Level"
+    value: 50
+    range: [10, 100]
+    step: 5
+    unit: "billion €"
+    source: "World Bank estimates, 2024"
+    format: "{value} bn €"
+    control: slider
+    description: "Annual investment in infrastructure"
+  }
+
   variable population {
+    label: "Population"
+    icon: "👥"
+    color: "#3b82f6"
     2025: 60M
     2035: 65M
     depends_on: growth_rate
@@ -45,6 +65,9 @@ scenario "My First Scenario" {
   }
 
   impact population_change {
+    label: "Population Change"
+    icon: "📈"
+    color: "#10b981"
     formula: population - 60000000
   }
 
@@ -162,6 +185,62 @@ Uncertainty distributions automatically narrow as historical data accumulates, m
 
 ### Composability
 Scenarios can import and compose with other scenarios, enabling modular foresight — an energy scenario combined with a demographic scenario.
+
+### Interactive Controls (v0.1.1)
+SDL scenarios are self-contained: a single `.sdl` file describes data, model, uncertainty, **and** how to present the scenario to users. Parameters declare interactive controls (sliders, toggles, dropdowns), while variables and impacts carry display hints (label, icon, color). Any viewer can render a full interactive UI from an SDL file alone.
+
+#### Parameter as user control
+
+```sdl
+parameter carbon_tax {
+  label: "Carbon Price (ETS)"
+  value: 80
+  range: [30, 200]
+  step: 5
+  unit: "€/tCO₂"
+  source: "EU ETS average price 2024"
+  format: "{value} €/t"
+  control: slider
+  description: "Price per ton of CO₂ in the EU Emissions Trading System"
+}
+```
+
+#### Variable & impact display hints
+
+```sdl
+variable renewable_share {
+  label: "Renewables Share"
+  description: "Share of renewables in the energy mix"
+  unit: "%"
+  icon: "☀"
+  color: "#10b981"
+  // ... timeseries, model, uncertainty
+}
+
+impact net_employment {
+  label: "Net Employment"
+  unit: "thousands"
+  icon: "⊕"
+  color: "#3b82f6"
+  derives_from: green_employment, fossil_employment
+  formula: green_employment - fossil_employment
+}
+```
+
+#### Scenario presentation metadata
+
+```sdl
+scenario "Green Transition" {
+  // ... core metadata
+  subtitle: "Renewables, emissions and costs to 2040"
+  category: ambiente
+  icon: "⚡"
+  color: "#10b981"
+  difficulty: base
+}
+```
+
+All interactive/presentation fields are **optional** — minimal SDL scenarios continue to work without them.
 
 ## Examples
 

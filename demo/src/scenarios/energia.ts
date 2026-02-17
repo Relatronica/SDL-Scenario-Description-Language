@@ -83,15 +83,63 @@ scenario "Transizione Energetica Italia 2025-2040" {
   author: "Relatronica — Citizen Lab"
   description: "Percorso dell'Italia verso la decarbonizzazione: rinnovabili, emissioni, costi e lavoro verde"
   tags: ["italia", "energia", "clima", "rinnovabili", "co2"]
+  subtitle: "Rinnovabili, emissioni e costi 2025-2040"
+  category: "ambiente"
+  icon: "⚡"
+  color: "#10b981"
+  difficulty: "base"
 
-  assumption renewable_investment { value: ${vals.renewable_investment ?? 20}  source: "GSE, PNIEC 2024"  confidence: 0.55  uncertainty: normal(±20%) }
-  assumption carbon_tax { value: ${vals.carbon_tax ?? 80}  source: "EU ETS"  confidence: 0.5  uncertainty: normal(±30%) }
-  assumption efficiency_rate { value: ${(vals.efficiency_rate ?? 3) / 100}  source: "ENEA 2024"  confidence: 0.5  uncertainty: normal(±25%) }
-  assumption gas_dependency { value: ${(vals.gas_dependency ?? 38) / 100}  source: "MASE, Terna"  confidence: 0.6  uncertainty: normal(±15%) }
+  parameter renewable_investment {
+    label: "Investimento in rinnovabili"
+    value: ${vals.renewable_investment ?? 20}
+    range: [5, 60]
+    step: 1
+    unit: "miliardi €"
+    source: "GSE Rapporto Statistico 2024; PNIEC 2024"
+    format: "{value} mld €"
+    control: slider
+    description: "Investimento annuo totale in fonti rinnovabili (solare, eolico, biomasse, idroelettrico)"
+  }
+  parameter carbon_tax {
+    label: "Prezzo carbonio (ETS)"
+    value: ${vals.carbon_tax ?? 80}
+    range: [30, 200]
+    step: 5
+    unit: "€/tCO₂"
+    source: "EU ETS prezzo medio 2024; proiezioni IEA"
+    format: "{value} €/t"
+    control: slider
+    description: "Prezzo per tonnellata di CO₂ nel sistema europeo di scambio emissioni"
+  }
+  parameter efficiency_rate {
+    label: "Efficienza energetica edifici"
+    value: ${(vals.efficiency_rate ?? 3) / 100}
+    range: [1, 8]
+    step: 0.5
+    unit: "%"
+    source: "ENEA Rapporto Efficienza Energetica 2024; Superbonus dati"
+    format: "{value}%/anno"
+    control: slider
+    description: "Percentuale di edifici residenziali riqualificati energeticamente per anno"
+  }
+  parameter gas_dependency {
+    label: "Dipendenza dal gas naturale"
+    value: ${(vals.gas_dependency ?? 38) / 100}
+    range: [10, 50]
+    step: 1
+    unit: "%"
+    source: "MASE Piano Energetico; Terna dati rete 2024"
+    format: "{value}%"
+    control: slider
+    description: "Quota del gas naturale nel mix energetico nazionale. Oggi circa 40%"
+  }
 
   variable quota_rinnovabili {
+    label: "Quota rinnovabili"
     description: "Quota rinnovabili nel mix elettrico nazionale"
     unit: "percentuale"
+    icon: "☀"
+    color: "#10b981"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.quota_rinnovabili[i])}`).join('\n    ')}
     depends_on: renewable_investment, carbon_tax, gas_dependency
     uncertainty: normal(±15%)
@@ -99,8 +147,11 @@ scenario "Transizione Energetica Italia 2025-2040" {
   }
 
   variable emissioni_co2 {
+    label: "Emissioni CO₂"
     description: "Emissioni annue di CO2 dell'Italia"
     unit: "MtCO2"
+    icon: "☁"
+    color: "#ef4444"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.emissioni_co2[i])}`).join('\n    ')}
     depends_on: renewable_investment, carbon_tax, efficiency_rate, gas_dependency
     uncertainty: normal(±18%)
@@ -108,8 +159,11 @@ scenario "Transizione Energetica Italia 2025-2040" {
   }
 
   variable costo_energia_famiglia {
+    label: "Costo energia famiglia"
     description: "Costo medio annuo energia per famiglia"
     unit: "EUR/anno"
+    icon: "🏠"
+    color: "#f59e0b"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.costo_energia_famiglia[i])}`).join('\n    ')}
     depends_on: renewable_investment, carbon_tax, efficiency_rate
     uncertainty: normal(±20%)
@@ -117,8 +171,11 @@ scenario "Transizione Energetica Italia 2025-2040" {
   }
 
   variable posti_lavoro_verdi {
+    label: "Lavoro verde"
     description: "Occupazione nei settori green"
     unit: "milioni"
+    icon: "♻"
+    color: "#8b5cf6"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.posti_lavoro_verdi[i])}`).join('\n    ')}
     depends_on: renewable_investment, efficiency_rate
     uncertainty: normal(±22%)
@@ -126,8 +183,11 @@ scenario "Transizione Energetica Italia 2025-2040" {
   }
 
   impact riduzione_emissioni {
+    label: "Riduzione emissioni"
     description: "Riduzione cumulata emissioni rispetto al 2025"
     unit: "MtCO2"
+    icon: "↓"
+    color: "#06b6d4"
     derives_from: emissioni_co2
     formula: 320 - emissioni_co2
   }

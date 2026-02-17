@@ -148,6 +148,17 @@ export enum TokenType {
   Formula = 'Formula',
   Compose = 'Compose',
 
+  // Interactive / presentation keywords
+  Label = 'Label',
+  Step = 'Step',
+  Format = 'Format',
+  Control = 'Control',
+  Icon = 'Icon',
+  Color = 'Color',
+  Category = 'Category',
+  Subtitle = 'Subtitle',
+  Difficulty = 'Difficulty',
+
   // Simulation methods
   MonteCarlo = 'MonteCarlo',
   LatinHypercube = 'LatinHypercube',
@@ -220,6 +231,13 @@ export interface ScenarioNode extends BaseNode {
   declarations: Declaration[];
 }
 
+export type ScenarioCategory =
+  | 'tecnologia' | 'economia' | 'ambiente' | 'societa' | 'politica';
+
+export type DifficultyLevel = 'base' | 'intermedio' | 'avanzato';
+
+export type ControlType = 'slider' | 'toggle' | 'dropdown' | 'input';
+
 export interface ScenarioMetadata {
   timeframe?: TimeframeValue;
   resolution?: ResolutionValue;
@@ -228,6 +246,11 @@ export interface ScenarioMetadata {
   version?: string;
   description?: string;
   tags?: string[];
+  subtitle?: string;
+  category?: ScenarioCategory;
+  icon?: string;
+  color?: string;
+  difficulty?: DifficultyLevel;
 }
 
 export interface TimeframeValue {
@@ -263,6 +286,9 @@ export interface VariableNode extends BaseNode {
   name: string;
   description?: string;
   unit?: string;
+  label?: string;
+  icon?: string;
+  color?: string;
   timeseries: TimeseriesEntry[];
   dependsOn?: string[];
   model?: ModelExpression;
@@ -308,6 +334,14 @@ export interface ParameterNode extends BaseNode {
   value?: ExpressionNode;
   range?: { min: ExpressionNode; max: ExpressionNode };
   description?: string;
+  label?: string;
+  unit?: string;
+  step?: ExpressionNode;
+  source?: string;
+  format?: string;
+  control?: ControlType;
+  icon?: string;
+  color?: string;
 }
 
 // ============================================================
@@ -332,6 +366,9 @@ export interface ImpactNode extends BaseNode {
   name: string;
   description?: string;
   unit?: string;
+  label?: string;
+  icon?: string;
+  color?: string;
   derivesFrom?: string[];
   formula?: ExpressionNode;
 }

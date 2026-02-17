@@ -83,15 +83,63 @@ scenario "Demografia e Pensioni Italia 2025-2050" {
   author: "Relatronica — Citizen Lab"
   description: "Proiezioni demografiche e sostenibilità del sistema pensionistico italiano"
   tags: ["italia", "demografia", "pensioni", "invecchiamento", "immigrazione"]
+  subtitle: "Popolazione, invecchiamento e welfare 2025-2050"
+  category: "societa"
+  icon: "👥"
+  color: "#8b5cf6"
+  difficulty: "intermedio"
 
-  assumption fertility_rate { value: ${vals.fertility_rate ?? 1.24}  source: "ISTAT 2024"  confidence: 0.65  uncertainty: normal(±12%) }
-  assumption immigration_net { value: ${(vals.immigration_net ?? 230) * 1000}  source: "ISTAT Bilancio demografico"  confidence: 0.4  uncertainty: normal(±30%) }
-  assumption retirement_age { value: ${vals.retirement_age ?? 64}  source: "INPS 2024"  confidence: 0.6  uncertainty: normal(±5%) }
-  assumption health_spending { value: ${((vals.health_spending ?? 6.8) / 100).toFixed(3)}  source: "OECD Health 2024"  confidence: 0.55  uncertainty: normal(±10%) }
+  parameter fertility_rate {
+    label: "Tasso di fecondità"
+    value: ${vals.fertility_rate ?? 1.24}
+    range: [0.9, 2.2]
+    step: 0.05
+    unit: "figli/donna"
+    source: "ISTAT 2024"
+    format: "{value}"
+    control: slider
+    description: "Numero medio di figli per donna"
+  }
+  parameter immigration_net {
+    label: "Immigrazione netta annua"
+    value: ${vals.immigration_net ?? 230}
+    range: [50, 500]
+    step: 10
+    unit: "migliaia"
+    source: "ISTAT Bilancio demografico"
+    format: "{value}K/anno"
+    control: slider
+    description: "Differenza tra ingressi e uscite di residenti stranieri per anno"
+  }
+  parameter retirement_age {
+    label: "Età pensionabile media"
+    value: ${vals.retirement_age ?? 64}
+    range: [62, 72]
+    step: 0.5
+    unit: "anni"
+    source: "INPS 2024"
+    format: "{value} anni"
+    control: slider
+    description: "Età media effettiva di pensionamento"
+  }
+  parameter health_spending {
+    label: "Spesa sanitaria pubblica"
+    value: ${vals.health_spending ?? 6.8}
+    range: [5, 10]
+    step: 0.1
+    unit: "% PIL"
+    source: "OECD Health 2024"
+    format: "{value}% PIL"
+    control: slider
+    description: "Spesa sanitaria pubblica in rapporto al PIL"
+  }
 
   variable popolazione_totale {
     description: "Popolazione residente in Italia"
     unit: "milioni"
+    label: "Popolazione"
+    icon: "👥"
+    color: "#3b82f6"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.popolazione_totale[i])}`).join('\n    ')}
     depends_on: fertility_rate, immigration_net
     uncertainty: normal(±5%)
@@ -101,6 +149,9 @@ scenario "Demografia e Pensioni Italia 2025-2050" {
   variable indice_dipendenza {
     description: "Rapporto anziani (65+) su popolazione attiva (15-64)"
     unit: "percentuale"
+    label: "Indice di dipendenza"
+    icon: "⚖"
+    color: "#ef4444"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.indice_dipendenza[i])}`).join('\n    ')}
     depends_on: fertility_rate, immigration_net, retirement_age
     uncertainty: normal(±10%)
@@ -110,6 +161,9 @@ scenario "Demografia e Pensioni Italia 2025-2050" {
   variable spesa_pensioni_pil {
     description: "Spesa pensionistica in rapporto al PIL"
     unit: "percentuale PIL"
+    label: "Spesa pensioni / PIL"
+    icon: "💰"
+    color: "#f59e0b"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.spesa_pensioni_pil[i])}`).join('\n    ')}
     depends_on: fertility_rate, immigration_net, retirement_age
     uncertainty: normal(±12%)
@@ -119,6 +173,9 @@ scenario "Demografia e Pensioni Italia 2025-2050" {
   variable aspettativa_vita {
     description: "Aspettativa di vita alla nascita"
     unit: "anni"
+    label: "Aspettativa di vita"
+    icon: "❤"
+    color: "#10b981"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.aspettativa_vita[i])}`).join('\n    ')}
     depends_on: health_spending
     uncertainty: normal(±3%)
@@ -128,6 +185,9 @@ scenario "Demografia e Pensioni Italia 2025-2050" {
   impact pressione_fiscale_previdenza {
     description: "Differenza di spesa pensionistica rispetto al 2025"
     unit: "punti % PIL"
+    label: "Pressione aggiuntiva"
+    icon: "↑"
+    color: "#ef4444"
     derives_from: spesa_pensioni_pil
     formula: spesa_pensioni_pil - 16
   }

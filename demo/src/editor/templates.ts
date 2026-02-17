@@ -16,7 +16,7 @@ export const EDITOR_TEMPLATES: SDLTemplate[] = [
   {
     id: 'blank',
     name: 'Scenario vuoto',
-    description: 'Struttura base con un singolo assunto e variabile',
+    description: 'Struttura base con assunti, parametri interattivi e variabili',
     icon: '📄',
     source: `// Il tuo scenario personalizzato
 // Modifica liberamente questo codice SDL
@@ -29,6 +29,11 @@ scenario "Il mio scenario" {
   version: "1.0"
   description: "Descrivi qui il tuo scenario"
   tags: ["custom"]
+  subtitle: "Un template per iniziare"
+  category: tecnologia
+  icon: "🔬"
+  color: "#3b82f6"
+  difficulty: base
 
   // ── Assunzioni ──
 
@@ -39,11 +44,29 @@ scenario "Il mio scenario" {
     uncertainty: normal(±20%)
   }
 
+  // ── Parametri interattivi ──
+  // I parametri con control: slider generano
+  // automaticamente slider nell'interfaccia
+
+  parameter intensita_investimento {
+    value: 50
+    range: [10, 100]
+    label: "Intensità investimento"
+    unit: "indice"
+    step: 5
+    format: "{value} / 100"
+    control: slider
+    description: "Livello di investimento nel progetto (0-100)"
+  }
+
   // ── Variabili ──
 
   variable indicatore_principale {
     description: "Il tuo indicatore principale"
     unit: "indice"
+    label: "Indicatore principale"
+    icon: "📊"
+    color: "#3b82f6"
 
     2025: 100
     2030: 120
@@ -60,6 +83,9 @@ scenario "Il mio scenario" {
   impact variazione_netta {
     description: "Variazione rispetto al 2025"
     unit: "indice"
+    label: "Variazione netta"
+    icon: "📈"
+    color: "#10b981"
     derives_from: indicatore_principale
     formula: indicatore_principale - 100
   }
@@ -117,12 +143,28 @@ scenario "Crescita Economica Italia" {
     uncertainty: beta(7, 3)
   }
 
-  // ── Parametri ──
+  // ── Parametri interattivi ──
 
   parameter spesa_pubblica_extra {
-    value: 5B EUR
-    range: [0B EUR, 15B EUR]
-    description: "Spesa pubblica aggiuntiva annua"
+    value: 5
+    range: [0, 15]
+    label: "Spesa pubblica extra"
+    unit: "mld €"
+    step: 0.5
+    format: "{value} mld €"
+    control: slider
+    description: "Spesa pubblica aggiuntiva annua per stimolo economico"
+  }
+
+  parameter aliquota_imprese {
+    value: 24
+    range: [15, 35]
+    label: "Aliquota IRES"
+    unit: "%"
+    step: 1
+    format: "{value}%"
+    control: slider
+    description: "Aliquota fiscale sulle imprese (attuale 24%)"
   }
 
   // ── Variabili ──
@@ -277,6 +319,34 @@ scenario "Transizione Energetica Locale" {
     uncertainty: beta(7, 3)
   }
 
+  // ── Parametri interattivi ──
+
+  parameter sussidio_rinnovabili {
+    value: 30
+    range: [0, 60]
+    label: "Sussidio rinnovabili"
+    unit: "%"
+    step: 5
+    format: "{value}%"
+    control: slider
+    icon: "☀"
+    color: "#10b981"
+    description: "Incentivo statale sulle installazioni rinnovabili"
+  }
+
+  parameter obiettivo_emissioni {
+    value: 55
+    range: [30, 80]
+    label: "Obiettivo riduzione CO₂"
+    unit: "%"
+    step: 5
+    format: "-{value}% al 2045"
+    control: slider
+    icon: "🎯"
+    color: "#06b6d4"
+    description: "Target di riduzione emissioni rispetto al 2025"
+  }
+
   // ── Variabili ──
 
   variable quota_rinnovabili {
@@ -404,6 +474,34 @@ scenario "Sfida Demografica" {
     source: "ISTAT, speranza di vita alla nascita 2024"
     confidence: 0.8
     uncertainty: normal(±3%)
+  }
+
+  // ── Parametri interattivi ──
+
+  parameter bonus_natalita {
+    value: 5000
+    range: [0, 15000]
+    label: "Bonus natalità"
+    unit: "€/anno"
+    step: 500
+    format: "{value} €"
+    control: slider
+    icon: "👶"
+    color: "#ec4899"
+    description: "Incentivo economico annuale per nuove nascite"
+  }
+
+  parameter quota_immigrazione {
+    value: 300
+    range: [100, 600]
+    label: "Quota immigrazione"
+    unit: "migliaia/anno"
+    step: 25
+    format: "{value}K persone"
+    control: slider
+    icon: "🌍"
+    color: "#06b6d4"
+    description: "Flusso migratorio netto annuale autorizzato (in migliaia)"
   }
 
   // ── Variabili ──

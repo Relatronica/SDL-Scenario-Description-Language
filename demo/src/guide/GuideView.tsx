@@ -183,9 +183,17 @@ function SectionStruttura() {
   description: "Descrizione dello scenario"
   tags: ["tag1", "tag2"]
 
+  // ── Metadati di presentazione (v0.1.1) ──
+  subtitle: "Una riga di sottotitolo"
+  category: tecnologia            // tecnologia | economia | ambiente |
+                                  // societa | politica | salute
+  icon: "🔬"                      // Emoji per la card
+  color: "#3b82f6"                // Colore primario (hex)
+  difficulty: intermedio           // base | intermedio | avanzato
+
   // ── Dichiarazioni ──
   assumption ...   // Condizioni esterne prese come date
-  parameter ...    // Valori configurabili
+  parameter ...    // Valori configurabili con slider
   variable ...     // Grandezze che cambiano nel tempo
   branch ...       // Scenari alternativi condizionali
   impact ...       // Metriche di output derivate
@@ -208,6 +216,21 @@ function SectionStruttura() {
           ['version', '"1.0"', 'No', 'Versione'],
           ['description', '"Testo"', 'No', 'Descrizione testuale'],
           ['tags', '["a", "b"]', 'No', 'Tag per categorizzazione'],
+        ]}
+      />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Metadati di presentazione <span className="text-xs font-normal text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full ml-2">v0.1.1</span></h3>
+      <p className="text-slate-400 leading-relaxed mb-3">
+        Campi opzionali che controllano come lo scenario appare nell'interfaccia: card, colori, categorizzazione.
+      </p>
+      <Table
+        headers={['Campo', 'Tipo', 'Descrizione']}
+        rows={[
+          ['subtitle', '"Testo"', 'Sottotitolo per la card dello scenario'],
+          ['category', 'tecnologia | economia | ambiente | societa | politica | salute', 'Categoria tematica per raggruppamento'],
+          ['icon', '"emoji"', 'Emoji o icona per la card'],
+          ['color', '"#hex"', 'Colore primario per grafici e UI'],
+          ['difficulty', 'base | intermedio | avanzato', 'Livello di complessita\' dello scenario'],
         ]}
       />
 
@@ -292,6 +315,11 @@ function SectionVariabili() {
   description: "Cosa rappresenta"
   unit: "unita' di misura"
 
+  // Metadati di visualizzazione (v0.1.1)
+  label: "Nome leggibile"    // Etichetta per grafici
+  icon: "📊"                  // Icona per il grafo causale
+  color: "#3b82f6"            // Colore per i grafici
+
   // Serie temporale (punti noti)
   2025: 100
   2030: 150
@@ -359,6 +387,34 @@ function SectionVariabili() {
           ['sigmoid(k, midpoint)', 'Ripidita\', centro', 'Transizioni graduali'],
         ]}
       />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Metadati di visualizzazione <span className="text-xs font-normal text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full ml-2">v0.1.1</span></h3>
+      <p className="text-slate-400 leading-relaxed mb-3">
+        Campi opzionali che personalizzano come la variabile appare nei grafici e nel grafo causale.
+      </p>
+      <Table
+        headers={['Campo', 'Tipo', 'Descrizione']}
+        rows={[
+          ['label', '"Testo"', 'Nome leggibile per grafici e legenda (default: nome variabile)'],
+          ['icon', '"emoji"', 'Icona visualizzata nel nodo del grafo causale'],
+          ['color', '"#hex"', 'Colore del nodo e delle bande nel fan chart'],
+        ]}
+      />
+      <CodeBlock title="Esempio con metadati visivi" code={`variable quota_rinnovabili {
+  description: "Quota rinnovabili nel mix energetico"
+  unit: "%"
+  label: "Rinnovabili"
+  icon: "☀"
+  color: "#10b981"
+
+  2025: 22
+  2030: 35
+  2040: 65
+
+  depends_on: prezzo_carbonio
+  uncertainty: normal(±12%)
+  interpolation: spline
+}`} />
     </section>
   );
 }
@@ -372,35 +428,110 @@ function SectionParametri() {
         sono valori di configurazione che <em>non cambiano nel tempo</em> all'interno di una singola simulazione, 
         ma possono variare tra simulazioni diverse. Utili per soglie, budget, costi unitari.
       </p>
+      <p className="text-slate-400 leading-relaxed mb-4">
+        A partire dalla <strong className="text-slate-200">v0.1.1</strong>, i parametri possono includere 
+        metadati per generare automaticamente <strong className="text-slate-200">controlli interattivi</strong> (slider, toggle, dropdown)
+        nell'interfaccia, permettendo all'utente di esplorare scenari alternativi in tempo reale.
+      </p>
 
-      <CodeBlock title="Sintassi" code={`parameter nome_parametro {
+      <CodeBlock title="Sintassi base" code={`parameter nome_parametro {
   value: 3.5%                      // Valore di default
   range: [2%, 6%]                  // Range esplorabile (opzionale)
   description: "Cosa rappresenta"  // Descrizione
 }`} />
 
-      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Esempio</h3>
-      <CodeBlock code={`parameter budget_formazione {
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Controlli interattivi <span className="text-xs font-normal text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full ml-2">v0.1.1</span></h3>
+      <p className="text-slate-400 leading-relaxed mb-3">
+        Quando un parametro specifica <code className="text-amber-300/80">control: slider</code>, l'interfaccia genera
+        automaticamente uno slider che l'utente puo' muovere per modificare il valore e vedere i risultati aggiornarsi in tempo reale.
+      </p>
+      <CodeBlock title="Sintassi completa con controlli" code={`parameter spesa_pubblica {
+  value: 5                          // Valore di default
+  range: [0, 15]                    // Min e max dello slider
+
+  // ── Controllo interattivo ──
+  control: slider                   // Tipo di controllo UI
+  label: "Spesa pubblica extra"     // Etichetta nell'interfaccia
+  unit: "mld €"                     // Unita' di misura
+  step: 0.5                         // Incremento dello slider
+  format: "{value} mld €"           // Formato di visualizzazione
+  description: "Spesa pubblica aggiuntiva annua"
+
+  // ── Stile visivo ──
+  icon: "💰"                         // Icona accanto al nome
+  color: "#10b981"                  // Colore della barra
+}`} />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Proprieta' dei parametri</h3>
+      <Table
+        headers={['Campo', 'Tipo', 'Descrizione']}
+        rows={[
+          ['value', 'Numero, %, Valuta', 'Valore di default (obbligatorio)'],
+          ['range', '[min, max]', 'Range esplorabile — definisce i limiti dello slider'],
+          ['description', '"Testo"', 'Descrizione del parametro'],
+          ['control', 'slider | toggle | dropdown | input', 'Tipo di controllo UI da generare'],
+          ['label', '"Testo"', 'Etichetta leggibile nell\'interfaccia'],
+          ['unit', '"Testo"', 'Unita\' di misura (es. "%", "mld €", "persone")'],
+          ['step', 'Numero', 'Incremento del controllo (default: 1% del range)'],
+          ['format', '"{value} unita\'"', 'Template per la visualizzazione del valore'],
+          ['source', '"Testo"', 'Fonte del valore di default'],
+          ['icon', '"emoji"', 'Icona visualizzata accanto al parametro'],
+          ['color', '"#hex"', 'Colore della barra di progresso'],
+        ]}
+      />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Tipi di controllo</h3>
+      <Table
+        headers={['Controllo', 'Uso tipico', 'Esempio']}
+        rows={[
+          ['slider', 'Valori numerici continui in un range', 'Budget, aliquote, soglie'],
+          ['toggle', 'Scelte binarie (on/off)', 'Politica attiva/inattiva'],
+          ['dropdown', 'Scelta tra opzioni discrete', 'Scenario base/ottimista/pessimista'],
+          ['input', 'Inserimento numerico libero', 'Valori precisi senza range'],
+        ]}
+      />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Esempio completo</h3>
+      <CodeBlock code={`parameter sussidio_rinnovabili {
+  value: 30
+  range: [0, 60]
+  label: "Sussidio rinnovabili"
+  unit: "%"
+  step: 5
+  format: "{value}%"
+  control: slider
+  icon: "☀"
+  color: "#10b981"
+  description: "Incentivo statale sulle installazioni rinnovabili"
+}
+
+parameter aliquota_imprese {
+  value: 24
+  range: [15, 35]
+  label: "Aliquota IRES"
+  unit: "%"
+  step: 1
+  format: "{value}%"
+  control: slider
+  description: "Aliquota fiscale sulle imprese"
+}
+
+parameter budget_formazione {
   value: 3B EUR
   range: [1B EUR, 8B EUR]
   description: "Budget annuo per riqualificazione professionale"
-}
-
-parameter costo_per_lavoratore {
-  value: 15000 EUR
-  description: "Costo medio per riqualificare un lavoratore"
-}
-
-parameter tasso_sconto {
-  value: 3.5%
-  range: [2%, 6%]
-  description: "Tasso di sconto sociale per analisi costi-benefici"
 }`} />
 
       <Tip>
         <strong>Differenza tra assunzione e parametro:</strong> le assunzioni rappresentano condizioni 
         esterne <em>incerte</em> (con distribuzione di probabilita'). I parametri sono scelte 
-        <em>configurabili</em> dall'utente (con range discreto).
+        <em>configurabili</em> dall'utente (con range discreto). Solo i parametri con <code>control: slider</code> generano 
+        slider interattivi nell'editor.
+      </Tip>
+
+      <Tip>
+        <strong>Suggerimento:</strong> nell'editor, scrivi un parametro con <code>control: slider</code> e 
+        il pannello "Controlli interattivi" apparira' automaticamente sotto il codice, pronto per l'uso.
       </Tip>
     </section>
   );
@@ -513,12 +644,20 @@ function SectionImpatti() {
   unit: "unita'"
   derives_from: variabile1, variabile2
   formula: variabile1 - variabile2
+
+  // Metadati di visualizzazione (v0.1.1)
+  label: "Nome leggibile"    // Etichetta per grafici
+  icon: "🎯"                  // Icona per il grafo causale
+  color: "#ef4444"            // Colore per i grafici
 }`} />
 
       <h3 className="text-lg font-semibold text-white mt-8 mb-3">Esempi</h3>
       <CodeBlock code={`impact occupazione_netta {
   description: "Variazione netta occupazione"
   unit: "migliaia"
+  label: "Occupazione netta"
+  icon: "👷"
+  color: "#10b981"
   derives_from: occupazione_green, occupazione_fossile
   formula: occupazione_green - occupazione_fossile
 }
@@ -526,6 +665,9 @@ function SectionImpatti() {
 impact progresso_climatico {
   description: "Riduzione emissioni dal 2025 (%)"
   unit: "%"
+  label: "Progresso climatico"
+  icon: "🌿"
+  color: "#06b6d4"
   derives_from: emissioni_co2
   formula: (320 - emissioni_co2) / 320 * 100
 }
@@ -536,6 +678,16 @@ impact risparmio_famiglie {
   derives_from: costo_energia
   formula: 100 - costo_energia
 }`} />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Metadati di visualizzazione <span className="text-xs font-normal text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full ml-2">v0.1.1</span></h3>
+      <Table
+        headers={['Campo', 'Tipo', 'Descrizione']}
+        rows={[
+          ['label', '"Testo"', 'Nome leggibile per grafici e legenda'],
+          ['icon', '"emoji"', 'Icona visualizzata nel nodo del grafo causale'],
+          ['color', '"#hex"', 'Colore del nodo e delle bande nel fan chart'],
+        ]}
+      />
 
       <Tip>
         La <code>formula</code> puo' usare operazioni aritmetiche (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>^</code>) 
@@ -688,6 +840,8 @@ function SectionRiferimento() {
           'linear', 'logistic', 'exponential', 'sigmoid',
           'yearly', 'monthly', 'weekly', 'daily',
           'derives_from', 'formula', 'interpolation',
+          'label', 'step', 'format', 'control', 'icon', 'color',
+          'category', 'subtitle', 'difficulty',
         ].map(kw => (
           <span key={kw} className="text-[11px] font-mono bg-slate-800/60 text-amber-300/70 px-2 py-1 rounded-md">{kw}</span>
         ))}
@@ -745,7 +899,7 @@ function SectionRiferimento() {
       </div>
 
       <h3 className="text-lg font-semibold text-white mt-8 mb-3">Schema completo</h3>
-      <CodeBlock title="Scenario completo" code={`scenario "Nome" {
+      <CodeBlock title="Scenario completo (con campi v0.1.1)" code={`scenario "Nome" {
   timeframe: 2025 -> 2040
   resolution: yearly
   confidence: 0.6
@@ -753,6 +907,11 @@ function SectionRiferimento() {
   version: "1.0"
   description: "Descrizione"
   tags: ["tag1", "tag2"]
+  subtitle: "Sottotitolo"         // v0.1.1
+  category: tecnologia             // v0.1.1
+  icon: "🔬"                       // v0.1.1
+  color: "#3b82f6"                 // v0.1.1
+  difficulty: intermedio            // v0.1.1
 
   assumption nome {
     value: 100
@@ -765,11 +924,21 @@ function SectionRiferimento() {
     value: 50
     range: [10, 100]
     description: "Descrizione"
+    label: "Nome leggibile"        // v0.1.1
+    unit: "unita'"                  // v0.1.1
+    step: 5                         // v0.1.1
+    format: "{value} unita'"        // v0.1.1
+    control: slider                 // v0.1.1
+    icon: "⚙"                      // v0.1.1
+    color: "#10b981"                // v0.1.1
   }
 
   variable nome {
     description: "Descrizione"
     unit: "unita'"
+    label: "Nome leggibile"        // v0.1.1
+    icon: "📊"                      // v0.1.1
+    color: "#3b82f6"                // v0.1.1
     2025: 100
     2030: 150
     2040: 200
@@ -789,6 +958,9 @@ function SectionRiferimento() {
   impact nome {
     description: "Descrizione"
     unit: "unita'"
+    label: "Nome leggibile"        // v0.1.1
+    icon: "🎯"                      // v0.1.1
+    color: "#ef4444"                // v0.1.1
     derives_from: var1, var2
     formula: var1 - var2
   }

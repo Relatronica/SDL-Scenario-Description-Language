@@ -18,6 +18,11 @@ scenario "Autonomous Mobility 2040" {
                 insurance markets, and freight logistics across OECD 
                 countries"
   tags: ["ai", "mobility", "autonomous-vehicles", "urban", "logistics", "safety"]
+  subtitle: "Veicoli autonomi, sicurezza stradale e logistica"
+  category: tecnologia
+  icon: "🚗"
+  color: "#06b6d4"
+  difficulty: base
 
   // ── Assumptions ──
 
@@ -68,18 +73,36 @@ scenario "Autonomous Mobility 2040" {
   parameter fleet_electrification_rate {
     value: 35%
     range: [15%, 70%]
+    label: "Elettrificazione flotta"
+    unit: "%"
+    step: 5
+    source: "BloombergNEF EV Outlook 2025"
+    format: "{value}%"
+    control: slider
     description: "Percentage of new AV deployments that are fully electric"
   }
 
   parameter urban_av_speed_limit {
     value: 40
     range: [25, 60]
+    label: "Limite velocità AV urbano"
+    unit: "km/h"
+    step: 5
+    source: "UNECE WP.29 AV regulations"
+    format: "{value} km/h"
+    control: slider
     description: "Typical speed limit for urban AV operations (km/h)"
   }
 
   parameter insurance_regulatory_lag {
     value: 3
     range: [1, 7]
+    label: "Ritardo normativo assicurativo"
+    unit: "anni"
+    step: 1
+    source: "Insurance Europe AV Policy Paper 2025"
+    format: "{value} anni"
+    control: slider
     description: "Years of lag between AV deployment and insurance framework adaptation"
   }
 
@@ -88,6 +111,9 @@ scenario "Autonomous Mobility 2040" {
   variable av_fleet_l4_l5 {
     description: "Cumulative L4/L5 autonomous vehicles in operation (OECD)"
     unit: "thousands"
+    label: "Flotta AV L4/L5"
+    icon: "🚗"
+    color: "#06b6d4"
 
     2025: 25
     2027: 80
@@ -110,6 +136,9 @@ scenario "Autonomous Mobility 2040" {
   variable av_ride_hailing_share {
     description: "Autonomous vehicles as % of total ride-hailing trips (OECD)"
     unit: "%"
+    label: "Ride-hailing AV"
+    icon: "📱"
+    color: "#8b5cf6"
 
     2025: 1%
     2027: 3%
@@ -132,6 +161,9 @@ scenario "Autonomous Mobility 2040" {
   variable traffic_fatalities_oecd {
     description: "Annual traffic fatalities across OECD countries"
     unit: "thousands"
+    label: "Morti stradali"
+    icon: "⚠"
+    color: "#ef4444"
 
     2025: 95
     2027: 92
@@ -154,6 +186,9 @@ scenario "Autonomous Mobility 2040" {
   variable urban_parking_demand {
     description: "Urban parking demand index (2025=100, reflecting shared AV impact)"
     unit: "index"
+    label: "Domanda parcheggi"
+    icon: "🅿"
+    color: "#f59e0b"
 
     2025: 100
     2027: 98
@@ -176,6 +211,9 @@ scenario "Autonomous Mobility 2040" {
   variable auto_insurance_premium_index {
     description: "Average auto insurance premium index (2025=100)"
     unit: "index"
+    label: "Premi assicurativi"
+    icon: "📋"
+    color: "#f59e0b"
 
     2025: 100
     2027: 98
@@ -197,6 +235,9 @@ scenario "Autonomous Mobility 2040" {
   variable autonomous_freight_share {
     description: "Share of long-haul freight moved by autonomous trucks (OECD)"
     unit: "%"
+    label: "Merci autonome"
+    icon: "🚛"
+    color: "#3b82f6"
 
     2025: 0.5%
     2027: 1.5%
@@ -219,6 +260,9 @@ scenario "Autonomous Mobility 2040" {
   variable truck_driver_employment {
     description: "Long-haul truck drivers employed (OECD, millions)"
     unit: "millions"
+    label: "Autisti camion"
+    icon: "👷"
+    color: "#ef4444"
 
     2025: 6.5
     2027: 6.3
@@ -240,6 +284,9 @@ scenario "Autonomous Mobility 2040" {
   variable av_cybersecurity_incidents {
     description: "Annual reported AV cybersecurity incidents"
     unit: "incidents"
+    label: "Incidenti cyber AV"
+    icon: "🔒"
+    color: "#8b5cf6"
 
     2025: 20
     2027: 55
@@ -369,6 +416,9 @@ scenario "Autonomous Mobility 2040" {
   impact lives_saved_annually {
     description: "Annual lives saved by AV technology vs 2025 baseline"
     unit: "thousands"
+    label: "Vite salvate"
+    icon: "❤"
+    color: "#10b981"
     derives_from: traffic_fatalities_oecd
     formula: 95 - traffic_fatalities_oecd
   }
@@ -376,6 +426,9 @@ scenario "Autonomous Mobility 2040" {
   impact urban_space_freed {
     description: "Urban space freed from parking (index, 0=none, 100=all parking eliminated)"
     unit: "index"
+    label: "Spazio urbano liberato"
+    icon: "🏙"
+    color: "#3b82f6"
     derives_from: urban_parking_demand
     formula: 100 - urban_parking_demand
   }
@@ -383,6 +436,9 @@ scenario "Autonomous Mobility 2040" {
   impact logistics_cost_reduction {
     description: "Cost reduction in long-haul freight from autonomy"
     unit: "%"
+    label: "Riduzione costi logistica"
+    icon: "📉"
+    color: "#10b981"
     derives_from: autonomous_freight_share
     formula: autonomous_freight_share * 0.45
   }
@@ -390,6 +446,9 @@ scenario "Autonomous Mobility 2040" {
   impact driver_displacement {
     description: "Truck drivers displaced relative to 2025 (millions)"
     unit: "millions"
+    label: "Autisti spostati"
+    icon: "👷"
+    color: "#ef4444"
     derives_from: truck_driver_employment
     formula: 6.5 - truck_driver_employment
   }
@@ -397,6 +456,9 @@ scenario "Autonomous Mobility 2040" {
   impact safety_trust_index {
     description: "Composite safety-trust index (safety improvement weighted by public acceptance)"
     unit: "index"
+    label: "Indice sicurezza-fiducia"
+    icon: "🤝"
+    color: "#10b981"
     derives_from: traffic_fatalities_oecd, public_acceptance
     formula: ((95 - traffic_fatalities_oecd) / 95 * 100) * public_acceptance
   }

@@ -89,11 +89,56 @@ scenario "Crisi Idrica Mediterraneo 2025-2045" {
   author: "Relatronica — Citizen Lab"
   description: "Modelli della crisi idrica mediterranea: precipitazioni, agricoltura, desalinizzazione e conflitti"
   tags: ["acqua", "clima", "agricoltura", "mediterraneo", "infrastrutture"]
+  subtitle: "Acqua, agricoltura e conflitti 2025-2045"
+  category: "ambiente"
+  icon: "💧"
+  color: "#10b981"
+  difficulty: "avanzato"
 
-  assumption rainfall_index { value: ${rain}  source: "Copernicus ERA5"  confidence: 0.6  uncertainty: normal(±18%) }
-  assumption temperature_anomaly { value: ${temp}  source: "IPCC AR6"  confidence: 0.7  uncertainty: normal(±15%) }
-  assumption infra_investment { value: ${infra * 1e9}  source: "EU Water Framework Directive"  confidence: 0.4  uncertainty: normal(±25%) }
-  assumption irrigation_efficiency { value: ${(irrig / 100).toFixed(2)}  source: "FAO AQUASTAT"  confidence: 0.5  uncertainty: normal(±15%) }
+  parameter rainfall_index {
+    label: "Indice precipitazioni"
+    value: ${rain}
+    range: [50, 120]
+    step: 5
+    unit: "indice"
+    source: "Copernicus ERA5"
+    format: "{value}"
+    control: slider
+    description: "Indice precipitazioni annuali nel Mediterraneo (100 = media 2020-2024)"
+  }
+  parameter temperature_anomaly {
+    label: "Anomalia termica"
+    value: ${temp}
+    range: [0.8, 3.0]
+    step: 0.1
+    unit: "°C"
+    source: "IPCC AR6"
+    format: "+{value}°C"
+    control: slider
+    description: "Anomalia di temperatura media rispetto al periodo pre-industriale"
+  }
+  parameter infra_investment {
+    label: "Investimenti infrastruttura"
+    value: ${infra * 1e9}
+    range: [2, 30]
+    step: 1
+    unit: "miliardi €"
+    source: "EU Water Framework Directive"
+    format: "{value} mld €"
+    control: slider
+    description: "Investimento annuo EU + nazionale in infrastruttura idrica in miliardi di euro"
+  }
+  parameter irrigation_efficiency {
+    label: "Efficienza irrigazione"
+    value: ${(irrig / 100).toFixed(2)}
+    range: [40, 95]
+    step: 5
+    unit: "%"
+    source: "FAO AQUASTAT"
+    format: "{value}%"
+    control: slider
+    description: "Target di efficienza irrigua per l'agricoltura mediterranea"
+  }
 
   variable water_stress {
     description: "Indice stress idrico Mediterraneo (0=abbondante, 100=scarsità estrema)"
@@ -116,6 +161,9 @@ scenario "Crisi Idrica Mediterraneo 2025-2045" {
   variable agricultural_output {
     description: "Produzione agricola mediterranea (2025=100)"
     unit: "indice"
+    label: "Produzione agricola"
+    icon: "🌾"
+    color: "#10b981"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.agricultural_output[i])}`).join('\n    ')}
     depends_on: water_stress, irrigation_efficiency
     uncertainty: normal(±15%)
@@ -134,6 +182,9 @@ scenario "Crisi Idrica Mediterraneo 2025-2045" {
   variable conflict_risk {
     description: "Rischio conflitto idrico transfrontaliero (0-100)"
     unit: "indice"
+    label: "Rischio conflitto"
+    icon: "⚔"
+    color: "#8b5cf6"
     ${YEARS.map((y, i) => `${y}: ${fmt(v.conflict_risk[i])}`).join('\n    ')}
     depends_on: water_stress
     uncertainty: beta(4, 4)
@@ -143,6 +194,9 @@ scenario "Crisi Idrica Mediterraneo 2025-2045" {
   impact rischio_alimentare {
     description: "Rischio sicurezza alimentare"
     unit: "indice"
+    label: "Rischio alimentare"
+    icon: "🍽"
+    color: "#ef4444"
     derives_from: agricultural_output
     formula: 100 - agricultural_output
   }
