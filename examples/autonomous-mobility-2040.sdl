@@ -1,0 +1,433 @@
+// ============================================================
+// SDL Example: Autonomous Mobility 2040
+// ============================================================
+// Models the adoption trajectory of autonomous vehicles
+// (L4/L5) and their cascading impacts on urban planning,
+// road safety, insurance, and logistics. A highly intuitive
+// scenario ideal for new users exploring SDL.
+// ============================================================
+
+scenario "Autonomous Mobility 2040" {
+  timeframe: 2025 -> 2045
+  resolution: yearly
+  confidence: 0.35
+  author: "Relatronica"
+  version: "1.0"
+  description: "Models the deployment of Level 4/5 autonomous vehicles 
+                and cascading effects on road safety, urban planning, 
+                insurance markets, and freight logistics across OECD 
+                countries"
+  tags: ["ai", "mobility", "autonomous-vehicles", "urban", "logistics", "safety"]
+
+  // ── Assumptions ──
+
+  assumption av_technology_readiness {
+    value: 0.55
+    source: "SAE/RAND AV technology readiness assessment, 2025"
+    confidence: 0.4
+    uncertainty: beta(5, 4)
+  }
+
+  assumption regulatory_framework_maturity {
+    value: 0.30
+    source: "UNECE WP.29 automated driving regulation progress, 2025"
+    confidence: 0.3
+    uncertainty: beta(3, 6)
+  }
+
+  assumption public_acceptance {
+    value: 0.42
+    source: "AAA/Eurobarometer autonomous driving trust survey, 2025"
+    confidence: 0.5
+    uncertainty: beta(4, 5)
+
+    bind {
+      source: "https://api.eurobarometer.eu/surveys/autonomous-driving/trust"
+      refresh: yearly
+      field: "trust_index"
+      fallback: 0.42
+    }
+  }
+
+  assumption lidar_sensor_cost {
+    value: 800 USD
+    source: "Velodyne/Luminar average L4 sensor suite cost, 2025"
+    confidence: 0.6
+    uncertainty: lognormal(6.7, 0.3)
+  }
+
+  assumption 5g_coverage_oecd {
+    value: 55%
+    source: "GSMA 5G coverage tracker OECD average, 2025"
+    confidence: 0.6
+    uncertainty: normal(±12%)
+  }
+
+  // ── Parameters ──
+
+  parameter fleet_electrification_rate {
+    value: 35%
+    range: [15%, 70%]
+    description: "Percentage of new AV deployments that are fully electric"
+  }
+
+  parameter urban_av_speed_limit {
+    value: 40
+    range: [25, 60]
+    description: "Typical speed limit for urban AV operations (km/h)"
+  }
+
+  parameter insurance_regulatory_lag {
+    value: 3
+    range: [1, 7]
+    description: "Years of lag between AV deployment and insurance framework adaptation"
+  }
+
+  // ── Variables ──
+
+  variable av_fleet_l4_l5 {
+    description: "Cumulative L4/L5 autonomous vehicles in operation (OECD)"
+    unit: "thousands"
+
+    2025: 25
+    2027: 80
+    2029: 220
+    2031: 550
+    2033: 1200
+    2035: 2500
+    2037: 4500
+    2039: 7500
+    2041: 11000
+    2043: 15000
+    2045: 19000
+
+    depends_on: av_technology_readiness, regulatory_framework_maturity, lidar_sensor_cost
+    model: logistic(k=0.3, midpoint=2036, max=30000)
+    uncertainty: lognormal(7.0, 0.5)
+    interpolation: spline
+  }
+
+  variable av_ride_hailing_share {
+    description: "Autonomous vehicles as % of total ride-hailing trips (OECD)"
+    unit: "%"
+
+    2025: 1%
+    2027: 3%
+    2029: 7%
+    2031: 14%
+    2033: 24%
+    2035: 36%
+    2037: 48%
+    2039: 58%
+    2041: 66%
+    2043: 72%
+    2045: 76%
+
+    depends_on: av_fleet_l4_l5, public_acceptance, regulatory_framework_maturity
+    model: logistic(k=0.25, midpoint=2036, max=85)
+    uncertainty: normal(±20%)
+    interpolation: spline
+  }
+
+  variable traffic_fatalities_oecd {
+    description: "Annual traffic fatalities across OECD countries"
+    unit: "thousands"
+
+    2025: 95
+    2027: 92
+    2029: 87
+    2031: 80
+    2033: 72
+    2035: 62
+    2037: 52
+    2039: 43
+    2041: 36
+    2043: 30
+    2045: 25
+
+    depends_on: av_fleet_l4_l5, av_technology_readiness
+    model: exponential(rate=-0.07, base=95000)
+    uncertainty: normal(±12%)
+    interpolation: spline
+  }
+
+  variable urban_parking_demand {
+    description: "Urban parking demand index (2025=100, reflecting shared AV impact)"
+    unit: "index"
+
+    2025: 100
+    2027: 98
+    2029: 94
+    2031: 88
+    2033: 80
+    2035: 71
+    2037: 62
+    2039: 54
+    2041: 48
+    2043: 43
+    2045: 39
+
+    depends_on: av_fleet_l4_l5, av_ride_hailing_share
+    model: exponential(rate=-0.05, base=100)
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  variable auto_insurance_premium_index {
+    description: "Average auto insurance premium index (2025=100)"
+    unit: "index"
+
+    2025: 100
+    2027: 98
+    2029: 95
+    2031: 90
+    2033: 83
+    2035: 75
+    2037: 66
+    2039: 58
+    2041: 52
+    2043: 47
+    2045: 43
+
+    depends_on: traffic_fatalities_oecd, av_fleet_l4_l5, insurance_regulatory_lag
+    uncertainty: normal(±18%)
+    interpolation: spline
+  }
+
+  variable autonomous_freight_share {
+    description: "Share of long-haul freight moved by autonomous trucks (OECD)"
+    unit: "%"
+
+    2025: 0.5%
+    2027: 1.5%
+    2029: 4%
+    2031: 8%
+    2033: 15%
+    2035: 24%
+    2037: 34%
+    2039: 44%
+    2041: 52%
+    2043: 58%
+    2045: 63%
+
+    depends_on: av_technology_readiness, regulatory_framework_maturity, 5g_coverage_oecd
+    model: logistic(k=0.22, midpoint=2037, max=75)
+    uncertainty: normal(±22%)
+    interpolation: spline
+  }
+
+  variable truck_driver_employment {
+    description: "Long-haul truck drivers employed (OECD, millions)"
+    unit: "millions"
+
+    2025: 6.5
+    2027: 6.3
+    2029: 6.0
+    2031: 5.5
+    2033: 4.9
+    2035: 4.2
+    2037: 3.5
+    2039: 2.9
+    2041: 2.5
+    2043: 2.2
+    2045: 2.0
+
+    depends_on: autonomous_freight_share
+    uncertainty: normal(±12%)
+    interpolation: linear
+  }
+
+  variable av_cybersecurity_incidents {
+    description: "Annual reported AV cybersecurity incidents"
+    unit: "incidents"
+
+    2025: 20
+    2027: 55
+    2029: 120
+    2031: 220
+    2033: 380
+    2035: 500
+    2037: 580
+    2039: 600
+    2041: 560
+    2043: 500
+    2045: 430
+
+    depends_on: av_fleet_l4_l5
+    uncertainty: lognormal(4.5, 0.5)
+    interpolation: spline
+  }
+
+  // ── Branches ──
+
+  branch "Regulatory Green Light" when regulatory_framework_maturity > 0.6 and public_acceptance > 0.6 {
+    probability: 0.22
+
+    variable av_fleet_l4_l5 {
+      2031: 850
+      2033: 2000
+      2035: 4500
+      2040: 14000
+      uncertainty: lognormal(8.0, 0.4)
+    }
+
+    variable av_ride_hailing_share {
+      2031: 20%
+      2033: 35%
+      2035: 52%
+      2040: 75%
+      uncertainty: normal(±15%)
+    }
+
+    variable autonomous_freight_share {
+      2031: 12%
+      2033: 25%
+      2035: 40%
+      2040: 60%
+      uncertainty: normal(±18%)
+    }
+  }
+
+  branch "Fatal Incident Backlash" when traffic_fatalities_oecd > 85 and av_fleet_l4_l5 > 200 {
+    probability: 0.18
+
+    variable public_acceptance {
+      2029: 0.28
+      2031: 0.25
+      2033: 0.30
+      2035: 0.38
+      uncertainty: beta(3, 7)
+    }
+
+    variable av_fleet_l4_l5 {
+      2031: 300
+      2033: 500
+      2035: 900
+      2040: 3000
+      uncertainty: lognormal(6.5, 0.5)
+    }
+
+    variable regulatory_framework_maturity {
+      2029: 0.20
+      2031: 0.22
+      2033: 0.28
+      2035: 0.35
+      uncertainty: beta(3, 6)
+    }
+  }
+
+  branch "Logistics First" when autonomous_freight_share > 20% and av_ride_hailing_share < 25% {
+    probability: 0.20
+
+    variable autonomous_freight_share {
+      2033: 28%
+      2035: 42%
+      2037: 55%
+      2040: 68%
+      uncertainty: normal(±15%)
+    }
+
+    variable truck_driver_employment {
+      2033: 4.2
+      2035: 3.2
+      2037: 2.4
+      2040: 1.6
+      uncertainty: normal(±15%)
+    }
+
+    variable av_ride_hailing_share {
+      2033: 15%
+      2035: 22%
+      2037: 32%
+      2040: 48%
+      uncertainty: normal(±18%)
+    }
+  }
+
+  branch "Cybersecurity Crisis" when av_cybersecurity_incidents > 500 {
+    probability: 0.12
+
+    variable public_acceptance {
+      2035: 0.32
+      2037: 0.28
+      2039: 0.30
+      2041: 0.35
+      uncertainty: beta(3, 6)
+    }
+
+    variable av_fleet_l4_l5 {
+      2037: 3200
+      2039: 4500
+      2041: 6500
+      2045: 11000
+      uncertainty: lognormal(8.0, 0.5)
+    }
+  }
+
+  // ── Impacts ──
+
+  impact lives_saved_annually {
+    description: "Annual lives saved by AV technology vs 2025 baseline"
+    unit: "thousands"
+    derives_from: traffic_fatalities_oecd
+    formula: 95 - traffic_fatalities_oecd
+  }
+
+  impact urban_space_freed {
+    description: "Urban space freed from parking (index, 0=none, 100=all parking eliminated)"
+    unit: "index"
+    derives_from: urban_parking_demand
+    formula: 100 - urban_parking_demand
+  }
+
+  impact logistics_cost_reduction {
+    description: "Cost reduction in long-haul freight from autonomy"
+    unit: "%"
+    derives_from: autonomous_freight_share
+    formula: autonomous_freight_share * 0.45
+  }
+
+  impact driver_displacement {
+    description: "Truck drivers displaced relative to 2025 (millions)"
+    unit: "millions"
+    derives_from: truck_driver_employment
+    formula: 6.5 - truck_driver_employment
+  }
+
+  impact safety_trust_index {
+    description: "Composite safety-trust index (safety improvement weighted by public acceptance)"
+    unit: "index"
+    derives_from: traffic_fatalities_oecd, public_acceptance
+    formula: ((95 - traffic_fatalities_oecd) / 95 * 100) * public_acceptance
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 10000
+    method: monte_carlo
+    seed: 2040
+    output: distribution
+    percentiles: [5, 10, 25, 50, 75, 90, 95]
+    convergence: 0.01
+    timeout: 30s
+  }
+
+  // ── Calibration ──
+
+  calibrate av_fleet_l4_l5 {
+    historical: "https://api.sae.org/av-deployment/oecd/fleet-size/2020-2025"
+    method: bayesian_update
+    window: 3y
+    prior: lognormal(5.0, 0.6)
+    update_frequency: yearly
+  }
+
+  calibrate traffic_fatalities_oecd {
+    historical: "https://stats.oecd.org/api/traffic-fatalities/2010-2025"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±12%)
+    update_frequency: yearly
+  }
+}

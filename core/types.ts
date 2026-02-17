@@ -3,7 +3,7 @@
  * Abstract Syntax Tree Type Definitions
  * 
  * Spec: v0.1
- * License: MIT
+ * License: GPL-3.0-only
  * (c) Relatronica 2026
  */
 

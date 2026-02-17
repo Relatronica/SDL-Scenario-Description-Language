@@ -1,0 +1,402 @@
+// ============================================================
+// SDL Example: AI-Driven Drug Discovery 2040
+// ============================================================
+// Models the transformation of pharmaceutical R&D through AI,
+// from target identification to clinical trials. Explores
+// breakthrough, regulatory, and safety failure scenarios.
+// Demonstrates lognormal distributions for fat-tailed
+// innovation events and beta distributions for accuracy rates.
+// ============================================================
+
+scenario "AI-Driven Drug Discovery 2040" {
+  timeframe: 2025 -> 2042
+  resolution: yearly
+  confidence: 0.30
+  author: "Relatronica"
+  version: "1.0"
+  description: "Models AI's impact on pharmaceutical R&D timelines, 
+                clinical trial success rates, drug development costs, 
+                and the evolving relationship between AI diagnostics 
+                and human medical practice"
+  tags: ["ai", "health", "pharma", "drug-discovery", "diagnostics"]
+
+  // ── Assumptions ──
+
+  assumption ai_model_biomedical_capability {
+    value: 0.55
+    source: "AlphaFold/BioNeMo benchmark composite score, 2025"
+    confidence: 0.5
+    uncertainty: beta(5, 4)
+  }
+
+  assumption pharma_rd_investment {
+    value: 260B USD
+    source: "EFPIA/PhRMA aggregate global pharma R&D spend, 2025"
+    confidence: 0.7
+    uncertainty: normal(±12%)
+
+    bind {
+      source: "https://api.evaluate.com/pharma/global-rd-spend"
+      refresh: yearly
+      field: "total_rd_spend_usd_billions"
+      fallback: 260
+    }
+  }
+
+  assumption fda_ai_regulatory_readiness {
+    value: 0.40
+    source: "FDA AI/ML Action Plan progress tracker, 2025"
+    confidence: 0.4
+    uncertainty: beta(3, 4)
+  }
+
+  assumption ema_ai_regulatory_readiness {
+    value: 0.35
+    source: "EMA AI Reflection Paper implementation status, 2025"
+    confidence: 0.4
+    uncertainty: beta(3, 5)
+  }
+
+  assumption biobank_data_availability {
+    value: 0.45
+    source: "UK Biobank/All of Us/global genomic data coverage"
+    confidence: 0.6
+    uncertainty: beta(4, 5)
+  }
+
+  // ── Parameters ──
+
+  parameter ai_rd_adoption_rate {
+    value: 18%
+    range: [8%, 45%]
+    description: "Percentage of pharma R&D pipeline using AI at any stage"
+  }
+
+  parameter clinical_trial_digitization {
+    value: 0.30
+    range: [0.10, 0.80]
+    description: "Degree of clinical trial process digitization and AI integration"
+  }
+
+  parameter open_science_factor {
+    value: 0.35
+    range: [0.10, 0.70]
+    description: "Degree of open data/model sharing in AI drug discovery"
+  }
+
+  // ── Variables ──
+
+  variable ai_assisted_drug_approvals {
+    description: "Annual FDA+EMA drug approvals where AI played a substantial role"
+    unit: "drugs"
+
+    2025: 8
+    2027: 14
+    2029: 24
+    2031: 38
+    2033: 55
+    2035: 72
+    2037: 88
+    2040: 110
+    2042: 125
+
+    depends_on: ai_model_biomedical_capability, fda_ai_regulatory_readiness, ema_ai_regulatory_readiness, pharma_rd_investment
+    model: logistic(k=0.2, midpoint=2034, max=160)
+    uncertainty: lognormal(3.0, 0.4)
+    interpolation: spline
+  }
+
+  variable preclinical_to_approval_time {
+    description: "Average time from preclinical candidate to regulatory approval"
+    unit: "years"
+
+    2025: 10.5
+    2027: 9.8
+    2029: 9.0
+    2031: 8.2
+    2033: 7.3
+    2035: 6.5
+    2037: 5.8
+    2040: 5.0
+    2042: 4.5
+
+    depends_on: ai_model_biomedical_capability, clinical_trial_digitization, fda_ai_regulatory_readiness
+    model: exponential(rate=-0.05, base=10.5)
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  variable drug_development_cost {
+    description: "Average cost to develop a new drug (from discovery to market)"
+    unit: "B USD"
+
+    2025: 2.3
+    2027: 2.1
+    2029: 1.9
+    2031: 1.7
+    2033: 1.5
+    2035: 1.3
+    2037: 1.1
+    2040: 0.9
+    2042: 0.8
+
+    depends_on: ai_model_biomedical_capability, preclinical_to_approval_time, clinical_trial_digitization
+    model: exponential(rate=-0.06, base=2300)
+    uncertainty: lognormal(0.2, 0.3)
+    interpolation: spline
+  }
+
+  variable clinical_trial_success_rate {
+    description: "Phase I to approval success rate for AI-assisted drugs"
+    unit: "%"
+
+    2025: 12%
+    2027: 14%
+    2029: 17%
+    2031: 21%
+    2033: 25%
+    2035: 30%
+    2037: 34%
+    2040: 39%
+    2042: 42%
+
+    depends_on: ai_model_biomedical_capability, biobank_data_availability
+    model: logistic(k=0.1, midpoint=2035, max=55)
+    uncertainty: beta(4, 10)
+    interpolation: spline
+  }
+
+  variable ai_diagnostic_accuracy {
+    description: "Average accuracy of AI diagnostic systems vs specialist physicians"
+    unit: "index"
+
+    2025: 0.87
+    2027: 0.89
+    2029: 0.91
+    2031: 0.93
+    2033: 0.94
+    2035: 0.95
+    2037: 0.96
+    2040: 0.97
+    2042: 0.975
+
+    depends_on: ai_model_biomedical_capability, biobank_data_availability
+    model: logistic(k=0.15, midpoint=2030, max=0.99)
+    uncertainty: beta(30, 3)
+    interpolation: spline
+  }
+
+  variable radiologist_workforce_change {
+    description: "Change in radiology workforce demand relative to 2025 baseline"
+    unit: "%"
+
+    2025: 100%
+    2027: 98%
+    2029: 95%
+    2031: 90%
+    2033: 85%
+    2035: 80%
+    2037: 76%
+    2040: 72%
+    2042: 70%
+
+    depends_on: ai_diagnostic_accuracy, fda_ai_regulatory_readiness
+    uncertainty: normal(±12%)
+    interpolation: linear
+  }
+
+  variable rare_disease_ai_candidates {
+    description: "AI-identified drug candidates targeting rare diseases (cumulative)"
+    unit: "candidates"
+
+    2025: 120
+    2027: 200
+    2029: 350
+    2031: 550
+    2033: 820
+    2035: 1150
+    2037: 1500
+    2040: 2100
+    2042: 2600
+
+    depends_on: ai_model_biomedical_capability, open_science_factor, biobank_data_availability
+    model: exponential(rate=0.19, base=120)
+    uncertainty: lognormal(5.5, 0.4)
+    interpolation: spline
+  }
+
+  variable ai_safety_incidents_pharma {
+    description: "Annual reported AI-related safety incidents in pharma (misidentified targets, biased trials)"
+    unit: "incidents"
+
+    2025: 15
+    2027: 30
+    2029: 55
+    2031: 85
+    2033: 110
+    2035: 120
+    2037: 115
+    2040: 95
+    2042: 80
+
+    depends_on: ai_assisted_drug_approvals, fda_ai_regulatory_readiness
+    uncertainty: lognormal(3.5, 0.5)
+    interpolation: spline
+  }
+
+  // ── Branches ──
+
+  branch "AlphaFold Moment" when ai_model_biomedical_capability > 0.8 {
+    probability: 0.15
+
+    variable preclinical_to_approval_time {
+      2031: 6.5
+      2033: 5.0
+      2035: 3.8
+      2040: 2.5
+      uncertainty: normal(±20%)
+    }
+
+    variable drug_development_cost {
+      2031: 1.3
+      2033: 0.9
+      2035: 0.6
+      2040: 0.4
+      uncertainty: lognormal(-0.5, 0.3)
+    }
+
+    variable rare_disease_ai_candidates {
+      2031: 800
+      2033: 1500
+      2035: 2800
+      2040: 5500
+      uncertainty: lognormal(7.0, 0.5)
+    }
+  }
+
+  branch "Regulatory Bottleneck" when fda_ai_regulatory_readiness < 0.3 and ema_ai_regulatory_readiness < 0.25 {
+    probability: 0.22
+
+    variable ai_assisted_drug_approvals {
+      2031: 22
+      2033: 30
+      2035: 40
+      2040: 60
+      uncertainty: normal(±20%)
+    }
+
+    variable preclinical_to_approval_time {
+      2031: 9.2
+      2033: 8.5
+      2035: 8.0
+      2040: 7.0
+      uncertainty: normal(±12%)
+    }
+  }
+
+  branch "AI Misdiagnosis Crisis" when ai_safety_incidents_pharma > 100 and ai_diagnostic_accuracy < 0.92 {
+    probability: 0.10
+
+    variable ai_diagnostic_accuracy {
+      2033: 0.88
+      2035: 0.90
+      2037: 0.92
+      2040: 0.94
+      uncertainty: beta(15, 2)
+    }
+
+    variable radiologist_workforce_change {
+      2033: 92%
+      2035: 90%
+      2040: 85%
+      uncertainty: normal(±8%)
+    }
+
+    variable clinical_trial_success_rate {
+      2033: 18%
+      2035: 20%
+      2040: 28%
+      uncertainty: beta(3, 10)
+    }
+  }
+
+  branch "Open Science Acceleration" when open_science_factor > 0.55 and biobank_data_availability > 0.65 {
+    probability: 0.20
+
+    variable clinical_trial_success_rate {
+      2031: 26%
+      2033: 33%
+      2035: 40%
+      2040: 48%
+      uncertainty: beta(6, 8)
+    }
+
+    variable rare_disease_ai_candidates {
+      2031: 700
+      2033: 1200
+      2035: 2000
+      2040: 3800
+      uncertainty: lognormal(6.5, 0.4)
+    }
+  }
+
+  // ── Impacts ──
+
+  impact rd_productivity_gain {
+    description: "R&D productivity gain: AI-assisted drugs approved per billion USD development cost"
+    unit: "drugs/B USD"
+    derives_from: ai_assisted_drug_approvals, drug_development_cost
+    formula: ai_assisted_drug_approvals / drug_development_cost
+  }
+
+  impact time_to_patient {
+    description: "Years saved per drug reaching patients compared to 2025 baseline"
+    unit: "years"
+    derives_from: preclinical_to_approval_time
+    formula: 10.5 - preclinical_to_approval_time
+  }
+
+  impact rare_disease_hope_index {
+    description: "Progress in addressing rare diseases (% of 7000 known rare diseases with AI candidates)"
+    unit: "%"
+    derives_from: rare_disease_ai_candidates
+    formula: rare_disease_ai_candidates / 7000 * 100
+  }
+
+  impact diagnostic_parity {
+    description: "AI diagnostic accuracy relative to human specialists (1.0 = parity)"
+    unit: "ratio"
+    derives_from: ai_diagnostic_accuracy
+    formula: ai_diagnostic_accuracy / 0.92
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 10000
+    method: monte_carlo
+    seed: 2040
+    output: distribution
+    percentiles: [5, 10, 25, 50, 75, 90, 95]
+    convergence: 0.01
+    timeout: 30s
+  }
+
+  // ── Calibration ──
+
+  calibrate ai_assisted_drug_approvals {
+    historical: "https://api.fda.gov/drug/approvals/ai-assisted/2020-2025"
+    method: bayesian_update
+    window: 3y
+    prior: lognormal(2.5, 0.5)
+    update_frequency: yearly
+  }
+
+  calibrate clinical_trial_success_rate {
+    historical: "https://api.bio.org/clinical-success-rates/2015-2025"
+    method: bayesian_update
+    window: 5y
+    prior: beta(4, 12)
+    update_frequency: yearly
+  }
+}

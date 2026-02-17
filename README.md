@@ -177,6 +177,9 @@ See the [`examples/`](./examples/) directory:
 | **[`pandemic-preparedness-2035.sdl`](./examples/pandemic-preparedness-2035.sdl)** | Health / Biosecurity | Medium | `lognormal` for fat-tailed risks, low confidence |
 | **[`african-urban-leapfrog-2050.sdl`](./examples/african-urban-leapfrog-2050.sdl)** | Urbanization | Medium | `latin_hypercube` sampling, exponential growth |
 | **[`eu-defense-autonomy-2035.sdl`](./examples/eu-defense-autonomy-2035.sdl)** | Geopolitics / Defense | Medium | Very low confidence (0.25), many external assumptions |
+| **[`ai-energy-demand-2035.sdl`](./examples/ai-energy-demand-2035.sdl)** | AI / Energy / Climate | High | `bind` + `watch` + `calibrate`, `lognormal` compute growth |
+| **[`ai-drug-discovery-2040.sdl`](./examples/ai-drug-discovery-2040.sdl)** | AI / Health / Pharma | High | `lognormal` for breakthroughs, `beta` for accuracy rates |
+| **[`autonomous-mobility-2040.sdl`](./examples/autonomous-mobility-2040.sdl)** | AI / Mobility / Urban | Medium | `logistic` adoption curves, `calibrate`, 20-year horizon |
 
 ## Specification
 
@@ -216,6 +219,6 @@ The full formal specification is available at [`spec/SDL-SPEC-v0.1.md`](./spec/S
 
 ## License
 
-MIT — Created by [Relatronica](https://relatronica.com)
+GPL-3.0 — Created by [Relatronica](https://relatronica.com)
 
 *Imagining possible futures and building tools to navigate them.*

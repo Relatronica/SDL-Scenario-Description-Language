@@ -474,7 +474,7 @@ function Sidebar({ mode, selectedId, editorTemplateId, guideSectionId, onSelect,
           <p className="text-[10px] text-slate-600 leading-relaxed">
             Creato da <span className="text-slate-500">Relatronica</span>
           </p>
-          <p className="text-[10px] text-slate-700 mt-0.5">MIT License</p>
+          <p className="text-[10px] text-slate-700 mt-0.5">GPL-3.0 License</p>
         </div>
       </aside>
     </>

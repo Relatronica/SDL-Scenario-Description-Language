@@ -8,6 +8,9 @@ export type { ScenarioDefinition, ScenarioMeta, SliderDef, VariableDisplay, Scen
 export { CATEGORY_LABELS, CATEGORY_COLORS } from './types';
 
 import aiLavoro from './ai-lavoro';
+import aiEnergia from './ai-energia';
+import aiFarmaci from './ai-farmaci';
+import mobilitaAutonoma from './mobilita-autonoma';
 import energia from './energia';
 import demografia from './demografia';
 import sovranitaDigitale from './sovranita-digitale';
@@ -21,6 +24,9 @@ import type { ScenarioDefinition } from './types';
 
 export const SCENARIOS: ScenarioDefinition[] = [
   aiLavoro,
+  aiEnergia,
+  aiFarmaci,
+  mobilitaAutonoma,
   energia,
   demografia,
   sovranitaDigitale,

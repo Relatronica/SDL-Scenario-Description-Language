@@ -1,0 +1,397 @@
+// ============================================================
+// SDL Example: AI Energy Demand & Climate Tension 2035
+// ============================================================
+// Models the rapidly growing energy consumption of AI
+// infrastructure (training, inference, data centers) and its
+// tension with global climate targets. Designed to compose
+// with green-transition-italy.sdl via import.
+// ============================================================
+
+scenario "AI Energy Demand & Climate Tension 2035" {
+  timeframe: 2025 -> 2040
+  resolution: yearly
+  confidence: 0.40
+  author: "Relatronica"
+  version: "1.0"
+  description: "Models the exponential growth in AI compute energy 
+                demand, data center proliferation, water usage, and 
+                the tension between AI scaling and net-zero climate 
+                commitments"
+  tags: ["ai", "energy", "climate", "data-centers", "sustainability"]
+
+  // ── Assumptions ──
+
+  assumption global_ai_compute_demand {
+    value: 4.5
+    source: "Epoch AI compute trend analysis, 2025"
+    confidence: 0.5
+    uncertainty: lognormal(1.5, 0.4)
+  }
+
+  assumption datacenter_pue {
+    value: 1.30
+    source: "Uptime Institute Global Data Center Survey, 2025"
+    confidence: 0.7
+    uncertainty: normal(±8%)
+
+    bind {
+      source: "https://api.uptimeinstitute.com/survey/pue/global"
+      refresh: yearly
+      field: "average_pue"
+      fallback: 1.30
+    }
+  }
+
+  assumption grid_carbon_intensity {
+    value: 410
+    source: "Ember Global Electricity Review 2025"
+    confidence: 0.6
+    uncertainty: normal(±15%)
+
+    bind {
+      source: "https://api.ember-climate.org/global/carbon-intensity"
+      refresh: monthly
+      field: "gco2_per_kwh"
+      fallback: 410
+    }
+
+    watch {
+      warn  when: actual > assumed * 1.1
+      error when: actual > assumed * 1.3
+
+      on_trigger {
+        recalculate: true
+        notify: ["author", "subscribers"]
+        suggest: "assumption_update"
+      }
+    }
+  }
+
+  assumption chip_efficiency_improvement {
+    value: 25%
+    source: "NVIDIA/AMD roadmap analysis, Moore's Law extrapolation"
+    confidence: 0.5
+    uncertainty: normal(±30%)
+  }
+
+  assumption corporate_renewable_pledges {
+    value: 0.65
+    source: "RE100 tech company commitments tracker, 2025"
+    confidence: 0.5
+    uncertainty: beta(5, 3)
+  }
+
+  // ── Parameters ──
+
+  parameter ai_scaling_exponent {
+    value: 3.5
+    range: [2.0, 5.0]
+    description: "Annual compute growth multiplier for frontier AI training runs"
+  }
+
+  parameter inference_to_training_ratio {
+    value: 6.0
+    range: [3.0, 15.0]
+    description: "Ratio of total inference compute to training compute"
+  }
+
+  parameter carbon_tax_on_compute {
+    value: 0 EUR
+    range: [0 EUR, 50 EUR]
+    description: "Hypothetical carbon tax per MWh consumed by data centers"
+  }
+
+  // ── Variables ──
+
+  variable ai_electricity_consumption {
+    description: "Total global electricity consumed by AI workloads"
+    unit: "TWh"
+
+    2025: 120
+    2027: 195
+    2029: 310
+    2031: 480
+    2033: 700
+    2035: 950
+    2037: 1200
+    2040: 1600
+
+    depends_on: global_ai_compute_demand, chip_efficiency_improvement, inference_to_training_ratio
+    model: exponential(rate=0.18, base=120)
+    uncertainty: lognormal(4.8, 0.3)
+    interpolation: spline
+  }
+
+  variable datacenter_count {
+    description: "Number of hyperscale data centers globally"
+    unit: "facilities"
+
+    2025: 1100
+    2027: 1400
+    2029: 1800
+    2031: 2300
+    2033: 2900
+    2035: 3500
+    2037: 4100
+    2040: 5000
+
+    depends_on: global_ai_compute_demand
+    model: logistic(k=0.12, midpoint=2034, max=7000)
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  variable datacenter_water_usage {
+    description: "Total water consumption by global data centers"
+    unit: "billion liters"
+
+    2025: 26
+    2027: 38
+    2029: 55
+    2031: 78
+    2033: 105
+    2035: 135
+    2037: 165
+    2040: 210
+
+    depends_on: ai_electricity_consumption, datacenter_pue
+    model: exponential(rate=0.15, base=26)
+    uncertainty: normal(±22%)
+    interpolation: spline
+  }
+
+  variable ai_sector_co2_emissions {
+    description: "Annual CO2 emissions from global AI compute"
+    unit: "MtCO2"
+
+    2025: 50
+    2027: 72
+    2029: 100
+    2031: 135
+    2033: 170
+    2035: 200
+    2037: 220
+    2040: 240
+
+    depends_on: ai_electricity_consumption, grid_carbon_intensity, corporate_renewable_pledges
+    uncertainty: normal(±20%)
+    interpolation: spline
+  }
+
+  variable renewable_share_ai {
+    description: "Share of AI workloads powered by renewable energy"
+    unit: "%"
+
+    2025: 40%
+    2027: 45%
+    2029: 52%
+    2031: 58%
+    2033: 64%
+    2035: 70%
+    2037: 76%
+    2040: 84%
+
+    depends_on: corporate_renewable_pledges, grid_carbon_intensity
+    model: logistic(k=0.12, midpoint=2033, max=95)
+    uncertainty: normal(±12%)
+    interpolation: spline
+  }
+
+  variable ai_share_global_electricity {
+    description: "AI's share of total global electricity consumption"
+    unit: "%"
+
+    2025: 0.4%
+    2027: 0.6%
+    2029: 0.9%
+    2031: 1.4%
+    2033: 2.0%
+    2035: 2.7%
+    2037: 3.3%
+    2040: 4.2%
+
+    depends_on: ai_electricity_consumption
+    uncertainty: normal(±18%)
+    interpolation: spline
+  }
+
+  variable cost_per_ai_query {
+    description: "Average energy cost per AI inference query"
+    unit: "cents USD"
+
+    2025: 0.40
+    2027: 0.32
+    2029: 0.25
+    2031: 0.18
+    2033: 0.14
+    2035: 0.10
+    2037: 0.07
+    2040: 0.05
+
+    depends_on: chip_efficiency_improvement, ai_electricity_consumption
+    model: exponential(rate=-0.15, base=0.40)
+    uncertainty: normal(±20%)
+    interpolation: spline
+  }
+
+  // ── Branches ──
+
+  branch "Efficiency Breakthrough" when chip_efficiency_improvement > 40% {
+    probability: 0.20
+
+    variable ai_electricity_consumption {
+      2031: 350
+      2033: 450
+      2035: 580
+      2040: 850
+      uncertainty: normal(±18%)
+    }
+
+    variable ai_sector_co2_emissions {
+      2031: 90
+      2033: 100
+      2035: 105
+      2040: 100
+      uncertainty: normal(±15%)
+    }
+
+    variable cost_per_ai_query {
+      2031: 0.10
+      2033: 0.05
+      2035: 0.03
+      2040: 0.01
+      uncertainty: normal(±25%)
+    }
+  }
+
+  branch "Compute Explosion" when global_ai_compute_demand > 6.0 and chip_efficiency_improvement < 20% {
+    probability: 0.18
+
+    variable ai_electricity_consumption {
+      2031: 650
+      2033: 1100
+      2035: 1700
+      2040: 3200
+      uncertainty: lognormal(7.0, 0.4)
+    }
+
+    variable ai_share_global_electricity {
+      2031: 2.0%
+      2033: 3.5%
+      2035: 5.2%
+      2040: 8.5%
+      uncertainty: normal(±25%)
+    }
+
+    variable datacenter_water_usage {
+      2031: 110
+      2033: 180
+      2035: 280
+      2040: 450
+      uncertainty: normal(±25%)
+    }
+  }
+
+  branch "Carbon Tax on AI" when ai_sector_co2_emissions > 150 and carbon_tax_on_compute > 20 {
+    probability: 0.15
+
+    variable ai_sector_co2_emissions {
+      2033: 140
+      2035: 120
+      2040: 85
+      uncertainty: normal(±20%)
+    }
+
+    variable renewable_share_ai {
+      2033: 72%
+      2035: 82%
+      2040: 93%
+      uncertainty: normal(±8%)
+    }
+
+    variable cost_per_ai_query {
+      2033: 0.20
+      2035: 0.16
+      2040: 0.10
+      uncertainty: normal(±15%)
+    }
+  }
+
+  branch "Grid Stress Crisis" when ai_share_global_electricity > 3% {
+    probability: 0.12
+
+    variable grid_carbon_intensity {
+      2035: 450
+      2037: 470
+      2040: 480
+      uncertainty: normal(±12%)
+    }
+
+    variable ai_sector_co2_emissions {
+      2035: 260
+      2037: 300
+      2040: 350
+      uncertainty: normal(±20%)
+    }
+  }
+
+  // ── Impacts ──
+
+  impact carbon_intensity_ai_power {
+    description: "Carbon intensity of AI workload electricity (grams CO2 per kWh)"
+    unit: "gCO2/kWh"
+    derives_from: ai_sector_co2_emissions, ai_electricity_consumption
+    formula: ai_sector_co2_emissions / ai_electricity_consumption * 1000
+  }
+
+  impact climate_budget_consumption {
+    description: "AI sector share of global annual carbon budget (1.5C pathway)"
+    unit: "%"
+    derives_from: ai_sector_co2_emissions
+    formula: ai_sector_co2_emissions / 30000 * 100
+  }
+
+  impact water_stress_contribution {
+    description: "Data center water as % of global industrial water use"
+    unit: "%"
+    derives_from: datacenter_water_usage
+    formula: datacenter_water_usage / 800 * 100
+  }
+
+  impact net_zero_gap {
+    description: "Gap between AI renewables target (100%) and actual"
+    unit: "%"
+    derives_from: renewable_share_ai
+    formula: 100 - renewable_share_ai
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 10000
+    method: monte_carlo
+    seed: 2035
+    output: distribution
+    percentiles: [5, 10, 25, 50, 75, 90, 95]
+    convergence: 0.01
+    timeout: 30s
+  }
+
+  // ── Calibration ──
+
+  calibrate ai_electricity_consumption {
+    historical: "https://api.iea.org/data/electricity/ai-datacenters/2020-2025"
+    method: bayesian_update
+    window: 3y
+    prior: lognormal(4.8, 0.4)
+    update_frequency: yearly
+  }
+
+  calibrate ai_sector_co2_emissions {
+    historical: "https://api.ember-climate.org/sector/datacenters/emissions/2020-2025"
+    method: bayesian_update
+    window: 3y
+    prior: normal(±20%)
+    update_frequency: yearly
+  }
+}

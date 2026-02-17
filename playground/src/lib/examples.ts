@@ -14,6 +14,9 @@ import waterScarcitySource from '@sdl/examples/water-scarcity-mediterranean.sdl?
 import pandemicSource from '@sdl/examples/pandemic-preparedness-2035.sdl?raw';
 import africanUrbanSource from '@sdl/examples/african-urban-leapfrog-2050.sdl?raw';
 import euDefenseSource from '@sdl/examples/eu-defense-autonomy-2035.sdl?raw';
+import aiEnergySource from '@sdl/examples/ai-energy-demand-2035.sdl?raw';
+import aiDrugDiscoverySource from '@sdl/examples/ai-drug-discovery-2040.sdl?raw';
+import autonomousMobilitySource from '@sdl/examples/autonomous-mobility-2040.sdl?raw';
 
 export interface SDLExample {
   name: string;
@@ -43,4 +46,7 @@ export const EXAMPLES: SDLExample[] = [
   parseExample(pandemicSource),
   parseExample(africanUrbanSource),
   parseExample(euDefenseSource),
+  parseExample(aiEnergySource),
+  parseExample(aiDrugDiscoverySource),
+  parseExample(autonomousMobilitySource),
 ];
