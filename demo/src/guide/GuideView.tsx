@@ -40,13 +40,13 @@ function CodeBlock({ code, title }: { code: string; title?: string }) {
   };
 
   return (
-    <div className="relative group rounded-xl overflow-hidden border border-slate-800 bg-slate-900/60 my-4">
+    <div className="relative group rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/60 my-4">
       {title && (
-        <div className="flex items-center justify-between px-4 py-2 bg-slate-800/40 border-b border-slate-800/60">
-          <span className="text-[11px] font-semibold text-slate-400">{title}</span>
+        <div className="flex items-center justify-between px-4 py-2 bg-zinc-800/40 border-b border-zinc-800/60">
+          <span className="text-[11px] font-semibold text-zinc-400">{title}</span>
           <button
             onClick={handleCopy}
-            className="text-[10px] text-slate-500 hover:text-slate-300 transition-colors px-2 py-1 rounded-md hover:bg-slate-700/50"
+            className="text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors px-2 py-1 rounded-md hover:bg-zinc-700/50"
           >
             {copied ? 'Copiato!' : 'Copia'}
           </button>
@@ -55,12 +55,12 @@ function CodeBlock({ code, title }: { code: string; title?: string }) {
       {!title && (
         <button
           onClick={handleCopy}
-          className="absolute top-2 right-2 text-[10px] text-slate-600 hover:text-slate-300 transition-colors px-2 py-1 rounded-md hover:bg-slate-700/50 opacity-0 group-hover:opacity-100"
+          className="absolute top-2 right-2 text-[10px] text-zinc-600 hover:text-zinc-300 transition-colors px-2 py-1 rounded-md hover:bg-zinc-700/50 opacity-0 group-hover:opacity-100"
         >
           {copied ? 'Copiato!' : 'Copia'}
         </button>
       )}
-      <pre className="text-[13px] font-mono text-slate-300 p-4 overflow-x-auto leading-relaxed whitespace-pre-wrap">
+      <pre className="text-[13px] font-mono text-zinc-300 p-4 overflow-x-auto leading-relaxed whitespace-pre-wrap">
         {code}
       </pre>
     </div>
@@ -75,7 +75,7 @@ function Tip({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex gap-3 bg-blue-500/5 border border-blue-500/15 rounded-xl p-4 my-4">
       <span className="text-blue-400 text-sm shrink-0 mt-0.5">&#9432;</span>
-      <div className="text-[13px] text-slate-400 leading-relaxed">{children}</div>
+      <div className="text-[13px] text-zinc-400 leading-relaxed">{children}</div>
     </div>
   );
 }
@@ -86,20 +86,20 @@ function Tip({ children }: { children: React.ReactNode }) {
 
 function Table({ headers, rows }: { headers: string[]; rows: string[][] }) {
   return (
-    <div className="overflow-x-auto my-4 rounded-xl border border-slate-800">
+    <div className="overflow-x-auto my-4 rounded-xl border border-zinc-800">
       <table className="w-full text-[13px]">
         <thead>
-          <tr className="bg-slate-800/40">
+          <tr className="bg-zinc-800/40">
             {headers.map((h, i) => (
-              <th key={i} className="text-left px-4 py-2.5 text-slate-400 font-semibold border-b border-slate-800/60">{h}</th>
+              <th key={i} className="text-left px-4 py-2.5 text-zinc-400 font-semibold border-b border-zinc-800/60">{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={i} className="border-b border-slate-800/30 last:border-b-0 hover:bg-slate-800/20 transition-colors">
+            <tr key={i} className="border-b border-zinc-800/30 last:border-b-0 hover:bg-zinc-800/20 transition-colors">
               {row.map((cell, j) => (
-                <td key={j} className={`px-4 py-2.5 ${j === 0 ? 'font-mono text-amber-300/80' : 'text-slate-400'}`}>{cell}</td>
+                <td key={j} className={`px-4 py-2.5 ${j === 0 ? 'font-mono text-amber-300/80' : 'text-zinc-400'}`}>{cell}</td>
               ))}
             </tr>
           ))}
@@ -117,10 +117,10 @@ function SectionPanoramica() {
   return (
     <section>
       <h2 className="text-2xl font-bold text-white mb-4">Cos'e' SDL?</h2>
-      <p className="text-slate-400 leading-relaxed mb-4">
-        <strong className="text-slate-200">SDL (Scenario Description Language)</strong> e' un linguaggio formale
+      <p className="text-zinc-400 leading-relaxed mb-4">
+        <strong className="text-zinc-200">SDL (Scenario Description Language)</strong> e' un linguaggio formale
         per descrivere, simulare e monitorare scenari futuri. A differenza delle previsioni tradizionali
-        (testi statici o presentazioni), uno scenario SDL e' un <strong className="text-slate-200">oggetto computazionale</strong>: 
+        (testi statici o presentazioni), uno scenario SDL e' un <strong className="text-zinc-200">oggetto computazionale</strong>: 
         puo' essere parsato, eseguito con simulazioni Monte Carlo, collegato a fonti dati reali,
         e tradotto da/verso linguaggio naturale.
       </p>
@@ -137,9 +137,9 @@ function SectionPanoramica() {
           ['Trasparente', 'Ogni assunzione dichiara la sua fonte e il livello di confidenza'],
           ['Verificabile', 'I risultati possono essere riprodotti e controllati'],
         ].map(([title, desc]) => (
-          <div key={title} className="bg-slate-900/40 border border-slate-800/60 rounded-lg p-3">
-            <p className="text-sm font-semibold text-slate-200 mb-1">{title}</p>
-            <p className="text-[12px] text-slate-500 leading-relaxed">{desc}</p>
+          <div key={title} className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-3">
+            <p className="text-sm font-semibold text-zinc-200 mb-1">{title}</p>
+            <p className="text-[12px] text-zinc-500 leading-relaxed">{desc}</p>
           </div>
         ))}
       </div>
@@ -152,9 +152,9 @@ function SectionPanoramica() {
           ['3. Simula', '2.000+ simulazioni Monte Carlo propagano l\'incertezza'],
           ['4. Analizza', 'Fan chart con percentili mostrano la gamma di futuri possibili'],
         ].map(([step, desc]) => (
-          <div key={step} className="flex-1 bg-slate-900/40 border border-slate-800/60 rounded-xl p-4">
+          <div key={step} className="flex-1 bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-4">
             <p className="text-sm font-bold text-blue-400 mb-1">{step}</p>
-            <p className="text-[11px] text-slate-500 leading-relaxed">{desc}</p>
+            <p className="text-[11px] text-zinc-500 leading-relaxed">{desc}</p>
           </div>
         ))}
       </div>
@@ -166,7 +166,7 @@ function SectionStruttura() {
   return (
     <section>
       <h2 className="text-2xl font-bold text-white mb-4">Struttura di uno scenario</h2>
-      <p className="text-slate-400 leading-relaxed mb-4">
+      <p className="text-zinc-400 leading-relaxed mb-4">
         Ogni file SDL contiene esattamente un blocco <code className="text-amber-300/80">scenario</code>.
         Al suo interno si dichiarano i metadati e i vari costrutti.
       </p>
@@ -220,7 +220,7 @@ function SectionStruttura() {
       />
 
       <h3 className="text-lg font-semibold text-white mt-8 mb-3">Metadati di presentazione <span className="text-xs font-normal text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full ml-2">v0.1.1</span></h3>
-      <p className="text-slate-400 leading-relaxed mb-3">
+      <p className="text-zinc-400 leading-relaxed mb-3">
         Campi opzionali che controllano come lo scenario appare nell'interfaccia: card, colori, categorizzazione.
       </p>
       <Table
@@ -247,8 +247,8 @@ function SectionAssunzioni() {
   return (
     <section>
       <h2 className="text-2xl font-bold text-white mb-4">Assunzioni</h2>
-      <p className="text-slate-400 leading-relaxed mb-4">
-        Le <strong className="text-slate-200">assunzioni</strong> (<code className="text-amber-300/80">assumption</code>) 
+      <p className="text-zinc-400 leading-relaxed mb-4">
+        Le <strong className="text-zinc-200">assunzioni</strong> (<code className="text-amber-300/80">assumption</code>) 
         rappresentano condizioni esterne prese come date. Sono gli <em>input</em> dello scenario: 
         non vengono derivate, ma alimentano le variabili attraverso il grafo causale.
       </p>
@@ -305,8 +305,8 @@ function SectionVariabili() {
   return (
     <section>
       <h2 className="text-2xl font-bold text-white mb-4">Variabili</h2>
-      <p className="text-slate-400 leading-relaxed mb-4">
-        Le <strong className="text-slate-200">variabili</strong> (<code className="text-amber-300/80">variable</code>) 
+      <p className="text-zinc-400 leading-relaxed mb-4">
+        Le <strong className="text-zinc-200">variabili</strong> (<code className="text-amber-300/80">variable</code>) 
         sono grandezze misurabili che cambiano nel tempo. Sono il cuore computazionale di SDL: 
         definiscono serie temporali con punti noti, modelli di crescita, e incertezza.
       </p>
@@ -340,8 +340,8 @@ function SectionVariabili() {
 }`} />
 
       <h3 className="text-lg font-semibold text-white mt-8 mb-3">Serie temporali</h3>
-      <p className="text-slate-400 leading-relaxed mb-3">
-        I punti definiti nella variabile sono <strong className="text-slate-200">ancore</strong>. 
+      <p className="text-zinc-400 leading-relaxed mb-3">
+        I punti definiti nella variabile sono <strong className="text-zinc-200">ancore</strong>. 
         Tra un punto e l'altro, SDL interpola secondo il metodo specificato.
       </p>
       <Table
@@ -354,9 +354,9 @@ function SectionVariabili() {
       />
 
       <h3 className="text-lg font-semibold text-white mt-8 mb-3">Dipendenze causali</h3>
-      <p className="text-slate-400 leading-relaxed mb-3">
+      <p className="text-zinc-400 leading-relaxed mb-3">
         <code className="text-amber-300/80">depends_on</code> dichiara che questa variabile 
-        e' influenzata da altre. Il motore usa queste relazioni per costruire il <strong className="text-slate-200">grafo causale</strong> e 
+        e' influenzata da altre. Il motore usa queste relazioni per costruire il <strong className="text-zinc-200">grafo causale</strong> e 
         determinare l'ordine di esecuzione.
       </p>
       <CodeBlock code={`variable occupazione_green {
@@ -389,7 +389,7 @@ function SectionVariabili() {
       />
 
       <h3 className="text-lg font-semibold text-white mt-8 mb-3">Metadati di visualizzazione <span className="text-xs font-normal text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full ml-2">v0.1.1</span></h3>
-      <p className="text-slate-400 leading-relaxed mb-3">
+      <p className="text-zinc-400 leading-relaxed mb-3">
         Campi opzionali che personalizzano come la variabile appare nei grafici e nel grafo causale.
       </p>
       <Table
@@ -423,14 +423,14 @@ function SectionParametri() {
   return (
     <section>
       <h2 className="text-2xl font-bold text-white mb-4">Parametri</h2>
-      <p className="text-slate-400 leading-relaxed mb-4">
-        I <strong className="text-slate-200">parametri</strong> (<code className="text-amber-300/80">parameter</code>) 
+      <p className="text-zinc-400 leading-relaxed mb-4">
+        I <strong className="text-zinc-200">parametri</strong> (<code className="text-amber-300/80">parameter</code>) 
         sono valori di configurazione che <em>non cambiano nel tempo</em> all'interno di una singola simulazione, 
         ma possono variare tra simulazioni diverse. Utili per soglie, budget, costi unitari.
       </p>
-      <p className="text-slate-400 leading-relaxed mb-4">
-        A partire dalla <strong className="text-slate-200">v0.1.1</strong>, i parametri possono includere 
-        metadati per generare automaticamente <strong className="text-slate-200">controlli interattivi</strong> (slider, toggle, dropdown)
+      <p className="text-zinc-400 leading-relaxed mb-4">
+        A partire dalla <strong className="text-zinc-200">v0.1.1</strong>, i parametri possono includere 
+        metadati per generare automaticamente <strong className="text-zinc-200">controlli interattivi</strong> (slider, toggle, dropdown)
         nell'interfaccia, permettendo all'utente di esplorare scenari alternativi in tempo reale.
       </p>
 
@@ -441,7 +441,7 @@ function SectionParametri() {
 }`} />
 
       <h3 className="text-lg font-semibold text-white mt-8 mb-3">Controlli interattivi <span className="text-xs font-normal text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full ml-2">v0.1.1</span></h3>
-      <p className="text-slate-400 leading-relaxed mb-3">
+      <p className="text-zinc-400 leading-relaxed mb-3">
         Quando un parametro specifica <code className="text-amber-300/80">control: slider</code>, l'interfaccia genera
         automaticamente uno slider che l'utente puo' muovere per modificare il valore e vedere i risultati aggiornarsi in tempo reale.
       </p>
@@ -541,8 +541,8 @@ function SectionBranches() {
   return (
     <section>
       <h2 className="text-2xl font-bold text-white mb-4">Branches (scenari alternativi)</h2>
-      <p className="text-slate-400 leading-relaxed mb-4">
-        Un <strong className="text-slate-200">branch</strong> e' una biforcazione condizionale: 
+      <p className="text-zinc-400 leading-relaxed mb-4">
+        Un <strong className="text-zinc-200">branch</strong> e' una biforcazione condizionale: 
         quando una condizione viene soddisfatta durante la simulazione, il motore "forka" il run 
         e continua sia lungo il percorso base sia lungo quello alternativo.
       </p>
@@ -559,12 +559,12 @@ function SectionBranches() {
 }`} />
 
       <h3 className="text-lg font-semibold text-white mt-8 mb-3">Come funzionano</h3>
-      <p className="text-slate-400 leading-relaxed mb-3">
+      <p className="text-zinc-400 leading-relaxed mb-3">
         A ogni passo temporale della simulazione:
       </p>
-      <ol className="list-decimal list-inside text-slate-400 space-y-2 ml-2 text-[13px] leading-relaxed">
+      <ol className="list-decimal list-inside text-zinc-400 space-y-2 ml-2 text-[13px] leading-relaxed">
         <li>Il motore valuta la condizione <code className="text-amber-300/80">when</code> con i valori correnti</li>
-        <li>Se la condizione e' vera <strong className="text-slate-200">e</strong> un sorteggio casuale {'<'} <code className="text-amber-300/80">probability</code>:
+        <li>Se la condizione e' vera <strong className="text-zinc-200">e</strong> un sorteggio casuale {'<'} <code className="text-amber-300/80">probability</code>:
           <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
             <li>Il run viene biforcato</li>
             <li>Le variabili del branch sovrascrivono quelle base</li>
@@ -633,8 +633,8 @@ function SectionImpatti() {
   return (
     <section>
       <h2 className="text-2xl font-bold text-white mb-4">Impatti</h2>
-      <p className="text-slate-400 leading-relaxed mb-4">
-        Gli <strong className="text-slate-200">impatti</strong> (<code className="text-amber-300/80">impact</code>) 
+      <p className="text-zinc-400 leading-relaxed mb-4">
+        Gli <strong className="text-zinc-200">impatti</strong> (<code className="text-amber-300/80">impact</code>) 
         sono metriche di output derivate dalle variabili. Rappresentano cio' che lo scenario vuole 
         misurare: effetti netti, progressi, gap rispetto a obiettivi.
       </p>
@@ -701,7 +701,7 @@ function SectionSimulazione() {
   return (
     <section>
       <h2 className="text-2xl font-bold text-white mb-4">Simulazione</h2>
-      <p className="text-slate-400 leading-relaxed mb-4">
+      <p className="text-zinc-400 leading-relaxed mb-4">
         Il blocco <code className="text-amber-300/80">simulate</code> configura il motore Monte Carlo.
         Il simulatore esegue migliaia di run, campionando ogni volta valori diversi dalle distribuzioni
         di incertezza, e produce distribuzioni di probabilita' per ogni variabile e impatto.
@@ -742,24 +742,24 @@ function SectionSimulazione() {
       />
 
       <h3 className="text-lg font-semibold text-white mt-8 mb-3">Come leggere i risultati</h3>
-      <p className="text-slate-400 leading-relaxed mb-3">
-        I <strong className="text-slate-200">fan chart</strong> mostrano la distribuzione dei risultati:
+      <p className="text-zinc-400 leading-relaxed mb-3">
+        I <strong className="text-zinc-200">fan chart</strong> mostrano la distribuzione dei risultati:
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-slate-900/40 border border-slate-800/60 rounded-lg p-3 text-center">
+        <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-3 text-center">
           <div className="w-12 h-3 rounded-full bg-blue-400/20 mx-auto mb-2" />
-          <p className="text-xs font-semibold text-slate-300">Banda esterna (P5-P95)</p>
-          <p className="text-[11px] text-slate-500">90% dei risultati cade qui</p>
+          <p className="text-xs font-semibold text-zinc-300">Banda esterna (P5-P95)</p>
+          <p className="text-[11px] text-zinc-500">90% dei risultati cade qui</p>
         </div>
-        <div className="bg-slate-900/40 border border-slate-800/60 rounded-lg p-3 text-center">
+        <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-3 text-center">
           <div className="w-12 h-3 rounded-full bg-blue-400/40 mx-auto mb-2" />
-          <p className="text-xs font-semibold text-slate-300">Banda interna (P25-P75)</p>
-          <p className="text-[11px] text-slate-500">50% dei risultati cade qui</p>
+          <p className="text-xs font-semibold text-zinc-300">Banda interna (P25-P75)</p>
+          <p className="text-[11px] text-zinc-500">50% dei risultati cade qui</p>
         </div>
-        <div className="bg-slate-900/40 border border-slate-800/60 rounded-lg p-3 text-center">
+        <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-3 text-center">
           <div className="w-12 h-1.5 rounded-full bg-blue-400 mx-auto mb-2 mt-0.5" />
-          <p className="text-xs font-semibold text-slate-300">Linea mediana (P50)</p>
-          <p className="text-[11px] text-slate-500">Il risultato piu' probabile</p>
+          <p className="text-xs font-semibold text-zinc-300">Linea mediana (P50)</p>
+          <p className="text-[11px] text-zinc-500">Il risultato piu' probabile</p>
         </div>
       </div>
     </section>
@@ -770,8 +770,8 @@ function SectionDistribuzioni() {
   return (
     <section>
       <h2 className="text-2xl font-bold text-white mb-4">Distribuzioni di incertezza</h2>
-      <p className="text-slate-400 leading-relaxed mb-4">
-        Le distribuzioni sono il modo in cui SDL rappresenta l'<strong className="text-slate-200">incertezza</strong>.
+      <p className="text-zinc-400 leading-relaxed mb-4">
+        Le distribuzioni sono il modo in cui SDL rappresenta l'<strong className="text-zinc-200">incertezza</strong>.
         Ogni assunzione e variabile puo' avere una distribuzione che descrive quanto i valori
         reali potrebbero deviare dalle stime.
       </p>
@@ -790,30 +790,30 @@ function SectionDistribuzioni() {
 
       <h3 className="text-lg font-semibold text-white mt-8 mb-3">Guida alla scelta</h3>
       <div className="space-y-3">
-        <div className="bg-slate-900/40 border border-slate-800/60 rounded-lg p-4">
+        <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-4">
           <p className="text-sm font-semibold text-blue-400 mb-1">normal(±X%)</p>
-          <p className="text-[12px] text-slate-400">La scelta piu' comune. "Il valore potrebbe deviare di ±X% dal previsto".
+          <p className="text-[12px] text-zinc-400">La scelta piu' comune. "Il valore potrebbe deviare di ±X% dal previsto".
             Esempio: <code className="text-amber-300/80">normal(±15%)</code> = potrebbe essere 15% sopra o sotto.</p>
         </div>
-        <div className="bg-slate-900/40 border border-slate-800/60 rounded-lg p-4">
+        <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-4">
           <p className="text-sm font-semibold text-emerald-400 mb-1">beta(a, b)</p>
-          <p className="text-[12px] text-slate-400">Per valori tra 0 e 1 (probabilita', indici normalizzati). 
+          <p className="text-[12px] text-zinc-400">Per valori tra 0 e 1 (probabilita', indici normalizzati). 
             <code className="text-amber-300/80">beta(8, 2)</code> = concentrata verso 1.
             <code className="text-amber-300/80"> beta(2, 8)</code> = concentrata verso 0.</p>
         </div>
-        <div className="bg-slate-900/40 border border-slate-800/60 rounded-lg p-4">
+        <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-4">
           <p className="text-sm font-semibold text-amber-400 mb-1">uniform(min, max)</p>
-          <p className="text-[12px] text-slate-400">Quando non hai idea di quale valore sia piu' probabile nel range.
+          <p className="text-[12px] text-zinc-400">Quando non hai idea di quale valore sia piu' probabile nel range.
             Esempio: <code className="text-amber-300/80">uniform(0.5, 1.5)</code> = equiprobabile tra 0.5 e 1.5.</p>
         </div>
-        <div className="bg-slate-900/40 border border-slate-800/60 rounded-lg p-4">
+        <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-4">
           <p className="text-sm font-semibold text-purple-400 mb-1">triangular(min, moda, max)</p>
-          <p className="text-[12px] text-slate-400">Quando conosci il minimo, il massimo, e il valore piu' probabile.
+          <p className="text-[12px] text-zinc-400">Quando conosci il minimo, il massimo, e il valore piu' probabile.
             Esempio: <code className="text-amber-300/80">triangular(10, 25, 60)</code></p>
         </div>
-        <div className="bg-slate-900/40 border border-slate-800/60 rounded-lg p-4">
+        <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-4">
           <p className="text-sm font-semibold text-red-400 mb-1">lognormal(mu, sigma)</p>
-          <p className="text-[12px] text-slate-400">Per valori che non possono essere negativi e tendono ad avere "code" lunghe a destra.
+          <p className="text-[12px] text-zinc-400">Per valori che non possono essere negativi e tendono ad avere "code" lunghe a destra.
             Esempio: prezzi, costi, tempi.</p>
         </div>
       </div>
@@ -825,7 +825,7 @@ function SectionRiferimento() {
   return (
     <section>
       <h2 className="text-2xl font-bold text-white mb-4">Riferimento rapido</h2>
-      <p className="text-slate-400 leading-relaxed mb-6">
+      <p className="text-zinc-400 leading-relaxed mb-6">
         Un riepilogo di tutti i costrutti SDL con la sintassi essenziale.
       </p>
 
@@ -843,7 +843,7 @@ function SectionRiferimento() {
           'label', 'step', 'format', 'control', 'icon', 'color',
           'category', 'subtitle', 'difficulty',
         ].map(kw => (
-          <span key={kw} className="text-[11px] font-mono bg-slate-800/60 text-amber-300/70 px-2 py-1 rounded-md">{kw}</span>
+          <span key={kw} className="text-[11px] font-mono bg-zinc-800/60 text-amber-300/70 px-2 py-1 rounded-md">{kw}</span>
         ))}
       </div>
 
@@ -894,7 +894,7 @@ function SectionRiferimento() {
       <h3 className="text-lg font-semibold text-white mt-6 mb-3">Valute supportate</h3>
       <div className="flex flex-wrap gap-2">
         {['EUR', 'USD', 'GBP', 'CHF', 'JPY', 'CNY'].map(c => (
-          <span key={c} className="text-xs font-mono bg-slate-800/60 text-slate-300 px-3 py-1.5 rounded-lg">{c}</span>
+          <span key={c} className="text-xs font-mono bg-zinc-800/60 text-zinc-300 px-3 py-1.5 rounded-lg">{c}</span>
         ))}
       </div>
 
@@ -1024,7 +1024,7 @@ export default function GuideView({ initialSection }: GuideViewProps) {
   return (
     <div className="min-h-full animate-fade-in">
       {/* Header */}
-      <header className="relative overflow-hidden border-b border-slate-800">
+      <header className="relative overflow-hidden border-b border-zinc-800">
         <div className="absolute inset-0 bg-gradient-to-r from-amber-600/5 via-transparent to-orange-600/5" />
         <div className="relative max-w-full px-6 lg:px-8 py-8">
           <div className="flex items-center gap-3 mb-3">
@@ -1040,7 +1040,7 @@ export default function GuideView({ initialSection }: GuideViewProps) {
           <h1 className="text-2xl md:text-3xl font-extrabold text-white leading-tight mb-2">
             Guida SDL
           </h1>
-          <p className="text-sm text-slate-400 max-w-2xl leading-relaxed mb-4">
+          <p className="text-sm text-zinc-400 max-w-2xl leading-relaxed mb-4">
             Impara a scrivere scenari in SDL: dalla struttura base fino ai branches e alle simulazioni Monte Carlo.
           </p>
 
@@ -1054,7 +1054,7 @@ export default function GuideView({ initialSection }: GuideViewProps) {
                   flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-lg transition-all
                   ${activeSection === s.id
                     ? 'bg-amber-500/15 text-amber-300 border border-amber-500/20'
-                    : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/60 border border-transparent'}
+                    : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/60 border border-transparent'}
                 `}
               >
                 <span>{s.icon}</span>
@@ -1068,7 +1068,7 @@ export default function GuideView({ initialSection }: GuideViewProps) {
       {/* Content */}
       <div ref={contentRef} className="max-w-4xl mx-auto px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 mb-6 text-[11px] text-slate-600">
+        <div className="flex items-center gap-2 mb-6 text-[11px] text-zinc-600">
           <span>Guida SDL</span>
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -1080,17 +1080,17 @@ export default function GuideView({ initialSection }: GuideViewProps) {
         <SectionComponent />
 
         {/* Prev/Next navigation */}
-        <div className="flex items-center justify-between mt-12 pt-6 border-t border-slate-800/60">
+        <div className="flex items-center justify-between mt-12 pt-6 border-t border-zinc-800/60">
           {prevSection ? (
             <button
               onClick={() => setActiveSection(prevSection.id)}
-              className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors group"
+              className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors group"
             >
-              <svg className="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               <div className="text-left">
-                <p className="text-[10px] text-slate-600">Precedente</p>
+                <p className="text-[10px] text-zinc-600">Precedente</p>
                 <p className="font-medium">{prevSection.icon} {prevSection.label}</p>
               </div>
             </button>
@@ -1099,13 +1099,13 @@ export default function GuideView({ initialSection }: GuideViewProps) {
           {nextSection ? (
             <button
               onClick={() => setActiveSection(nextSection.id)}
-              className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors group"
+              className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors group"
             >
               <div className="text-right">
-                <p className="text-[10px] text-slate-600">Successiva</p>
+                <p className="text-[10px] text-zinc-600">Successiva</p>
                 <p className="font-medium">{nextSection.icon} {nextSection.label}</p>
               </div>
-              <svg className="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>

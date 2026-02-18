@@ -107,8 +107,8 @@ function Shell({
         selected ? 'ring-2 ring-white/30 shadow-xl scale-[1.03]' : 'shadow-lg'
       }`}
       style={{
-        background: 'linear-gradient(145deg, rgba(30,41,59,0.95), rgba(15,23,42,0.95))',
-        border: `1px solid ${selected ? color : 'rgba(51,65,85,0.6)'}`,
+        background: 'linear-gradient(145deg, rgba(39,39,42,0.95), rgba(24,24,27,0.95))',
+        border: `1px solid ${selected ? color : 'rgba(63,63,70,0.6)'}`,
       }}
     >
       <div className="h-1" style={{ background: color }} />
@@ -120,13 +120,13 @@ function Shell({
         <p className="text-[11px] font-semibold text-white leading-tight truncate">{name}</p>
       </div>
       <div className="px-2.5 pb-2.5 space-y-0.5">{children}</div>
-      {hasInput && <Handle type="target" position={Position.Left} className="!w-2.5 !h-2.5 !rounded-full !border-2 !-left-1" style={{ borderColor: color, background: '#0f172a' }} />}
-      {hasOutput && <Handle type="source" position={Position.Right} className="!w-2.5 !h-2.5 !rounded-full !border-2 !-right-1" style={{ borderColor: color, background: '#0f172a' }} />}
+      {hasInput && <Handle type="target" position={Position.Left} className="!w-2.5 !h-2.5 !rounded-full !border-2 !-left-1" style={{ borderColor: color, background: '#18181b' }} />}
+      {hasOutput && <Handle type="source" position={Position.Right} className="!w-2.5 !h-2.5 !rounded-full !border-2 !-right-1" style={{ borderColor: color, background: '#18181b' }} />}
     </div>
   );
 }
 
-function Tag({ text, cls = 'bg-slate-700/60 text-slate-400' }: { text: string; cls?: string }) {
+function Tag({ text, cls = 'bg-zinc-700/60 text-zinc-400' }: { text: string; cls?: string }) {
   return text ? <span className={`inline-block text-[8px] font-medium px-1 py-0.5 rounded ${cls}`}>{text}</span> : null;
 }
 
@@ -140,10 +140,10 @@ const AssumptionNode = memo(({ data, selected }: NodeProps) => (
     )}
     {data.confidence != null && (
       <div className="flex items-center gap-1">
-        <div className="flex-1 h-0.5 bg-slate-700/50 rounded-full overflow-hidden">
+        <div className="flex-1 h-0.5 bg-zinc-700/50 rounded-full overflow-hidden">
           <div className="h-full bg-blue-500/60 rounded-full" style={{ width: `${data.confidence * 100}%` }} />
         </div>
-        <span className="text-[8px] text-slate-500">{(data.confidence * 100).toFixed(0)}%</span>
+        <span className="text-[8px] text-zinc-500">{(data.confidence * 100).toFixed(0)}%</span>
       </div>
     )}
   </Shell>
@@ -152,17 +152,17 @@ const AssumptionNode = memo(({ data, selected }: NodeProps) => (
 const ParameterNodeC = memo(({ data, selected }: NodeProps) => (
   <Shell color="#06b6d4" icon="⚙️" typeLabel="Parameter" name={data.label} selected={selected} hasOutput>
     {data.value && data.value !== '—' && <span className="text-sm font-bold text-cyan-300 font-mono">{data.value}</span>}
-    {data.description && <p className="text-[9px] text-slate-500 truncate">{data.description}</p>}
+    {data.description && <p className="text-[9px] text-zinc-500 truncate">{data.description}</p>}
   </Shell>
 ));
 
 const VariableNodeC = memo(({ data, selected }: NodeProps) => (
   <Shell color={data.color ?? '#10b981'} icon="📈" typeLabel="Variable" name={data.label} selected={selected} hasInput hasOutput>
-    {data.description && <p className="text-[9px] text-slate-500 truncate">{data.description}</p>}
+    {data.description && <p className="text-[9px] text-zinc-500 truncate">{data.description}</p>}
     {data.valueRange && (
       <div className="flex items-baseline gap-1.5">
         <span className="text-[10px] text-emerald-300 font-mono font-bold">{data.valueRange}</span>
-        {data.unit && <span className="text-[8px] text-slate-500">{data.unit}</span>}
+        {data.unit && <span className="text-[8px] text-zinc-500">{data.unit}</span>}
       </div>
     )}
     <div className="flex flex-wrap gap-0.5">
@@ -174,7 +174,7 @@ const VariableNodeC = memo(({ data, selected }: NodeProps) => (
 
 const ImpactNodeC = memo(({ data, selected }: NodeProps) => (
   <Shell color={data.color ?? '#8b5cf6'} icon="🎯" typeLabel="Impact" name={data.label} selected={selected} hasInput>
-    {data.description && <p className="text-[9px] text-slate-500 truncate">{data.description}</p>}
+    {data.description && <p className="text-[9px] text-zinc-500 truncate">{data.description}</p>}
     {data.unit && <Tag text={data.unit} cls="bg-violet-500/15 text-violet-300" />}
   </Shell>
 ));
@@ -183,7 +183,7 @@ const BranchNodeC = memo(({ data, selected }: NodeProps) => (
   <Shell color="#f59e0b" icon="🔀" typeLabel="Branch" name={data.label} selected={selected} hasInput hasOutput>
     {data.probability != null && (
       <div className="flex items-center gap-1.5">
-        <div className="flex-1 h-1 bg-slate-700/60 rounded-full overflow-hidden">
+        <div className="flex-1 h-1 bg-zinc-700/60 rounded-full overflow-hidden">
           <div className="h-full rounded-full bg-amber-500" style={{ width: `${Math.min(data.probability * 100, 100)}%` }} />
         </div>
         <span className="text-[10px] font-semibold text-amber-300">{(data.probability * 100).toFixed(0)}%</span>
@@ -193,7 +193,7 @@ const BranchNodeC = memo(({ data, selected }: NodeProps) => (
 ));
 
 const SimulateNodeC = memo(({ data, selected }: NodeProps) => (
-  <Shell color="#64748b" icon="🎲" typeLabel="Simulate" name="Monte Carlo" selected={selected}>
+  <Shell color="#71717a" icon="🎲" typeLabel="Simulate" name="Monte Carlo" selected={selected}>
     <Tag text="2,000 runs" />
   </Shell>
 ));
@@ -240,9 +240,9 @@ function buildNodeData(decl: Declaration): Record<string, unknown> {
       return { label: b.name, probability: b.probability, color: '#f59e0b' };
     }
     case 'Simulate':
-      return { label: 'Simulation', color: '#64748b' };
+      return { label: 'Simulation', color: '#71717a' };
     default:
-      return { label: (decl as any).name ?? decl.type, color: '#64748b' };
+      return { label: (decl as any).name ?? decl.type, color: '#71717a' };
   }
 }
 
@@ -265,7 +265,7 @@ function astToFlow(scenario: ScenarioNode, causalGraph?: CausalGraphType): { nod
       if (nodes.some(n => n.id === edge.from) && nodes.some(n => n.id === edge.to)) {
         edges.push({
           id: `e-${edge.from}-${edge.to}`, source: edge.from, target: edge.to,
-          animated: true, style: { stroke: 'rgba(100,116,139,0.5)', strokeWidth: 1.5 }, type: 'smoothstep',
+          animated: true, style: { stroke: 'rgba(113,113,122,0.5)', strokeWidth: 1.5 }, type: 'smoothstep',
         });
       }
     }
@@ -308,14 +308,14 @@ export default function CausalGraph({ sdlSource }: CausalGraphProps) {
 
   if (!flow || nodes.length === 0) {
     return (
-      <div className="h-[500px] flex items-center justify-center text-slate-500 text-sm">
+      <div className="h-[500px] flex items-center justify-center text-zinc-500 text-sm">
         Impossibile generare il grafo causale
       </div>
     );
   }
 
   return (
-    <div className="h-[500px] rounded-xl overflow-hidden border border-slate-800">
+    <div className="h-[500px] rounded-xl overflow-hidden border border-zinc-800">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -326,15 +326,15 @@ export default function CausalGraph({ sdlSource }: CausalGraphProps) {
         fitViewOptions={{ padding: 0.3, minZoom: 0.4, maxZoom: 1.2 }}
         minZoom={0.2}
         maxZoom={2}
-        defaultEdgeOptions={{ type: 'smoothstep', animated: true, style: { stroke: 'rgb(71,85,105)', strokeWidth: 2 } }}
+        defaultEdgeOptions={{ type: 'smoothstep', animated: true, style: { stroke: 'rgb(82,82,91)', strokeWidth: 2 } }}
         proOptions={{ hideAttribution: true }}
       >
-        <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="rgb(30,41,59)" />
+        <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="rgb(39,39,42)" />
         <Controls showInteractive={false} position="bottom-left" />
         <MiniMap
           nodeStrokeWidth={3}
-          nodeColor={(n) => n.data?.color ?? '#64748b'}
-          maskColor="rgba(15,23,42,0.8)"
+          nodeColor={(n) => n.data?.color ?? '#71717a'}
+          maskColor="rgba(24,24,27,0.8)"
           position="bottom-right"
           style={{ width: 130, height: 85 }}
         />

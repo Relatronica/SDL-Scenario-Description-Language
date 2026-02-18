@@ -74,13 +74,13 @@ function MiniFanChart({ data, label, color, unit }: {
   if (!data || data.length === 0) return null;
   const gid = `g-editor-${label.replace(/\s/g, '-')}`;
   return (
-    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 animate-fade-in">
+    <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 animate-fade-in">
       <div className="flex items-center gap-2.5 mb-4">
         <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-semibold text-slate-200 truncate">{label}</h3>
+          <h3 className="text-sm font-semibold text-zinc-200 truncate">{label}</h3>
         </div>
-        <span className="ml-auto text-[10px] uppercase tracking-wider text-slate-600 font-medium shrink-0">{unit}</span>
+        <span className="ml-auto text-[10px] uppercase tracking-wider text-zinc-600 font-medium shrink-0">{unit}</span>
       </div>
       <ResponsiveContainer width="100%" height={190}>
         <ComposedChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
@@ -88,13 +88,13 @@ function MiniFanChart({ data, label, color, unit }: {
             <linearGradient id={`${gid}-o`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity={0.1} /><stop offset="100%" stopColor={color} stopOpacity={0.1} /></linearGradient>
             <linearGradient id={`${gid}-i`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity={0.22} /><stop offset="100%" stopColor={color} stopOpacity={0.22} /></linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgb(30,41,59)" />
-          <XAxis dataKey="year" tick={{ fontSize: 11, fill: 'rgb(100,116,139)' }} axisLine={{ stroke: 'rgb(51,65,85)' }} tickLine={false} />
-          <YAxis tick={{ fontSize: 11, fill: 'rgb(100,116,139)' }} axisLine={{ stroke: 'rgb(51,65,85)' }} tickLine={false} tickFormatter={formatValue} width={50} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgb(39,39,42)" />
+          <XAxis dataKey="year" tick={{ fontSize: 11, fill: 'rgb(113,113,122)' }} axisLine={{ stroke: 'rgb(63,63,70)' }} tickLine={false} />
+          <YAxis tick={{ fontSize: 11, fill: 'rgb(113,113,122)' }} axisLine={{ stroke: 'rgb(63,63,70)' }} tickLine={false} tickFormatter={formatValue} width={50} />
           <Tooltip
-            contentStyle={{ backgroundColor: 'rgb(15,23,42)', border: '1px solid rgb(51,65,85)', borderRadius: '12px', fontSize: '12px', color: 'rgb(203,213,225)', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
+            contentStyle={{ backgroundColor: 'rgb(24,24,27)', border: '1px solid rgb(63,63,70)', borderRadius: '12px', fontSize: '12px', color: 'rgb(212,212,216)', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
             formatter={(value: number, name: string) => name === 'p50' ? [formatValue(value), 'Mediana'] : [null, null]}
-            labelFormatter={(l) => `Anno ${l}`} labelStyle={{ color: 'rgb(148,163,184)', fontWeight: 600 }}
+            labelFormatter={(l) => `Anno ${l}`} labelStyle={{ color: 'rgb(161,161,170)', fontWeight: 600 }}
           />
           <Area type="monotone" dataKey="base" stackId="fan" fill="transparent" stroke="none" />
           <Area type="monotone" dataKey="outerLower" stackId="fan" fill={`url(#${gid}-o)`} stroke="none" />
@@ -104,7 +104,7 @@ function MiniFanChart({ data, label, color, unit }: {
           <Line type="monotone" dataKey="p50" stroke={color} strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: color, stroke: 'white', strokeWidth: 2 }} />
         </ComposedChart>
       </ResponsiveContainer>
-      <div className="flex items-center justify-center gap-6 mt-2 text-[10px] text-slate-600">
+      <div className="flex items-center justify-center gap-6 mt-2 text-[10px] text-zinc-600">
         <span className="flex items-center gap-1.5"><span className="w-6 h-1.5 rounded-full" style={{ backgroundColor: color, opacity: 0.2 }} />90%</span>
         <span className="flex items-center gap-1.5"><span className="w-6 h-1.5 rounded-full" style={{ backgroundColor: color, opacity: 0.4 }} />50%</span>
         <span className="flex items-center gap-1.5"><span className="w-6 h-0.5 rounded-full" style={{ backgroundColor: color }} />Mediana</span>
@@ -215,8 +215,8 @@ function ParameterSliders({ params, overrides, onChange, onReset }: {
   const hasOverrides = Object.keys(overrides).length > 0;
 
   return (
-    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden animate-fade-in">
-      <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800/60">
+    <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl overflow-hidden animate-fade-in">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-800/60">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-cyan-500/15 flex items-center justify-center">
             <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -224,32 +224,32 @@ function ParameterSliders({ params, overrides, onChange, onReset }: {
             </svg>
           </div>
           <div>
-            <h3 className="text-xs font-semibold text-slate-200">Controlli interattivi</h3>
-            <p className="text-[10px] text-slate-500">{params.length} parametr{params.length > 1 ? 'i' : 'o'} con slider</p>
+            <h3 className="text-xs font-semibold text-zinc-200">Controlli interattivi</h3>
+            <p className="text-[10px] text-zinc-500">{params.length} parametr{params.length > 1 ? 'i' : 'o'} con slider</p>
           </div>
         </div>
         {hasOverrides && (
-          <button onClick={onReset} className="text-[10px] text-slate-500 hover:text-amber-400 transition-colors px-2 py-1 rounded">
+          <button onClick={onReset} className="text-[10px] text-zinc-500 hover:text-amber-400 transition-colors px-2 py-1 rounded">
             Reset
           </button>
         )}
       </div>
 
-      <div className="divide-y divide-slate-800/40">
+      <div className="divide-y divide-zinc-800/40">
         {params.map(p => {
           const curr = p.name in overrides ? overrides[p.name] : p.value;
           const isModified = curr !== p.value;
           const pct = ((curr - p.min) / (p.max - p.min)) * 100;
 
           return (
-            <div key={p.name} className="group px-5 py-3 hover:bg-slate-800/30 transition-colors">
+            <div key={p.name} className="group px-5 py-3 hover:bg-zinc-800/30 transition-colors">
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-1.5 min-w-0">
                   {p.icon && <span className="text-sm shrink-0">{p.icon}</span>}
-                  <span className="text-xs font-medium text-slate-200 truncate">{p.label}</span>
+                  <span className="text-xs font-medium text-zinc-200 truncate">{p.label}</span>
                   {isModified && <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />}
                 </div>
-                <span className={`text-xs font-mono tabular-nums ${isModified ? 'text-cyan-400 font-semibold' : 'text-slate-400'}`}>
+                <span className={`text-xs font-mono tabular-nums ${isModified ? 'text-cyan-400 font-semibold' : 'text-zinc-400'}`}>
                   {fmtParamVal(curr, p.format, p.unit)}
                 </span>
               </div>
@@ -259,24 +259,24 @@ function ParameterSliders({ params, overrides, onChange, onReset }: {
                   onChange={e => onChange(p.name, parseFloat(e.target.value))}
                   className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
                   style={{
-                    background: `linear-gradient(to right, ${p.color ?? '#06b6d4'} 0%, ${p.color ?? '#06b6d4'} ${pct}%, rgb(51,65,85) ${pct}%, rgb(51,65,85) 100%)`,
+                    background: `linear-gradient(to right, ${p.color ?? '#06b6d4'} 0%, ${p.color ?? '#06b6d4'} ${pct}%, rgb(63,63,70) ${pct}%, rgb(63,63,70) 100%)`,
                     margin: 0,
                   }} />
               </div>
 
               <div className="flex justify-between mt-1">
-                <span className="text-[9px] text-slate-600 font-mono">{smartFmt(p.min)}</span>
+                <span className="text-[9px] text-zinc-600 font-mono">{smartFmt(p.min)}</span>
                 {isModified && (
                   <button onClick={() => onChange(p.name, p.value)}
-                    className="text-[9px] text-slate-600 hover:text-cyan-400 transition-colors">
+                    className="text-[9px] text-zinc-600 hover:text-cyan-400 transition-colors">
                     default: {smartFmt(p.value)}
                   </button>
                 )}
-                <span className="text-[9px] text-slate-600 font-mono">{smartFmt(p.max)}</span>
+                <span className="text-[9px] text-zinc-600 font-mono">{smartFmt(p.max)}</span>
               </div>
 
               {p.description && (
-                <p className="text-[10px] text-slate-600 mt-1 hidden group-hover:block leading-tight">{p.description}</p>
+                <p className="text-[10px] text-zinc-600 mt-1 hidden group-hover:block leading-tight">{p.description}</p>
               )}
             </div>
           );
@@ -284,8 +284,8 @@ function ParameterSliders({ params, overrides, onChange, onReset }: {
       </div>
 
       {hasOverrides && (
-        <div className="px-5 py-2 border-t border-slate-800/60">
-          <p className="text-[10px] text-slate-500 flex items-center gap-1.5">
+        <div className="px-5 py-2 border-t border-zinc-800/60">
+          <p className="text-[10px] text-zinc-500 flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
             Valori modificati — la simulazione si aggiorna automaticamente
           </p>
@@ -312,12 +312,12 @@ function DiagnosticsPanel({ items }: { items: DiagnosticItem[] }) {
   const warnings = items.filter(d => d.severity === 'warning');
 
   return (
-    <div className="border border-slate-800 rounded-xl overflow-hidden animate-fade-in">
-      <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-900/60 border-b border-slate-800/60">
-        <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="border border-zinc-800 rounded-xl overflow-hidden animate-fade-in">
+      <div className="flex items-center gap-3 px-4 py-2.5 bg-zinc-900/60 border-b border-zinc-800/60">
+        <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
         </svg>
-        <span className="text-xs font-semibold text-slate-400">Diagnostica</span>
+        <span className="text-xs font-semibold text-zinc-400">Diagnostica</span>
         {errors.length > 0 && (
           <span className="text-[10px] font-medium text-red-400 bg-red-400/10 px-2 py-0.5 rounded-full">{errors.length} errori</span>
         )}
@@ -327,7 +327,7 @@ function DiagnosticsPanel({ items }: { items: DiagnosticItem[] }) {
       </div>
       <div className="max-h-40 overflow-y-auto">
         {items.map((d, i) => (
-          <div key={i} className="flex items-start gap-2.5 px-4 py-2 border-b border-slate-800/30 last:border-b-0">
+          <div key={i} className="flex items-start gap-2.5 px-4 py-2 border-b border-zinc-800/30 last:border-b-0">
             <span className={`mt-0.5 w-1.5 h-1.5 rounded-full shrink-0 ${
               d.severity === 'error' ? 'bg-red-400' : d.severity === 'warning' ? 'bg-amber-400' : 'bg-blue-400'
             }`} />
@@ -339,7 +339,7 @@ function DiagnosticsPanel({ items }: { items: DiagnosticItem[] }) {
               </p>
             </div>
             {d.line != null && (
-              <span className="text-[10px] text-slate-600 shrink-0">riga {d.line}</span>
+              <span className="text-[10px] text-zinc-600 shrink-0">riga {d.line}</span>
             )}
           </div>
         ))}
@@ -359,13 +359,13 @@ function TemplatePicker({ onSelect }: { onSelect: (t: SDLTemplate) => void }) {
         <button
           key={t.id}
           onClick={() => onSelect(t)}
-          className="group text-left bg-slate-900/60 border border-slate-800 rounded-xl p-4 hover:border-slate-600 hover:bg-slate-900/80 transition-all hover:shadow-lg hover:shadow-black/20 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+          className="group text-left bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 hover:border-zinc-600 hover:bg-zinc-900/80 transition-all hover:shadow-lg hover:shadow-black/20 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
         >
           <div className="flex items-center gap-3 mb-2">
             <span className="text-2xl">{t.icon}</span>
             <p className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors">{t.name}</p>
           </div>
-          <p className="text-[11px] text-slate-500 leading-relaxed">{t.description}</p>
+          <p className="text-[11px] text-zinc-500 leading-relaxed">{t.description}</p>
         </button>
       ))}
     </div>
@@ -398,7 +398,7 @@ function CodeMirrorEditor({ value, onChange }: {
           '&': { height: '100%', fontSize: '13px' },
           '.cm-scroller': { overflow: 'auto', fontFamily: "'JetBrains Mono', monospace" },
           '.cm-content': { padding: '12px 0' },
-          '.cm-gutters': { backgroundColor: 'transparent', borderRight: '1px solid rgb(30,41,59)' },
+          '.cm-gutters': { backgroundColor: 'transparent', borderRight: '1px solid rgb(39,39,42)' },
           '.cm-activeLineGutter': { backgroundColor: 'rgba(59,130,246,0.08)' },
           '.cm-activeLine': { backgroundColor: 'rgba(59,130,246,0.06)' },
         }),
@@ -619,7 +619,7 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
   return (
     <div className="min-h-full animate-fade-in">
       {/* Header */}
-      <header className="relative overflow-hidden border-b border-slate-800">
+      <header className="relative overflow-hidden border-b border-zinc-800">
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/5 via-transparent to-cyan-600/5" />
         <div className="relative max-w-full px-6 lg:px-8 py-8">
           <div className="flex items-center gap-3 mb-3">
@@ -635,14 +635,14 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
           <h1 className="text-2xl md:text-3xl font-extrabold text-white leading-tight mb-2">
             Crea il tuo scenario
           </h1>
-          <p className="text-sm text-slate-400 max-w-2xl leading-relaxed mb-4">
+          <p className="text-sm text-zinc-400 max-w-2xl leading-relaxed mb-4">
             Scrivi codice SDL, verifica la sintassi in tempo reale, e lancia simulazioni Monte Carlo.
           </p>
-          <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
+          <div className="flex flex-wrap items-center gap-3 text-[11px] text-zinc-500">
             {/* Template badge */}
             <button
               onClick={() => setShowTemplates(!showTemplates)}
-              className="flex items-center gap-1.5 bg-slate-800/60 px-3 py-1.5 rounded-full hover:bg-slate-800 transition-colors"
+              className="flex items-center gap-1.5 bg-zinc-800/60 px-3 py-1.5 rounded-full hover:bg-zinc-800 transition-colors"
             >
               <span>{currentTemplate.icon}</span>
               <span>{currentTemplate.name}</span>
@@ -653,12 +653,12 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
 
             {/* Status */}
             {ast ? (
-              <span className="flex items-center gap-1.5 bg-slate-800/60 px-3 py-1.5 rounded-full">
+              <span className="flex items-center gap-1.5 bg-zinc-800/60 px-3 py-1.5 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Parsing OK
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 bg-slate-800/60 px-3 py-1.5 rounded-full">
+              <span className="flex items-center gap-1.5 bg-zinc-800/60 px-3 py-1.5 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
                 Errori nel codice
               </span>
@@ -666,8 +666,8 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
 
             {result && (
               <>
-                <span className="bg-slate-800/60 px-3 py-1.5 rounded-full">{simRuns.toLocaleString()} simulazioni</span>
-                {simElapsed > 0 && <span className="bg-slate-800/60 px-3 py-1.5 rounded-full">{simElapsed}ms</span>}
+                <span className="bg-zinc-800/60 px-3 py-1.5 rounded-full">{simRuns.toLocaleString()} simulazioni</span>
+                {simElapsed > 0 && <span className="bg-zinc-800/60 px-3 py-1.5 rounded-full">{simElapsed}ms</span>}
               </>
             )}
 
@@ -678,7 +678,7 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
               className={`
                 ml-auto flex items-center gap-2 px-5 py-2 text-xs font-semibold rounded-lg transition-all
                 ${!canSimulate || isSimulating
-                  ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                  ? 'bg-zinc-700 text-zinc-500 cursor-not-allowed'
                   : 'bg-gradient-to-r from-emerald-600 to-cyan-600 text-white hover:from-emerald-500 hover:to-cyan-500 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30'}
               `}
             >
@@ -708,19 +708,19 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
 
       {/* Template picker (collapsible) */}
       {showTemplates && (
-        <div className="px-6 lg:px-8 py-5 border-b border-slate-800 bg-slate-950/80 animate-fade-in">
-          <p className="text-xs text-slate-400 mb-3">Scegli un template per iniziare:</p>
+        <div className="px-6 lg:px-8 py-5 border-b border-zinc-800 bg-zinc-950/80 animate-fade-in">
+          <p className="text-xs text-zinc-400 mb-3">Scegli un template per iniziare:</p>
           <TemplatePicker onSelect={handleLoadTemplate} />
         </div>
       )}
 
       <main className="px-6 lg:px-8 py-6">
         {/* Mobile tab switcher */}
-        <div className="flex items-center gap-1 mb-5 lg:hidden bg-slate-900/60 p-1 rounded-lg border border-slate-800 w-fit">
+        <div className="flex items-center gap-1 mb-5 lg:hidden bg-zinc-900/60 p-1 rounded-lg border border-zinc-800 w-fit">
           <button
             onClick={() => setActiveTab('editor')}
             className={`px-4 py-2 text-xs font-semibold rounded-md transition-colors ${
-              activeTab === 'editor' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'
+              activeTab === 'editor' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'
             }`}
           >
             Editor
@@ -728,7 +728,7 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
           <button
             onClick={() => setActiveTab('results')}
             className={`px-4 py-2 text-xs font-semibold rounded-md transition-colors ${
-              activeTab === 'results' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'
+              activeTab === 'results' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'
             }`}
           >
             Risultati {result ? `(${resultCharts.length})` : ''}
@@ -741,12 +741,12 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
             <div className="flex items-center justify-between mb-1">
               <h2 className="text-lg font-bold text-white">Codice SDL</h2>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-slate-600">{source.split('\n').length} righe</span>
+                <span className="text-[10px] text-zinc-600">{source.split('\n').length} righe</span>
               </div>
             </div>
 
             {/* CodeMirror editor */}
-            <div className="border border-slate-800 rounded-2xl overflow-hidden bg-slate-900/40" style={{ height: '480px' }}>
+            <div className="border border-zinc-800 rounded-2xl overflow-hidden bg-zinc-900/40" style={{ height: '480px' }}>
               <CodeMirrorEditor value={source} onChange={handleSourceChange} />
             </div>
 
@@ -780,10 +780,10 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
                     const val = last.distribution.percentiles.get(50) ?? last.distribution.mean;
                     const lastYear = last.date.getFullYear();
                     return (
-                      <div key={name} className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-center">
-                        <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1 truncate">{name.replace(/_/g, ' ')}</p>
+                      <div key={name} className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-3 text-center">
+                        <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1 truncate">{name.replace(/_/g, ' ')}</p>
                         <p className="text-lg font-bold tabular-nums" style={{ color }}>{formatValue(val)}</p>
-                        <p className="text-[10px] text-slate-600 mt-0.5">{lastYear}</p>
+                        <p className="text-[10px] text-zinc-600 mt-0.5">{lastYear}</p>
                       </div>
                     );
                   })}
@@ -807,14 +807,14 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
             ) : (
               <div className="h-80 flex items-center justify-center">
                 <div className="text-center max-w-xs">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800/60 flex items-center justify-center">
-                    <svg className="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-zinc-800/60 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                   </div>
-                  <p className="text-sm text-slate-400 mb-2">Nessun risultato ancora</p>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Scrivi o modifica il codice SDL nell'editor, poi premi <strong className="text-slate-400">Simula</strong> per lanciare 2.000 simulazioni Monte Carlo.
+                  <p className="text-sm text-zinc-400 mb-2">Nessun risultato ancora</p>
+                  <p className="text-[11px] text-zinc-600 leading-relaxed">
+                    Scrivi o modifica il codice SDL nell'editor, poi premi <strong className="text-zinc-400">Simula</strong> per lanciare 2.000 simulazioni Monte Carlo.
                   </p>
                 </div>
               </div>
