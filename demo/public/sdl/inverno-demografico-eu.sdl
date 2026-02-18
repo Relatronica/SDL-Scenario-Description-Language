@@ -8,7 +8,7 @@ scenario "Inverno Demografico Europeo 2025-2060" {
   tags: ["europa", "demografia", "pensioni", "migrazione", "fiscale"]
   subtitle: "Popolazione, pensioni e forza lavoro EU 2025-2060"
   category: societa
-  icon: "🧓"
+  icon: "user"
   color: "#8b5cf6"
   difficulty: intermedio
 
@@ -64,7 +64,7 @@ scenario "Inverno Demografico Europeo 2025-2060" {
     description: "Popolazione totale EU-27"
     unit: "milioni"
     label: "Popolazione EU"
-    icon: "👥"
+    icon: "users"
     color: "#3b82f6"
     2025: 448
     2030: 446
@@ -83,7 +83,7 @@ scenario "Inverno Demografico Europeo 2025-2060" {
     description: "Popolazione in età lavorativa (15-64)"
     unit: "milioni"
     label: "Forza lavoro"
-    icon: "👷"
+    icon: "hard-hat"
     color: "#10b981"
     2025: 290
     2030: 280
@@ -102,7 +102,7 @@ scenario "Inverno Demografico Europeo 2025-2060" {
     description: "Rapporto di dipendenza anziani (65+ / 15-64)"
     unit: "percentuale"
     label: "Indice dipendenza"
-    icon: "⚖"
+    icon: "scale"
     color: "#ef4444"
     2025: 33
     2030: 37
@@ -121,7 +121,7 @@ scenario "Inverno Demografico Europeo 2025-2060" {
     description: "Spesa pensionistica pubblica (% PIL)"
     unit: "percentuale PIL"
     label: "Spesa pensioni / PIL"
-    icon: "💰"
+    icon: "coins"
     color: "#f59e0b"
     2025: 12.5
     2030: 13.2
@@ -140,7 +140,7 @@ scenario "Inverno Demografico Europeo 2025-2060" {
     description: "Tasso di crescita reale PIL EU-27"
     unit: "percentuale"
     label: "Crescita PIL"
-    icon: "📈"
+    icon: "trending-up"
     color: "#10b981"
     2025: 1.4
     2030: 1.1
@@ -159,7 +159,7 @@ scenario "Inverno Demografico Europeo 2025-2060" {
     description: "Indice carenza manodopera (2025=100)"
     unit: "indice"
     label: "Carenza manodopera"
-    icon: "🔍"
+    icon: "search"
     color: "#8b5cf6"
     2025: 100
     2030: 115
@@ -178,7 +178,7 @@ scenario "Inverno Demografico Europeo 2025-2060" {
     description: "Aumento spesa pensionistica rispetto al 2025"
     unit: "punti % PIL"
     label: "Pressione aggiuntiva"
-    icon: "↑"
+    icon: "arrow-up"
     color: "#ef4444"
     derives_from: pension_expenditure
     formula: pension_expenditure - 12.5
@@ -188,7 +188,7 @@ scenario "Inverno Demografico Europeo 2025-2060" {
     description: "Calo cumulativo della popolazione in età lavorativa"
     unit: "milioni"
     label: "Declino forza lavoro"
-    icon: "↓"
+    icon: "arrow-down"
     color: "#ef4444"
     derives_from: working_age_pop
     formula: 290 - working_age_pop

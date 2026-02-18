@@ -10,6 +10,7 @@ import {
 } from 'recharts';
 import type { FanChartPoint } from '../lib/simulation';
 import { formatValue } from '../lib/simulation';
+import { SdlIcon } from '../lib/icons';
 
 export interface FanChartDisplay {
   id: string;
@@ -26,7 +27,7 @@ export default function FanChart({ data, display }: { data: FanChartPoint[]; dis
   return (
     <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 animate-fade-in">
       <div className="flex items-center gap-2.5 mb-4">
-        <span className="text-lg" aria-hidden>{display.icon}</span>
+        <span aria-hidden style={{ color: display.color }}><SdlIcon name={display.icon} size={20} /></span>
         <div>
           <h3 className="text-sm font-semibold text-zinc-200">{display.label}</h3>
           <p className="text-[11px] text-zinc-500">{display.description}</p>

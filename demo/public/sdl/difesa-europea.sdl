@@ -8,7 +8,7 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
   tags: ["difesa", "europa", "geopolitica", "NATO", "industria"]
   subtitle: "NATO, industria e deterrenza 2025-2038"
   category: politica
-  icon: "🛡"
+  icon: "shield"
   color: "#ef4444"
   difficulty: avanzato
 
@@ -64,7 +64,7 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
     description: "Spesa difesa media UE (% PIL)"
     unit: "percentuale PIL"
     label: "Spesa difesa"
-    icon: "💰"
+    icon: "coins"
     color: "#3b82f6"
     2025: 1.9
     2027: 2.1
@@ -82,7 +82,7 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
     description: "Capacità produzione munizioni UE (2025=100)"
     unit: "indice"
     label: "Produzione munizioni"
-    icon: "🏭"
+    icon: "factory"
     color: "#f59e0b"
     2025: 100
     2027: 130
@@ -100,7 +100,7 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
     description: "Dipendenza da equipaggiamento USA (% procurement)"
     unit: "percentuale"
     label: "Dipendenza USA"
-    icon: "🇺🇸"
+    icon: "flag"
     color: "#ef4444"
     2025: 55
     2027: 52
@@ -118,7 +118,7 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
     description: "Capacità di schieramento rapido (truppe in 30 giorni)"
     unit: "migliaia"
     label: "Schieramento rapido"
-    icon: "⚔"
+    icon: "swords"
     color: "#10b981"
     2025: 5
     2027: 12
@@ -136,7 +136,7 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
     description: "Prontezza cyber-difesa collettiva UE (0-100)"
     unit: "indice"
     label: "Cyber difesa"
-    icon: "🔒"
+    icon: "lock"
     color: "#8b5cf6"
     2025: 42
     2027: 50
@@ -154,7 +154,7 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
     description: "Occupazione industria difesa UE"
     unit: "migliaia"
     label: "Occupazione difesa"
-    icon: "👷"
+    icon: "hard-hat"
     color: "#10b981"
     2025: 470
     2027: 510
@@ -172,7 +172,7 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
     description: "Indice composito autonomia difensiva UE"
     unit: "indice"
     label: "Autonomia strategica"
-    icon: "🇪🇺"
+    icon: "flag"
     color: "#3b82f6"
     derives_from: us_dependency, rapid_deployment, cyber_readiness
     formula: ((100 - us_dependency) * 0.33) + (rapid_deployment / 80 * 33) + (cyber_readiness * 0.34)
@@ -182,7 +182,7 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
     description: "Indice credibilità di deterrenza UE"
     unit: "indice"
     label: "Credibilità deterrenza"
-    icon: "⚡"
+    icon: "zap"
     color: "#ef4444"
     derives_from: defense_spending, ammo_production, rapid_deployment
     formula: (defense_spending / 3 * 30) + (ammo_production / 500 * 40) + (rapid_deployment / 80 * 30)

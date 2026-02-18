@@ -15,7 +15,7 @@ scenario "EU AI Act — Rischio Compliance" {
   tags: ["ai-act", "gdpr", "compliance", "regolamentazione", "europa"]
   subtitle: "Costi, sanzioni e fiducia nell'era dell'AI Act"
   category: regolamentazione
-  icon: "⚖️"
+  icon: "scale"
   color: "#6366f1"
   difficulty: avanzato
 
@@ -91,7 +91,7 @@ scenario "EU AI Act — Rischio Compliance" {
     description: "Costo medio annuo di compliance AI Act per azienda (>250 dip.)"
     unit: "milioni EUR"
     label: "Costo compliance"
-    icon: "💶"
+    icon: "banknote"
     color: "#f59e0b"
 
     2025: 0.8
@@ -113,7 +113,7 @@ scenario "EU AI Act — Rischio Compliance" {
     description: "Percentuale di imprese UE conformi all'AI Act"
     unit: "percentuale"
     label: "Aziende conformi"
-    icon: "✓"
+    icon: "check"
     color: "#10b981"
 
     2025: 8
@@ -135,7 +135,7 @@ scenario "EU AI Act — Rischio Compliance" {
     description: "Sanzioni AI Act emesse (cumulativo UE)"
     unit: "numero"
     label: "Sanzioni emesse"
-    icon: "⚠"
+    icon: "alert-triangle"
     color: "#ef4444"
 
     2025: 0
@@ -156,7 +156,7 @@ scenario "EU AI Act — Rischio Compliance" {
     description: "Volume totale sanzioni AI Act (cumulativo)"
     unit: "milioni EUR"
     label: "Volume sanzioni"
-    icon: "💰"
+    icon: "coins"
     color: "#dc2626"
 
     2025: 0
@@ -177,7 +177,7 @@ scenario "EU AI Act — Rischio Compliance" {
     description: "Sistemi AI proibiti (Art. 5) rimossi dal mercato UE"
     unit: "sistemi"
     label: "Sistemi vietati rimossi"
-    icon: "🚫"
+    icon: "ban"
     color: "#7c3aed"
 
     2025: 12
@@ -198,7 +198,7 @@ scenario "EU AI Act — Rischio Compliance" {
     description: "Fiducia pubblica nei sistemi AI nell'UE (0-100)"
     unit: "indice"
     label: "Fiducia pubblica AI"
-    icon: "🤝"
+    icon: "handshake"
     color: "#3b82f6"
 
     2025: 38
@@ -220,7 +220,7 @@ scenario "EU AI Act — Rischio Compliance" {
     description: "PMI che abbandonano il mercato AI per costi compliance"
     unit: "percentuale"
     label: "PMI uscite dal mercato"
-    icon: "📉"
+    icon: "trending-down"
     color: "#78716c"
 
     2025: 2
@@ -243,7 +243,7 @@ scenario "EU AI Act — Rischio Compliance" {
     description: "Gap di conformità: aziende non ancora conformi"
     unit: "percentuale"
     label: "Gap conformità"
-    icon: "⚡"
+    icon: "zap"
     color: "#f97316"
     derives_from: enterprises_compliant
     formula: 100 - enterprises_compliant
@@ -253,7 +253,7 @@ scenario "EU AI Act — Rischio Compliance" {
     description: "Costo totale compliance per l'ecosistema UE (~50k aziende >250 dip.)"
     unit: "miliardi EUR"
     label: "Costo totale UE"
-    icon: "💶"
+    icon: "banknote"
     color: "#eab308"
     derives_from: compliance_cost
     formula: compliance_cost * 50000 / 1000
@@ -263,7 +263,7 @@ scenario "EU AI Act — Rischio Compliance" {
     description: "Variazione fiducia pubblica rispetto al 2025"
     unit: "punti"
     label: "Δ fiducia pubblica"
-    icon: "📊"
+    icon: "bar-chart"
     color: "#2563eb"
     derives_from: public_trust
     formula: public_trust - 38

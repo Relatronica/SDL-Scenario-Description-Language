@@ -16,7 +16,7 @@ scenario "AI e Scoperta Farmaci 2025-2042" {
   tags: ["ai", "salute", "farmaci", "pharma", "diagnostica"]
   subtitle: "Pharma, diagnostica e malattie rare 2025-2042"
   category: tecnologia
-  icon: "💊"
+  icon: "pill"
   color: "#10b981"
   difficulty: intermedio
 
@@ -76,7 +76,7 @@ scenario "AI e Scoperta Farmaci 2025-2042" {
     label: "Farmaci AI approvati"
     description: "Farmaci approvati con ruolo sostanziale dell'AI (FDA+EMA/anno)"
     unit: "farmaci"
-    icon: "💊"
+    icon: "pill"
     color: "#10b981"
 
     2025: 8
@@ -96,7 +96,7 @@ scenario "AI e Scoperta Farmaci 2025-2042" {
     label: "Tempo di sviluppo"
     description: "Tempo medio da candidato preclinico ad approvazione"
     unit: "anni"
-    icon: "⏱"
+    icon: "timer"
     color: "#3b82f6"
 
     2025: 10.5
@@ -116,7 +116,7 @@ scenario "AI e Scoperta Farmaci 2025-2042" {
     label: "Costo per farmaco"
     description: "Costo medio di sviluppo di un nuovo farmaco"
     unit: "miliardi USD"
-    icon: "💰"
+    icon: "coins"
     color: "#f59e0b"
 
     2025: 2.3B USD
@@ -136,7 +136,7 @@ scenario "AI e Scoperta Farmaci 2025-2042" {
     label: "Successo clinico"
     description: "Tasso di successo Fase I -> approvazione per farmaci AI-assistiti"
     unit: "%"
-    icon: "📊"
+    icon: "bar-chart"
     color: "#8b5cf6"
 
     2025: 12%
@@ -156,7 +156,7 @@ scenario "AI e Scoperta Farmaci 2025-2042" {
     label: "Candidati malattie rare"
     description: "Candidati farmaci AI per malattie rare (cumulativo)"
     unit: "candidati"
-    icon: "🧬"
+    icon: "dna"
     color: "#ef4444"
 
     2025: 120
@@ -178,7 +178,7 @@ scenario "AI e Scoperta Farmaci 2025-2042" {
     label: "Anni risparmiati"
     description: "Anni risparmiati per farmaco rispetto al baseline 2025"
     unit: "anni"
-    icon: "⚡"
+    icon: "zap"
     color: "#06b6d4"
     derives_from: tempo_approvazione
     formula: 10.5 - tempo_approvazione
@@ -188,7 +188,7 @@ scenario "AI e Scoperta Farmaci 2025-2042" {
     label: "Indice malattie rare"
     description: "Percentuale delle 7000 malattie rare con candidati AI"
     unit: "%"
-    icon: "🎯"
+    icon: "target"
     color: "#10b981"
     derives_from: candidati_malattie_rare
     formula: candidati_malattie_rare / 7000 * 100

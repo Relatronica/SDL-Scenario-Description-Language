@@ -25,6 +25,8 @@ import { simulate } from '@sdl/engine/monte-carlo';
 import type { SimulationResult, ScenarioNode, ParameterNode, ExpressionNode } from '@sdl/core/types';
 import { EDITOR_TEMPLATES, type SDLTemplate } from './templates';
 import { extractFanData, formatValue, type FanChartPoint } from '../lib/simulation';
+import { SdlIcon } from '../lib/icons';
+import { PenLine } from 'lucide-react';
 
 // Colors for auto-generated variable charts
 const CHART_COLORS = [
@@ -213,7 +215,7 @@ function ParameterSliders({ params, overrides, onChange, onReset }: {
             <div key={p.name} className="group px-5 py-3 hover:bg-zinc-800/30 transition-colors">
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  {p.icon && <span className="text-sm shrink-0">{p.icon}</span>}
+                  {p.icon && <span className="shrink-0" style={{ color: p.color ?? '#06b6d4' }}><SdlIcon name={p.icon} size={14} /></span>}
                   <span className="text-xs font-medium text-zinc-200 truncate">{p.label}</span>
                   {isModified && <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />}
                 </div>
@@ -330,7 +332,9 @@ function TemplatePicker({ onSelect }: { onSelect: (t: SDLTemplate) => void }) {
           className="group text-left bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 hover:border-zinc-600 hover:bg-zinc-900/80 transition-all hover:shadow-lg hover:shadow-black/20 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
         >
           <div className="flex items-center gap-3 mb-2">
-            <span className="text-2xl">{t.icon}</span>
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-zinc-800/60 text-zinc-400 group-hover:text-emerald-400 transition-colors shrink-0">
+              <SdlIcon name={t.icon} size={20} strokeWidth={1.8} />
+            </div>
             <p className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors">{t.name}</p>
           </div>
           <p className="text-[11px] text-zinc-500 leading-relaxed">{t.description}</p>
@@ -362,10 +366,12 @@ function CodeMirrorEditor({ value, onChange }: {
         basicSetup,
         javascript(),
         oneDark,
+        CMEditorView.lineWrapping,
         CMEditorView.theme({
           '&': { height: '100%', fontSize: '13px' },
           '.cm-scroller': { overflow: 'auto', fontFamily: "'JetBrains Mono', monospace" },
           '.cm-content': { padding: '12px 0' },
+          '.cm-line': { paddingRight: '16px' },
           '.cm-gutters': { backgroundColor: 'transparent', borderRight: '1px solid rgb(39,39,42)' },
           '.cm-activeLineGutter': { backgroundColor: 'rgba(59,130,246,0.08)' },
           '.cm-activeLine': { backgroundColor: 'rgba(59,130,246,0.06)' },
@@ -610,8 +616,8 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/5 via-transparent to-cyan-600/5" />
         <div className="relative max-w-full px-6 lg:px-8 py-8">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center text-2xl bg-emerald-500/10">
-              &#9998;
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-emerald-500/10 text-emerald-400">
+              <PenLine size={22} strokeWidth={1.8} />
             </div>
             <div>
               <span className="text-[10px] uppercase tracking-widest font-medium px-2 py-0.5 rounded-full text-emerald-400 bg-emerald-400/10">
@@ -631,7 +637,7 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
               onClick={() => setShowTemplates(!showTemplates)}
               className="flex items-center gap-1.5 bg-zinc-800/60 px-3 py-1.5 rounded-full hover:bg-zinc-800 transition-colors"
             >
-              <span>{currentTemplate.icon}</span>
+              <SdlIcon name={currentTemplate.icon} size={13} />
               <span>{currentTemplate.name}</span>
               <svg className={`w-3 h-3 transition-transform ${showTemplates ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -722,9 +728,9 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
           </button>
         </div>
 
-        <div className={`grid grid-cols-1 gap-6 ${params.length > 0 ? 'lg:grid-cols-12' : 'lg:grid-cols-12'}`}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Editor panel */}
-          <div className={`${params.length > 0 ? 'lg:col-span-5' : 'lg:col-span-6'} space-y-4 ${activeTab !== 'editor' ? 'hidden lg:block' : ''}`}>
+          <div className={`space-y-4 ${activeTab !== 'editor' ? 'hidden lg:block' : ''}`}>
             <div className="flex items-center justify-between mb-1">
               <h2 className="text-lg font-bold text-white">Codice SDL</h2>
               <div className="flex items-center gap-2">
@@ -733,7 +739,7 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
             </div>
 
             {/* CodeMirror editor */}
-            <div className="border border-zinc-800 rounded-2xl overflow-hidden bg-zinc-900/40" style={{ height: '480px' }}>
+            <div className="border border-zinc-800 rounded-2xl overflow-hidden bg-zinc-900/40" style={{ height: '560px' }}>
               <CodeMirrorEditor value={source} onChange={handleSourceChange} />
             </div>
 
@@ -745,7 +751,7 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
           </div>
 
           {/* Results panel */}
-          <div className={`${params.length > 0 ? 'lg:col-span-7' : 'lg:col-span-6'} space-y-5 ${activeTab !== 'results' ? 'hidden lg:block' : ''}`}>
+          <div className={`space-y-5 ${activeTab !== 'results' ? 'hidden lg:block' : ''}`}>
             <div className="flex items-center justify-between mb-1">
               <h2 className="text-lg font-bold text-white">Risultati simulazione</h2>
               {isSimulating && (

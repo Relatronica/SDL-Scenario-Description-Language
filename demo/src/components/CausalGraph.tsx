@@ -24,6 +24,7 @@ import 'reactflow/dist/style.css';
 import dagre from '@dagrejs/dagre';
 import { parse } from '@sdl/core/parser';
 import { validate } from '@sdl/core/validator';
+import { Lightbulb, Settings, TrendingUp, Target, GitBranch, Dices } from 'lucide-react';
 import type {
   ScenarioNode,
   Declaration,
@@ -98,7 +99,7 @@ function modelStr(m: ModelExpression | undefined): string {
 function Shell({
   color, icon, typeLabel, name, selected, children, hasInput = false, hasOutput = false,
 }: {
-  color: string; icon: string; typeLabel: string; name: string;
+  color: string; icon: React.ReactNode; typeLabel: string; name: string;
   selected?: boolean; children: React.ReactNode; hasInput?: boolean; hasOutput?: boolean;
 }) {
   return (
@@ -113,7 +114,7 @@ function Shell({
     >
       <div className="h-1" style={{ background: color }} />
       <div className="flex items-center gap-1.5 px-2.5 pt-1.5 pb-0.5">
-        <span className="text-xs">{icon}</span>
+        <span className="opacity-70" style={{ color }}>{icon}</span>
         <span className="text-[9px] font-semibold uppercase tracking-widest opacity-60" style={{ color }}>{typeLabel}</span>
       </div>
       <div className="px-2.5 pb-0.5">
@@ -131,7 +132,7 @@ function Tag({ text, cls = 'bg-zinc-700/60 text-zinc-400' }: { text: string; cls
 }
 
 const AssumptionNode = memo(({ data, selected }: NodeProps) => (
-  <Shell color="#3b82f6" icon="💡" typeLabel="Assumption" name={data.label} selected={selected} hasOutput>
+  <Shell color="#3b82f6" icon={<Lightbulb size={12} />} typeLabel="Assumption" name={data.label} selected={selected} hasOutput>
     {data.value && data.value !== '—' && (
       <div className="flex items-baseline gap-1.5">
         <span className="text-sm font-bold text-blue-300 font-mono">{data.value}</span>
@@ -150,14 +151,14 @@ const AssumptionNode = memo(({ data, selected }: NodeProps) => (
 ));
 
 const ParameterNodeC = memo(({ data, selected }: NodeProps) => (
-  <Shell color="#06b6d4" icon="⚙️" typeLabel="Parameter" name={data.label} selected={selected} hasOutput>
+  <Shell color="#06b6d4" icon={<Settings size={12} />} typeLabel="Parameter" name={data.label} selected={selected} hasOutput>
     {data.value && data.value !== '—' && <span className="text-sm font-bold text-cyan-300 font-mono">{data.value}</span>}
     {data.description && <p className="text-[9px] text-zinc-500 truncate">{data.description}</p>}
   </Shell>
 ));
 
 const VariableNodeC = memo(({ data, selected }: NodeProps) => (
-  <Shell color={data.color ?? '#10b981'} icon="📈" typeLabel="Variable" name={data.label} selected={selected} hasInput hasOutput>
+  <Shell color={data.color ?? '#10b981'} icon={<TrendingUp size={12} />} typeLabel="Variable" name={data.label} selected={selected} hasInput hasOutput>
     {data.description && <p className="text-[9px] text-zinc-500 truncate">{data.description}</p>}
     {data.valueRange && (
       <div className="flex items-baseline gap-1.5">
@@ -173,14 +174,14 @@ const VariableNodeC = memo(({ data, selected }: NodeProps) => (
 ));
 
 const ImpactNodeC = memo(({ data, selected }: NodeProps) => (
-  <Shell color={data.color ?? '#8b5cf6'} icon="🎯" typeLabel="Impact" name={data.label} selected={selected} hasInput>
+  <Shell color={data.color ?? '#8b5cf6'} icon={<Target size={12} />} typeLabel="Impact" name={data.label} selected={selected} hasInput>
     {data.description && <p className="text-[9px] text-zinc-500 truncate">{data.description}</p>}
     {data.unit && <Tag text={data.unit} cls="bg-violet-500/15 text-violet-300" />}
   </Shell>
 ));
 
 const BranchNodeC = memo(({ data, selected }: NodeProps) => (
-  <Shell color="#f59e0b" icon="🔀" typeLabel="Branch" name={data.label} selected={selected} hasInput hasOutput>
+  <Shell color="#f59e0b" icon={<GitBranch size={12} />} typeLabel="Branch" name={data.label} selected={selected} hasInput hasOutput>
     {data.probability != null && (
       <div className="flex items-center gap-1.5">
         <div className="flex-1 h-1 bg-zinc-700/60 rounded-full overflow-hidden">
@@ -193,7 +194,7 @@ const BranchNodeC = memo(({ data, selected }: NodeProps) => (
 ));
 
 const SimulateNodeC = memo(({ data, selected }: NodeProps) => (
-  <Shell color="#71717a" icon="🎲" typeLabel="Simulate" name="Monte Carlo" selected={selected}>
+  <Shell color="#71717a" icon={<Dices size={12} />} typeLabel="Simulate" name="Monte Carlo" selected={selected}>
     <Tag text="2,000 runs" />
   </Shell>
 ));

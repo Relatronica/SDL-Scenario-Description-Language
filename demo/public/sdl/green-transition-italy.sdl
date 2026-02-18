@@ -17,7 +17,7 @@ scenario "Transizione Verde Italia 2040" {
   tags: ["energia", "italia", "clima", "occupazione"]
   subtitle: "Rinnovabili, emissioni e costi verso la neutralità carbonica"
   category: ambiente
-  icon: "⚡"
+  icon: "zap"
   color: "#10b981"
   difficulty: intermedio
 
@@ -103,7 +103,7 @@ scenario "Transizione Verde Italia 2040" {
     description: "Quota di rinnovabili nel mix energetico italiano"
     unit: "%"
     label: "Quota rinnovabili"
-    icon: "☀"
+    icon: "sun"
     color: "#10b981"
 
     2025: 22%
@@ -124,7 +124,7 @@ scenario "Transizione Verde Italia 2040" {
     description: "Capacità fotovoltaica installata"
     unit: "GW"
     label: "Capacità solare"
-    icon: "🌞"
+    icon: "sun"
     color: "#f59e0b"
 
     2025: 30
@@ -142,7 +142,7 @@ scenario "Transizione Verde Italia 2040" {
     description: "Capacità eolica installata (onshore + offshore)"
     unit: "GW"
     label: "Capacità eolica"
-    icon: "💨"
+    icon: "wind"
     color: "#3b82f6"
 
     2025: 13
@@ -160,7 +160,7 @@ scenario "Transizione Verde Italia 2040" {
     description: "Lavoratori impiegati nel settore combustibili fossili"
     unit: "migliaia"
     label: "Occupazione fossile"
-    icon: "⛏"
+    icon: "hammer"
     color: "#ef4444"
 
     2025: 45
@@ -178,7 +178,7 @@ scenario "Transizione Verde Italia 2040" {
     description: "Lavoratori impiegati nel settore energia verde"
     unit: "migliaia"
     label: "Occupazione verde"
-    icon: "♻"
+    icon: "recycle"
     color: "#10b981"
 
     2025: 80
@@ -196,7 +196,7 @@ scenario "Transizione Verde Italia 2040" {
     description: "Emissioni annuali di CO₂"
     unit: "MtCO2"
     label: "Emissioni CO₂"
-    icon: "☁"
+    icon: "cloud"
     color: "#ef4444"
 
     2025: 320
@@ -214,7 +214,7 @@ scenario "Transizione Verde Italia 2040" {
     description: "Indice costo energia al consumo (2025 = 100)"
     unit: "indice"
     label: "Costo energia"
-    icon: "🏠"
+    icon: "home"
     color: "#f59e0b"
 
     2025: 100
@@ -288,7 +288,7 @@ scenario "Transizione Verde Italia 2040" {
     description: "Variazione netta occupazione dalla transizione energetica"
     unit: "migliaia"
     label: "Bilancio netto occupazione"
-    icon: "⊕"
+    icon: "circle-plus"
     color: "#3b82f6"
     derives_from: green_employment, fossil_employment
     formula: green_employment - fossil_employment
@@ -298,7 +298,7 @@ scenario "Transizione Verde Italia 2040" {
     description: "Progresso verso la neutralità carbonica (% riduzione da 2025)"
     unit: "%"
     label: "Progresso carbon neutrality"
-    icon: "🎯"
+    icon: "target"
     color: "#10b981"
     derives_from: co2_emissions
     formula: (320 - co2_emissions) / 320 * 100
@@ -308,7 +308,7 @@ scenario "Transizione Verde Italia 2040" {
     description: "Indice accessibilità energia (inverso del costo)"
     unit: "indice"
     label: "Accessibilità energia"
-    icon: "💰"
+    icon: "coins"
     color: "#f59e0b"
     derives_from: energy_cost_index
     formula: 10000 / energy_cost_index

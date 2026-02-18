@@ -16,7 +16,7 @@ scenario "Euro Digitale — Adozione CBDC 2025-2032" {
   tags: ["finanza", "cbdc", "eurozona", "banche", "inclusione"]
   subtitle: "Adozione CBDC, banche e inclusione 2025-2032"
   category: economia
-  icon: "💶"
+  icon: "banknote"
   color: "#f59e0b"
   difficulty: base
 
@@ -76,7 +76,7 @@ scenario "Euro Digitale — Adozione CBDC 2025-2032" {
     label: "Adozione wallet"
     description: "Percentuale adulti eurozona con wallet Euro Digitale"
     unit: "%"
-    icon: "📱"
+    icon: "smartphone"
     color: "#3b82f6"
 
     2025: 0%
@@ -97,7 +97,7 @@ scenario "Euro Digitale — Adozione CBDC 2025-2032" {
     label: "Transazioni giornaliere"
     description: "Transazioni giornaliere medie in milioni"
     unit: "milioni"
-    icon: "💳"
+    icon: "credit-card"
     color: "#10b981"
 
     2025: 0
@@ -118,7 +118,7 @@ scenario "Euro Digitale — Adozione CBDC 2025-2032" {
     label: "Filiali bancarie"
     description: "Filiali bancarie nell'eurozona (migliaia)"
     unit: "migliaia"
-    icon: "🏦"
+    icon: "landmark"
     color: "#ef4444"
 
     2025: 125
@@ -139,7 +139,7 @@ scenario "Euro Digitale — Adozione CBDC 2025-2032" {
     label: "Shift depositi"
     description: "Depositi retail migrati da banche a CBDC (%)"
     unit: "%"
-    icon: "↗"
+    icon: "trending-up"
     color: "#f59e0b"
 
     2025: 0%
@@ -160,7 +160,7 @@ scenario "Euro Digitale — Adozione CBDC 2025-2032" {
     label: "Inclusione finanziaria"
     description: "Indice inclusione finanziaria (0-100)"
     unit: "indice"
-    icon: "🤝"
+    icon: "handshake"
     color: "#8b5cf6"
 
     2025: 62
@@ -183,7 +183,7 @@ scenario "Euro Digitale — Adozione CBDC 2025-2032" {
     label: "Disruption bancaria"
     description: "Indice di disruption del settore bancario"
     unit: "indice"
-    icon: "⚡"
+    icon: "zap"
     color: "#ef4444"
     derives_from: bank_deposits_shift, bank_branch_count
     formula: (bank_deposits_shift * 10) + ((125 - bank_branch_count) / 125 * 100)
@@ -193,7 +193,7 @@ scenario "Euro Digitale — Adozione CBDC 2025-2032" {
     label: "Guadagno inclusione"
     description: "Guadagno netto in inclusione finanziaria"
     unit: "punti"
-    icon: "↑"
+    icon: "arrow-up"
     color: "#10b981"
     derives_from: financial_inclusion
     formula: financial_inclusion - 62

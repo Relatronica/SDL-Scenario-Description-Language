@@ -15,7 +15,7 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
   tags: ["africa", "urbanizzazione", "leapfrog", "fintech", "solare"]
   subtitle: "Megacities, leapfrog e crescita 2025-2055"
   category: economia
-  icon: "🌍"
+  icon: "globe"
   color: "#f59e0b"
   difficulty: intermedio
 
@@ -75,7 +75,7 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
     description: "Popolazione urbana Africa sub-sahariana"
     unit: "milioni"
     label: "Popolazione urbana"
-    icon: "🏙"
+    icon: "building"
     color: "#3b82f6"
 
     2025: 590
@@ -95,7 +95,7 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
     description: "Account mobile money attivi"
     unit: "milioni"
     label: "Mobile money"
-    icon: "📱"
+    icon: "smartphone"
     color: "#10b981"
 
     2025: 220
@@ -115,7 +115,7 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
     description: "Capacità solare off-grid installata"
     unit: "GW"
     label: "Solare off-grid"
-    icon: "☀"
+    icon: "sun"
     color: "#f59e0b"
 
     2025: 6
@@ -135,7 +135,7 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
     description: "PIL pro capite medio (PPP)"
     unit: "USD"
     label: "PIL pro capite"
-    icon: "💰"
+    icon: "coins"
     color: "#8b5cf6"
 
     2025: 3800
@@ -155,7 +155,7 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
     description: "Tasso di elettrificazione"
     unit: "percentuale"
     label: "Elettrificazione"
-    icon: "⚡"
+    icon: "zap"
     color: "#10b981"
 
     2025: 50
@@ -175,7 +175,7 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
     description: "Gap infrastrutturale (100=massimo deficit)"
     unit: "indice"
     label: "Gap infrastrutturale"
-    icon: "🏗"
+    icon: "building"
     color: "#ef4444"
 
     2025: 78
@@ -197,7 +197,7 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
     description: "Progresso leapfrog digitale (fintech + energia + connettività)"
     unit: "indice"
     label: "Indice leapfrog"
-    icon: "🚀"
+    icon: "rocket"
     color: "#3b82f6"
     derives_from: mobile_money, electrification
     formula: (mobile_money / 1500 * 50) + (electrification * 0.5)
@@ -207,7 +207,7 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
     description: "PIL pro capite come % della media mondiale"
     unit: "percentuale"
     label: "Convergenza economica"
-    icon: "📈"
+    icon: "trending-up"
     color: "#10b981"
     derives_from: gdp_per_capita
     formula: gdp_per_capita / 18000 * 100

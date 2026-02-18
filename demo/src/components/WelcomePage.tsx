@@ -5,6 +5,7 @@
 import { useMemo } from 'react';
 import { SDL_NATIVE_SCENARIOS } from '../scenarios';
 import { renderSDL } from '../lib/sdl-renderer';
+import { SdlIcon } from '../lib/icons';
 
 export default function WelcomePage({ onSelect }: { onSelect: (id: string) => void }) {
   const featured = useMemo(() => {
@@ -43,7 +44,9 @@ export default function WelcomePage({ onSelect }: { onSelect: (id: string) => vo
                 className="group text-left bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 hover:border-zinc-600 hover:bg-zinc-900/80 transition-all hover:shadow-lg hover:shadow-black/20 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="text-2xl">{s.meta.icon}</span>
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-zinc-800/60 text-zinc-400 group-hover:text-blue-400 transition-colors shrink-0">
+                    <SdlIcon name={s.meta.icon} size={20} strokeWidth={1.8} />
+                  </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-white group-hover:text-blue-300 transition-colors truncate">{s.meta.title}</p>
                     <p className="text-[10px] text-zinc-600">{s.meta.period}</p>

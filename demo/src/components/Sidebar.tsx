@@ -10,6 +10,7 @@ import {
 import { renderSDL } from '../lib/sdl-renderer';
 import { EDITOR_TEMPLATES } from '../editor/templates';
 import { GUIDE_SECTIONS, type GuideSectionId } from '../guide/GuideView';
+import { SdlIcon } from '../lib/icons';
 
 // ─── Types ───
 
@@ -202,7 +203,9 @@ export default function Sidebar({ mode, selectedId, editorTemplateId, guideSecti
                               }
                             `}
                           >
-                            <span className="text-base shrink-0">{s.icon}</span>
+                            <span className="shrink-0" style={{ color: isActive ? undefined : 'rgb(113,113,122)' }}>
+                              <SdlIcon name={s.icon} size={16} />
+                            </span>
                             <div className="min-w-0 flex-1">
                               <p className={`text-[12px] font-medium leading-tight truncate ${isActive ? 'text-blue-300' : 'text-zinc-300'}`}>
                                 {s.title}
@@ -272,7 +275,9 @@ export default function Sidebar({ mode, selectedId, editorTemplateId, guideSecti
                         }
                       `}
                     >
-                      <span className="text-base shrink-0">{t.icon}</span>
+                      <span className="shrink-0" style={{ color: isActive ? undefined : 'rgb(113,113,122)' }}>
+                        <SdlIcon name={t.icon} size={16} />
+                      </span>
                       <div className="min-w-0 flex-1">
                         <p className={`text-[12px] font-medium leading-tight truncate ${isActive ? 'text-emerald-300' : 'text-zinc-300'}`}>
                           {t.name}
@@ -338,7 +343,9 @@ export default function Sidebar({ mode, selectedId, editorTemplateId, guideSecti
                         }
                       `}
                     >
-                      <span className="text-sm shrink-0">{s.icon}</span>
+                      <span className="shrink-0" style={{ color: isActive ? undefined : 'rgb(113,113,122)' }}>
+                        <SdlIcon name={s.icon} size={14} />
+                      </span>
                       <p className={`text-[12px] font-medium leading-tight truncate ${isActive ? 'text-amber-300' : 'text-zinc-300'}`}>
                         {s.label}
                       </p>

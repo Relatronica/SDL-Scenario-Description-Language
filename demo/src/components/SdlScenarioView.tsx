@@ -13,6 +13,8 @@ import type { SimulationResult } from '@sdl/core/types';
 import { CATEGORY_LABELS, CATEGORY_COLORS } from '../scenarios/types';
 import { renderSDL, type RenderedScenario } from '../lib/sdl-renderer';
 import { extractFanData, getFinalMedian, formatValue } from '../lib/simulation';
+import { SdlIcon } from '../lib/icons';
+import { Link2 } from 'lucide-react';
 import FanChart from './FanChart';
 import SliderControl from './SliderControl';
 
@@ -132,8 +134,8 @@ export default function SdlScenarioView({ sdlSource, sdlId }: SdlScenarioViewPro
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-transparent to-violet-600/5" />
         <div className="relative max-w-full px-6 lg:px-8 py-8">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center text-2xl" style={{ backgroundColor: `${meta.color}15` }}>
-              {meta.icon}
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${meta.color}15`, color: meta.color }}>
+              <SdlIcon name={meta.icon} size={22} strokeWidth={1.8} />
             </div>
             <div>
               <span className="text-[10px] uppercase tracking-widest font-medium px-2 py-0.5 rounded-full" style={{ color: CATEGORY_COLORS[meta.category], backgroundColor: `${CATEGORY_COLORS[meta.category]}15` }}>
@@ -233,7 +235,7 @@ export default function SdlScenarioView({ sdlSource, sdlId }: SdlScenarioViewPro
           <div className="border border-zinc-800 rounded-2xl overflow-hidden">
             <button onClick={() => setShowGraph(!showGraph)} className="w-full flex items-center justify-between px-6 py-4 bg-zinc-900/40 hover:bg-zinc-900/60 transition-colors">
               <div className="flex items-center gap-3">
-                <span className="text-blue-400/70">🔗</span>
+                <Link2 size={16} className="text-blue-400/70" />
                 <span className="text-sm font-semibold text-zinc-300">Grafo causale</span>
                 <span className="text-[10px] text-zinc-600 bg-zinc-800 px-2 py-0.5 rounded-full">interattivo</span>
               </div>

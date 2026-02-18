@@ -16,7 +16,7 @@ scenario "Sorveglianza Biometrica — Rischio e Regolazione" {
   tags: ["biometrica", "sorveglianza", "ai-act", "gdpr", "diritti-civili"]
   subtitle: "Riconoscimento facciale, privacy e diritti nell'UE"
   category: regolamentazione
-  icon: "👁"
+  icon: "eye"
   color: "#7c3aed"
   difficulty: avanzato
 
@@ -92,7 +92,7 @@ scenario "Sorveglianza Biometrica — Rischio e Regolazione" {
     description: "Sistemi biometrici AI attivi nell'UE"
     unit: "sistemi"
     label: "Sistemi attivi"
-    icon: "📷"
+    icon: "camera"
     color: "#8b5cf6"
 
     2025: 4200
@@ -113,7 +113,7 @@ scenario "Sorveglianza Biometrica — Rischio e Regolazione" {
     description: "Identificazioni errate con conseguenze legali (annue)"
     unit: "casi"
     label: "Falsi positivi gravi"
-    icon: "⚠"
+    icon: "alert-triangle"
     color: "#ef4444"
 
     2025: 850
@@ -134,7 +134,7 @@ scenario "Sorveglianza Biometrica — Rischio e Regolazione" {
     description: "Reclami formali alle DPA per violazioni biometriche"
     unit: "reclami"
     label: "Reclami privacy"
-    icon: "📋"
+    icon: "clipboard-list"
     color: "#f59e0b"
 
     2025: 12000
@@ -155,7 +155,7 @@ scenario "Sorveglianza Biometrica — Rischio e Regolazione" {
     description: "Sanzioni per violazione Art. 5 (cumulativo)"
     unit: "milioni EUR"
     label: "Sanzioni Art. 5"
-    icon: "💰"
+    icon: "coins"
     color: "#dc2626"
 
     2025: 0
@@ -176,7 +176,7 @@ scenario "Sorveglianza Biometrica — Rischio e Regolazione" {
     description: "Indice percezione diritti civili digitali (0-100)"
     unit: "indice"
     label: "Diritti civili digitali"
-    icon: "🛡"
+    icon: "shield"
     color: "#3b82f6"
 
     2025: 62
@@ -198,7 +198,7 @@ scenario "Sorveglianza Biometrica — Rischio e Regolazione" {
     description: "Fatturato mercato biometrico conforme (non real-time, registrato)"
     unit: "miliardi EUR"
     label: "Mercato conforme"
-    icon: "✓"
+    icon: "check"
     color: "#10b981"
 
     2025: 1.2
@@ -222,7 +222,7 @@ scenario "Sorveglianza Biometrica — Rischio e Regolazione" {
     description: "Erosione diritti civili digitali rispetto al baseline 2025"
     unit: "punti"
     label: "Erosione diritti"
-    icon: "⚡"
+    icon: "zap"
     color: "#ef4444"
     derives_from: civil_liberties
     formula: 62 - civil_liberties
@@ -232,7 +232,7 @@ scenario "Sorveglianza Biometrica — Rischio e Regolazione" {
     description: "Riduzione sistemi biometrici rispetto al 2025"
     unit: "percentuale"
     label: "Efficacia enforcement"
-    icon: "📊"
+    icon: "bar-chart"
     color: "#10b981"
     derives_from: deployed_systems
     formula: (4200 - deployed_systems) / 4200 * 100
@@ -242,7 +242,7 @@ scenario "Sorveglianza Biometrica — Rischio e Regolazione" {
     description: "Costo sociale stimato dei falsi positivi"
     unit: "milioni EUR"
     label: "Costo sociale errori"
-    icon: "💶"
+    icon: "banknote"
     color: "#f59e0b"
     derives_from: false_ids
     formula: false_ids * 0.025

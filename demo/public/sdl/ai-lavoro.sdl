@@ -16,7 +16,7 @@ scenario "AI e Lavoro in Italia 2025-2035" {
   tags: ["italia", "ai", "lavoro", "automazione", "formazione"]
   subtitle: "Automazione, occupazione e competenze 2025-2035"
   category: tecnologia
-  icon: "🤖"
+  icon: "bot"
   color: "#3b82f6"
   difficulty: base
 
@@ -76,7 +76,7 @@ scenario "AI e Lavoro in Italia 2025-2035" {
     label: "Posti di lavoro a rischio"
     description: "Posti di lavoro a rischio automazione"
     unit: "milioni"
-    icon: "⚠"
+    icon: "alert-triangle"
     color: "#ef4444"
 
     2025: 0.8
@@ -95,7 +95,7 @@ scenario "AI e Lavoro in Italia 2025-2035" {
     label: "Nuovi posti digitali"
     description: "Nuovi posti di lavoro digitali"
     unit: "milioni"
-    icon: "✦"
+    icon: "sparkles"
     color: "#10b981"
 
     2025: 0.2
@@ -114,7 +114,7 @@ scenario "AI e Lavoro in Italia 2025-2035" {
     label: "Competenze digitali"
     description: "Indice competenze digitali DESI (0-100)"
     unit: "indice"
-    icon: "◈"
+    icon: "diamond"
     color: "#8b5cf6"
 
     2025: 36
@@ -133,7 +133,7 @@ scenario "AI e Lavoro in Italia 2025-2035" {
     label: "Impatto sul PIL"
     description: "Contributo AI al PIL italiano"
     unit: "miliardi EUR"
-    icon: "◆"
+    icon: "diamond"
     color: "#f59e0b"
 
     2025: 5B EUR
@@ -154,7 +154,7 @@ scenario "AI e Lavoro in Italia 2025-2035" {
     label: "Bilancio netto occupazione"
     description: "Bilancio netto: nuovi posti meno posti a rischio"
     unit: "milioni"
-    icon: "⊕"
+    icon: "circle-plus"
     color: "#3b82f6"
     derives_from: nuovi_posti_digitali, posti_lavoro_a_rischio
     formula: nuovi_posti_digitali - posti_lavoro_a_rischio

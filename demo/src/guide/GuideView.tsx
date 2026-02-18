@@ -6,22 +6,23 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
+import { SdlIcon } from '../lib/icons';
 
 // ═══════════════════════════════════════════
 // Guide section data
 // ═══════════════════════════════════════════
 
 export const GUIDE_SECTIONS = [
-  { id: 'panoramica', label: 'Panoramica', icon: '🔭' },
-  { id: 'struttura', label: 'Struttura scenario', icon: '🏗' },
-  { id: 'assunzioni', label: 'Assunzioni', icon: '📌' },
-  { id: 'variabili', label: 'Variabili', icon: '📊' },
-  { id: 'parametri', label: 'Parametri', icon: '⚙' },
-  { id: 'branches', label: 'Branches', icon: '🔀' },
-  { id: 'impatti', label: 'Impatti', icon: '🎯' },
-  { id: 'simulazione', label: 'Simulazione', icon: '🎲' },
-  { id: 'distribuzioni', label: 'Distribuzioni', icon: '📈' },
-  { id: 'riferimento', label: 'Riferimento rapido', icon: '📋' },
+  { id: 'panoramica', label: 'Panoramica', icon: 'telescope' },
+  { id: 'struttura', label: 'Struttura scenario', icon: 'building' },
+  { id: 'assunzioni', label: 'Assunzioni', icon: 'pin' },
+  { id: 'variabili', label: 'Variabili', icon: 'bar-chart' },
+  { id: 'parametri', label: 'Parametri', icon: 'settings' },
+  { id: 'branches', label: 'Branches', icon: 'git-branch' },
+  { id: 'impatti', label: 'Impatti', icon: 'target' },
+  { id: 'simulazione', label: 'Simulazione', icon: 'dice' },
+  { id: 'distribuzioni', label: 'Distribuzioni', icon: 'trending-up' },
+  { id: 'riferimento', label: 'Riferimento rapido', icon: 'clipboard-list' },
 ] as const;
 
 export type GuideSectionId = typeof GUIDE_SECTIONS[number]['id'];
@@ -1057,7 +1058,7 @@ export default function GuideView({ initialSection }: GuideViewProps) {
                     : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/60 border border-transparent'}
                 `}
               >
-                <span>{s.icon}</span>
+                <SdlIcon name={s.icon} size={13} />
                 <span>{s.label}</span>
               </button>
             ))}
@@ -1073,7 +1074,7 @@ export default function GuideView({ initialSection }: GuideViewProps) {
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
-          <span className="text-amber-400/60">{currentSection.icon} {currentSection.label}</span>
+          <span className="flex items-center gap-1 text-amber-400/60"><SdlIcon name={currentSection.icon} size={12} /> {currentSection.label}</span>
         </div>
 
         {/* Section content */}
@@ -1091,7 +1092,7 @@ export default function GuideView({ initialSection }: GuideViewProps) {
               </svg>
               <div className="text-left">
                 <p className="text-[10px] text-zinc-600">Precedente</p>
-                <p className="font-medium">{prevSection.icon} {prevSection.label}</p>
+                <p className="font-medium flex items-center gap-1.5"><SdlIcon name={prevSection.icon} size={14} /> {prevSection.label}</p>
               </div>
             </button>
           ) : <div />}
@@ -1103,7 +1104,7 @@ export default function GuideView({ initialSection }: GuideViewProps) {
             >
               <div className="text-right">
                 <p className="text-[10px] text-zinc-600">Successiva</p>
-                <p className="font-medium">{nextSection.icon} {nextSection.label}</p>
+                <p className="font-medium flex items-center justify-end gap-1.5">{nextSection.label} <SdlIcon name={nextSection.icon} size={14} /></p>
               </div>
               <svg className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

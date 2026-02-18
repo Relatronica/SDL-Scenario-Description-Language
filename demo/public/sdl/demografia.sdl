@@ -8,7 +8,7 @@ scenario "Demografia e Pensioni Italia 2025-2050" {
   tags: ["italia", "demografia", "pensioni", "invecchiamento", "immigrazione"]
   subtitle: "Popolazione, invecchiamento e welfare 2025-2050"
   category: societa
-  icon: "👥"
+    icon: "users"
   color: "#8b5cf6"
   difficulty: intermedio
 
@@ -64,7 +64,7 @@ scenario "Demografia e Pensioni Italia 2025-2050" {
     description: "Popolazione residente in Italia"
     unit: "milioni"
     label: "Popolazione"
-    icon: "👥"
+    icon: "users"
     color: "#3b82f6"
     2025: 59.0
     2030: 58.2
@@ -81,7 +81,7 @@ scenario "Demografia e Pensioni Italia 2025-2050" {
     description: "Rapporto anziani (65+) su popolazione attiva (15-64)"
     unit: "percentuale"
     label: "Indice di dipendenza"
-    icon: "⚖"
+    icon: "scale"
     color: "#ef4444"
     2025: 37
     2030: 42
@@ -98,7 +98,7 @@ scenario "Demografia e Pensioni Italia 2025-2050" {
     description: "Spesa pensionistica in rapporto al PIL"
     unit: "percentuale PIL"
     label: "Spesa pensioni / PIL"
-    icon: "💰"
+    icon: "coins"
     color: "#f59e0b"
     2025: 16.0
     2030: 16.8
@@ -115,7 +115,7 @@ scenario "Demografia e Pensioni Italia 2025-2050" {
     description: "Aspettativa di vita alla nascita"
     unit: "anni"
     label: "Aspettativa di vita"
-    icon: "❤"
+    icon: "heart"
     color: "#10b981"
     2025: 83.6
     2030: 84.2
@@ -132,7 +132,7 @@ scenario "Demografia e Pensioni Italia 2025-2050" {
     description: "Differenza di spesa pensionistica rispetto al 2025"
     unit: "punti % PIL"
     label: "Pressione aggiuntiva"
-    icon: "↑"
+    icon: "arrow-up"
     color: "#ef4444"
     derives_from: spesa_pensioni_pil
     formula: spesa_pensioni_pil - 16

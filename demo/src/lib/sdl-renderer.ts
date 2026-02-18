@@ -76,7 +76,7 @@ function extractMeta(ast: ScenarioNode, sdlId: string): ScenarioMeta {
     description: m.description ?? '',
     category,
     tags: m.tags ?? [],
-    icon: m.icon ?? '📊',
+    icon: m.icon ?? 'bar-chart',
     color: m.color ?? '#3b82f6',
     period,
     difficulty: (m.difficulty as ScenarioMeta['difficulty']) ?? 'base',
@@ -152,7 +152,7 @@ function extractVariableDisplays(ast: ScenarioNode): VariableDisplay[] {
         unit: v.unit ?? '',
         color: v.color ?? DEFAULT_COLORS[colorIdx % DEFAULT_COLORS.length],
         type: 'variable',
-        icon: v.icon ?? '📊',
+        icon: v.icon ?? 'bar-chart',
       });
       colorIdx++;
     } else if (decl.type === 'Impact') {
@@ -164,7 +164,7 @@ function extractVariableDisplays(ast: ScenarioNode): VariableDisplay[] {
         unit: imp.unit ?? '',
         color: imp.color ?? DEFAULT_COLORS[colorIdx % DEFAULT_COLORS.length],
         type: 'impact',
-        icon: imp.icon ?? '🎯',
+        icon: imp.icon ?? 'target',
       });
       colorIdx++;
     }

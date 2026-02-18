@@ -15,7 +15,7 @@ scenario "Crisi Idrica Mediterraneo 2025-2045" {
   tags: ["acqua", "clima", "agricoltura", "mediterraneo", "infrastrutture"]
   subtitle: "Acqua, agricoltura e conflitti 2025-2045"
   category: ambiente
-  icon: "💧"
+  icon: "droplets"
   color: "#10b981"
   difficulty: avanzato
 
@@ -75,7 +75,7 @@ scenario "Crisi Idrica Mediterraneo 2025-2045" {
     description: "Indice stress idrico Mediterraneo (0=abbondante, 100=scarsità estrema)"
     unit: "indice"
     label: "Stress idrico"
-    icon: "🔥"
+    icon: "flame"
     color: "#ef4444"
 
     2025: 42
@@ -94,7 +94,7 @@ scenario "Crisi Idrica Mediterraneo 2025-2045" {
     description: "Capacità desalinizzazione installata"
     unit: "milioni m³/giorno"
     label: "Desalinizzazione"
-    icon: "🏭"
+    icon: "factory"
     color: "#3b82f6"
 
     2025: 12
@@ -113,7 +113,7 @@ scenario "Crisi Idrica Mediterraneo 2025-2045" {
     description: "Produzione agricola mediterranea (2025=100)"
     unit: "indice"
     label: "Produzione agricola"
-    icon: "🌾"
+    icon: "wheat"
     color: "#10b981"
 
     2025: 100
@@ -132,7 +132,7 @@ scenario "Crisi Idrica Mediterraneo 2025-2045" {
     description: "Popolazione sotto stress idrico elevato"
     unit: "milioni"
     label: "Popolazione a rischio"
-    icon: "⚠"
+    icon: "alert-triangle"
     color: "#f59e0b"
 
     2025: 80
@@ -151,7 +151,7 @@ scenario "Crisi Idrica Mediterraneo 2025-2045" {
     description: "Rischio conflitto idrico transfrontaliero (0-100)"
     unit: "indice"
     label: "Rischio conflitto"
-    icon: "⚔"
+    icon: "swords"
     color: "#8b5cf6"
 
     2025: 22
@@ -172,7 +172,7 @@ scenario "Crisi Idrica Mediterraneo 2025-2045" {
     description: "Rischio sicurezza alimentare"
     unit: "indice"
     label: "Rischio alimentare"
-    icon: "🍽"
+    icon: "utensils"
     color: "#ef4444"
     derives_from: agricultural_output
     formula: 100 - agricultural_output
@@ -182,7 +182,7 @@ scenario "Crisi Idrica Mediterraneo 2025-2045" {
     description: "Gap tra capacità desalinizzazione e fabbisogno"
     unit: "milioni m³/giorno"
     label: "Gap infrastrutturale"
-    icon: "🏗"
+    icon: "building"
     color: "#ef4444"
     derives_from: desalination_capacity, population_at_risk
     formula: (population_at_risk * 0.15) - desalination_capacity

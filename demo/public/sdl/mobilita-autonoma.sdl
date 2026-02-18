@@ -8,7 +8,7 @@ scenario "Mobilita Autonoma 2025-2045" {
   tags: ["ai", "mobilita", "veicoli-autonomi", "citta", "logistica", "sicurezza"]
   subtitle: "Veicoli senza conducente, città e logistica 2025-2045"
   category: tecnologia
-  icon: "🚗"
+  icon: "car"
   color: "#06b6d4"
   difficulty: base
 
@@ -64,7 +64,7 @@ scenario "Mobilita Autonoma 2025-2045" {
     description: "Veicoli autonomi L4/L5 in circolazione (OCSE)"
     unit: "migliaia"
     label: "Flotta AV"
-    icon: "🚗"
+    icon: "car"
     color: "#06b6d4"
     2025: 25
     2029: 220
@@ -81,7 +81,7 @@ scenario "Mobilita Autonoma 2025-2045" {
     description: "Quota veicoli autonomi sul ride-hailing totale"
     unit: "percentuale"
     label: "Ride-hailing AV"
-    icon: "📱"
+    icon: "smartphone"
     color: "#8b5cf6"
     2025: 1
     2029: 7
@@ -98,7 +98,7 @@ scenario "Mobilita Autonoma 2025-2045" {
     description: "Morti in incidenti stradali OCSE all'anno"
     unit: "migliaia"
     label: "Morti stradali"
-    icon: "⚠"
+    icon: "alert-triangle"
     color: "#ef4444"
     2025: 95
     2029: 87
@@ -115,7 +115,7 @@ scenario "Mobilita Autonoma 2025-2045" {
     description: "Domanda parcheggi urbani (2025=100)"
     unit: "indice"
     label: "Domanda parcheggi"
-    icon: "🅿"
+    icon: "square-parking"
     color: "#3b82f6"
     2025: 100
     2029: 94
@@ -132,7 +132,7 @@ scenario "Mobilita Autonoma 2025-2045" {
     description: "Quota merci long-haul trasportate da camion autonomi"
     unit: "percentuale"
     label: "Merci autonome"
-    icon: "🚛"
+    icon: "truck"
     color: "#f59e0b"
     2025: 0.5
     2029: 4
@@ -149,7 +149,7 @@ scenario "Mobilita Autonoma 2025-2045" {
     description: "Autisti di camion long-haul occupati (OCSE)"
     unit: "milioni"
     label: "Autisti occupati"
-    icon: "👷"
+    icon: "hard-hat"
     color: "#10b981"
     2025: 6.5
     2029: 6.0
@@ -166,7 +166,7 @@ scenario "Mobilita Autonoma 2025-2045" {
     description: "Vite salvate annualmente rispetto al 2025"
     unit: "migliaia"
     label: "Vite salvate"
-    icon: "❤"
+    icon: "heart"
     color: "#10b981"
     derives_from: morti_stradali_ocse
     formula: 95 - morti_stradali_ocse
@@ -176,7 +176,7 @@ scenario "Mobilita Autonoma 2025-2045" {
     description: "Spazio urbano liberato dai parcheggi (0-100)"
     unit: "indice"
     label: "Spazio urbano liberato"
-    icon: "🏙"
+    icon: "building"
     color: "#3b82f6"
     derives_from: domanda_parcheggi
     formula: 100 - domanda_parcheggi
@@ -186,7 +186,7 @@ scenario "Mobilita Autonoma 2025-2045" {
     description: "Autisti spostati rispetto al 2025"
     unit: "milioni"
     label: "Autisti spostati"
-    icon: "👷"
+    icon: "hard-hat"
     color: "#ef4444"
     derives_from: autisti_occupati
     formula: 6.5 - autisti_occupati
