@@ -10,6 +10,7 @@ import WelcomePage from './components/WelcomePage';
 import EditorView from './editor/EditorView';
 import GuideView, { type GuideSectionId } from './guide/GuideView';
 import WizardView from './ai/WizardView';
+import OnboardingModal, { useOnboardingAutoOpen } from './components/OnboardingModal';
 
 export default function App() {
   const [mode, setMode] = useState<AppMode>('demo');
@@ -18,6 +19,7 @@ export default function App() {
   const [guideSectionId, setGuideSectionId] = useState<GuideSectionId | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
+  const onboarding = useOnboardingAutoOpen();
 
   const selectedScenario = selectedId
     ? SDL_NATIVE_SCENARIOS.find(s => s.id === selectedId) ?? null
@@ -70,8 +72,25 @@ export default function App() {
 
   const aiGeneratedRef = useRef<string | null>(null);
 
+  const handleOnboardingNavigate = useCallback((target: 'demo' | 'editor' | 'wizard') => {
+    if (target === 'demo') {
+      const first = SDL_NATIVE_SCENARIOS[0];
+      if (first) handleSelect(first.id);
+    } else if (target === 'editor') {
+      handleEditorSelect('blank');
+    } else {
+      handleWizardSelect();
+    }
+  }, [handleSelect, handleEditorSelect, handleWizardSelect]);
+
   return (
     <div className="flex h-screen overflow-hidden bg-zinc-950 text-zinc-100">
+      <OnboardingModal
+        open={onboarding.open}
+        onClose={onboarding.close}
+        onNavigate={handleOnboardingNavigate}
+      />
+
       <Sidebar
         mode={mode}
         selectedId={selectedId}
@@ -81,6 +100,7 @@ export default function App() {
         onEditorSelect={handleEditorSelect}
         onGuideSelect={handleGuideSelect}
         onWizardSelect={handleWizardSelect}
+        onHelpOpen={() => onboarding.setOpen(true)}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />

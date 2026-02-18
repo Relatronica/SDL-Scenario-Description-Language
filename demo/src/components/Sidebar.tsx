@@ -25,6 +25,7 @@ export interface SidebarProps {
   onEditorSelect: (templateId: string) => void;
   onGuideSelect: (sectionId: GuideSectionId) => void;
   onWizardSelect: () => void;
+  onHelpOpen: () => void;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -59,7 +60,7 @@ interface ScenarioMeta {
   category: ScenarioCategory;
 }
 
-export default function Sidebar({ mode, selectedId, editorTemplateId, guideSectionId, onSelect, onEditorSelect, onGuideSelect, onWizardSelect, isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ mode, selectedId, editorTemplateId, guideSectionId, onSelect, onEditorSelect, onGuideSelect, onWizardSelect, onHelpOpen, isOpen, onClose }: SidebarProps) {
   const [expandedCategories, setExpandedCategories] = useState<Set<ScenarioCategory>>(new Set());
   const [editorExpanded, setEditorExpanded] = useState(false);
   const [guideExpanded, setGuideExpanded] = useState(false);
@@ -400,11 +401,23 @@ export default function Sidebar({ mode, selectedId, editorTemplateId, guideSecti
         </nav>
 
         {/* Footer */}
-        <div className="shrink-0 px-5 py-4 border-t border-zinc-800/60">
-          <p className="text-[10px] text-zinc-600 leading-relaxed">
-            Creato da <span className="text-zinc-500">Relatronica</span>
-          </p>
-          <p className="text-[10px] text-zinc-700 mt-0.5">GPL-3.0 License</p>
+        <div className="shrink-0 px-5 py-4 border-t border-zinc-800/60 flex items-end justify-between">
+          <div>
+            <p className="text-[10px] text-zinc-600 leading-relaxed">
+              Creato da <span className="text-zinc-500">Relatronica</span>
+            </p>
+            <p className="text-[10px] text-zinc-700 mt-0.5">GPL-3.0 License</p>
+          </div>
+          <button
+            onClick={onHelpOpen}
+            className="p-1.5 rounded-lg text-zinc-600 hover:text-blue-400 hover:bg-zinc-800 transition-colors"
+            aria-label="Cos'è Segno?"
+            title="Cos'è Segno?"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
         </div>
       </aside>
     </>
