@@ -1,0 +1,251 @@
+scenario "Mobilita Autonoma 2025-2045" {
+  timeframe: 2025 -> 2045
+  resolution: yearly
+  confidence: 0.35
+  author: "Relatronica — Citizen Lab"
+  version: "1.0"
+  description: "Adozione dei veicoli autonomi L4/L5 e impatti su sicurezza, citta, logistica e lavoro"
+  tags: ["ai", "mobilita", "veicoli-autonomi", "citta", "logistica", "sicurezza"]
+  subtitle: "Veicoli senza conducente, città e logistica 2025-2045"
+  category: tecnologia
+  icon: "🚗"
+  color: "#06b6d4"
+  difficulty: base
+
+  parameter tech_readiness {
+    label: "Maturità tecnologica AV"
+    value: 55
+    range: [20, 95]
+    step: 5
+    unit: "indice"
+    source: "SAE/RAND AV Readiness Assessment 2025; Waymo/Cruise safety reports"
+    format: "{value}/100"
+    control: slider
+    description: "Livello di maturità della tecnologia autonoma L4/L5 (0=sperimentale, 100=affidabile)"
+  }
+
+  parameter regulatory_openness {
+    label: "Apertura regolatoria"
+    value: 30
+    range: [10, 90]
+    step: 5
+    unit: "indice"
+    source: "UNECE WP.29; NHTSA AV rulemaking; EU Connected Driving strategy"
+    format: "{value}/100"
+    control: slider
+    description: "Quanto velocemente i governi OCSE approvano framework per veicoli autonomi"
+  }
+
+  parameter public_trust {
+    label: "Fiducia pubblica"
+    value: 42
+    range: [15, 85]
+    step: 5
+    unit: "%"
+    source: "AAA Foundation Trust Survey 2025; Eurobarometro mobilita"
+    format: "{value}%"
+    control: slider
+    description: "Percentuale della popolazione disposta a usare un veicolo senza conducente"
+  }
+
+  parameter sensor_cost_reduction {
+    label: "Riduzione costo sensori"
+    value: 20
+    range: [5, 40]
+    step: 1
+    unit: "%/anno"
+    source: "Velodyne/Luminar pricing trends; McKinsey Mobility Report 2025"
+    format: "{value}%/anno"
+    control: slider
+    description: "Riduzione percentuale annua del costo dei sensori LiDAR e suite AV"
+  }
+
+  variable flotta_av {
+    description: "Veicoli autonomi L4/L5 in circolazione (OCSE)"
+    unit: "migliaia"
+    label: "Flotta AV"
+    icon: "🚗"
+    color: "#06b6d4"
+    2025: 25
+    2029: 220
+    2033: 1200
+    2037: 4500
+    2041: 11000
+    2045: 19000
+    depends_on: tech_readiness, regulatory_openness, public_trust, sensor_cost_reduction
+    uncertainty: lognormal(7, 0.5)
+    interpolation: spline
+  }
+
+  variable ride_hailing_av {
+    description: "Quota veicoli autonomi sul ride-hailing totale"
+    unit: "percentuale"
+    label: "Ride-hailing AV"
+    icon: "📱"
+    color: "#8b5cf6"
+    2025: 1
+    2029: 7
+    2033: 24
+    2037: 48
+    2041: 66
+    2045: 76
+    depends_on: tech_readiness, regulatory_openness, public_trust, sensor_cost_reduction
+    uncertainty: normal(±20%)
+    interpolation: spline
+  }
+
+  variable morti_stradali_ocse {
+    description: "Morti in incidenti stradali OCSE all'anno"
+    unit: "migliaia"
+    label: "Morti stradali"
+    icon: "⚠"
+    color: "#ef4444"
+    2025: 95
+    2029: 87
+    2033: 72
+    2037: 52
+    2041: 36
+    2045: 25
+    depends_on: tech_readiness, regulatory_openness, public_trust, sensor_cost_reduction
+    uncertainty: normal(±12%)
+    interpolation: spline
+  }
+
+  variable domanda_parcheggi {
+    description: "Domanda parcheggi urbani (2025=100)"
+    unit: "indice"
+    label: "Domanda parcheggi"
+    icon: "🅿"
+    color: "#3b82f6"
+    2025: 100
+    2029: 94
+    2033: 80
+    2037: 62
+    2041: 48
+    2045: 39
+    depends_on: tech_readiness, regulatory_openness, public_trust, sensor_cost_reduction
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  variable merci_autonome {
+    description: "Quota merci long-haul trasportate da camion autonomi"
+    unit: "percentuale"
+    label: "Merci autonome"
+    icon: "🚛"
+    color: "#f59e0b"
+    2025: 0.5
+    2029: 4
+    2033: 15
+    2037: 34
+    2041: 52
+    2045: 63
+    depends_on: tech_readiness, regulatory_openness, public_trust, sensor_cost_reduction
+    uncertainty: normal(±22%)
+    interpolation: spline
+  }
+
+  variable autisti_occupati {
+    description: "Autisti di camion long-haul occupati (OCSE)"
+    unit: "milioni"
+    label: "Autisti occupati"
+    icon: "👷"
+    color: "#10b981"
+    2025: 6.5
+    2029: 6.0
+    2033: 4.9
+    2037: 3.5
+    2041: 2.5
+    2045: 2.0
+    depends_on: tech_readiness, regulatory_openness, public_trust, sensor_cost_reduction
+    uncertainty: normal(±12%)
+    interpolation: linear
+  }
+
+  impact vite_salvate {
+    description: "Vite salvate annualmente rispetto al 2025"
+    unit: "migliaia"
+    label: "Vite salvate"
+    icon: "❤"
+    color: "#10b981"
+    derives_from: morti_stradali_ocse
+    formula: 95 - morti_stradali_ocse
+  }
+
+  impact spazio_urbano_liberato {
+    description: "Spazio urbano liberato dai parcheggi (0-100)"
+    unit: "indice"
+    label: "Spazio urbano liberato"
+    icon: "🏙"
+    color: "#3b82f6"
+    derives_from: domanda_parcheggi
+    formula: 100 - domanda_parcheggi
+  }
+
+  impact autisti_spostati {
+    description: "Autisti spostati rispetto al 2025"
+    unit: "milioni"
+    label: "Autisti spostati"
+    icon: "👷"
+    color: "#ef4444"
+    derives_from: autisti_occupati
+    formula: 6.5 - autisti_occupati
+  }
+
+  branch "Via libera regolatorio" when regulatory_openness > 60 {
+    probability: 0.22
+    variable flotta_av {
+      2033: 2160
+      2037: 7200
+      2041: 15400
+      uncertainty: lognormal(8, 0.4)
+    }
+    variable merci_autonome {
+      2033: 22.5
+      2037: 47.6
+      2041: 67.6
+      uncertainty: normal(±18%)
+    }
+  }
+
+  branch "Incidente fatale e backlash" when morti_stradali_ocse > 80 {
+    probability: 0.18
+    variable flotta_av {
+      2033: 540
+      2037: 2250
+      2041: 6600
+      uncertainty: lognormal(6.5, 0.5)
+    }
+    variable ride_hailing_av {
+      2033: 12
+      2037: 26.4
+      2041: 42.9
+      uncertainty: normal(±20%)
+    }
+  }
+
+  branch "Logistica first" when merci_autonome > 20 {
+    probability: 0.20
+    variable merci_autonome {
+      2037: 45.9
+      2041: 67.6
+      2045: 78.75
+      uncertainty: normal(±15%)
+    }
+    variable autisti_occupati {
+      2037: 2.45
+      2041: 1.5
+      2045: 1.1
+      uncertainty: normal(±15%)
+    }
+  }
+
+  simulate {
+    runs: 2000
+    method: monte_carlo
+    seed: 42
+    output: distribution
+    percentiles: [5, 25, 50, 75, 95]
+    convergence: 0.01
+  }
+}

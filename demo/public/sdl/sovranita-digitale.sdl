@@ -1,0 +1,175 @@
+scenario "Sovranita Digitale Europea 2025-2035" {
+  timeframe: 2025 -> 2035
+  resolution: yearly
+  confidence: 0.35
+  author: "Relatronica — Citizen Lab"
+  version: "1.0"
+  description: "L'Europa puo' costruire una propria autonomia tecnologica? Cloud, dati, open source e regolamentazione"
+  tags: ["europa", "sovranita", "cloud", "dati", "open-source", "regolamentazione"]
+  subtitle: "Cloud, dati e autonomia tecnologica 2025-2035"
+  category: politica
+  icon: "🛡"
+  color: "#ef4444"
+  difficulty: avanzato
+
+  parameter eu_cloud_investment {
+    label: "Investimento in cloud EU"
+    value: 10
+    range: [2, 40]
+    step: 1
+    unit: "miliardi €"
+    source: "Commissione UE Digital Decade 2030; IPCEI Cloud"
+    format: "{value} mld €"
+    control: slider
+    description: "Investimento annuo in infrastruttura cloud e data center europei (IPCEI, Gaia-X, fondi nazionali)"
+  }
+
+  parameter data_localization {
+    label: "Localizzazione dati"
+    value: 20
+    range: [10, 90]
+    step: 5
+    unit: "%"
+    source: "ENISA Data Flow Report 2024; Eurostat Digital Economy"
+    format: "{value}%"
+    control: slider
+    description: "Percentuale di dati europei processati su infrastrutture europee. Oggi circa 20%"
+  }
+
+  parameter open_source_adoption {
+    label: "Adozione open source nella PA"
+    value: 25
+    range: [5, 80]
+    step: 5
+    unit: "%"
+    source: "OSOR EU Observatory 2024; AgID Piano Triennale IT"
+    format: "{value}%"
+    control: slider
+    description: "Percentuale di PA europee che usano software open source per sistemi critici"
+  }
+
+  parameter digital_regulation_strength {
+    label: "Forza regolamentazione digitale"
+    value: 55
+    range: [10, 100]
+    step: 5
+    unit: "indice"
+    source: "DG CONNECT enforcement reports; DSA Transparency DB"
+    format: "{value}/100"
+    control: slider
+    description: "Intensità dell'applicazione di DSA, DMA, AI Act, Data Act (0=debole, 100=massima)"
+  }
+
+  variable indice_sovranita_digitale {
+    description: "Indice composito di sovranita digitale EU (0-100)"
+    unit: "indice"
+    label: "Sovranità digitale"
+    icon: "🛡"
+    color: "#3b82f6"
+    2025: 22
+    2027: 28
+    2029: 35
+    2031: 43
+    2033: 52
+    2035: 60
+    depends_on: eu_cloud_investment, data_localization, open_source_adoption, digital_regulation_strength
+    uncertainty: normal(±18%)
+    interpolation: spline
+  }
+
+  variable dipendenza_big_tech {
+    description: "Dipendenza da Big Tech extra-UE per servizi digitali critici"
+    unit: "percentuale"
+    label: "Dipendenza Big Tech"
+    icon: "⛓"
+    color: "#ef4444"
+    2025: 78
+    2027: 72
+    2029: 65
+    2031: 57
+    2033: 50
+    2035: 42
+    depends_on: eu_cloud_investment, data_localization, open_source_adoption, digital_regulation_strength
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  variable mercato_cloud_eu {
+    description: "Fatturato annuo dei provider cloud europei"
+    unit: "miliardi EUR"
+    label: "Cloud EU"
+    icon: "☁"
+    color: "#f59e0b"
+    2025: 12
+    2027: 18
+    2029: 28
+    2031: 42
+    2033: 58
+    2035: 78
+    depends_on: eu_cloud_investment, data_localization, open_source_adoption, digital_regulation_strength
+    uncertainty: normal(±22%)
+    interpolation: spline
+  }
+
+  variable posti_lavoro_tech_eu {
+    description: "Occupati nel settore tech europeo (non Big Tech)"
+    unit: "milioni"
+    label: "Lavoro tech EU"
+    icon: "💻"
+    color: "#8b5cf6"
+    2025: 1.2
+    2027: 1.5
+    2029: 1.9
+    2031: 2.4
+    2033: 3.0
+    2035: 3.6
+    depends_on: eu_cloud_investment, data_localization, open_source_adoption, digital_regulation_strength
+    uncertainty: normal(±20%)
+    interpolation: spline
+  }
+
+  impact guadagno_sovranita {
+    description: "Guadagno di sovranita digitale rispetto al 2025"
+    unit: "punti indice"
+    label: "Guadagno sovranità"
+    icon: "↑"
+    color: "#10b981"
+    derives_from: indice_sovranita_digitale
+    formula: indice_sovranita_digitale - 22
+  }
+
+  branch "Gaia-X decolla" when eu_cloud_investment > 25 {
+    probability: 0.25
+    variable mercato_cloud_eu {
+      2031: 54.6
+      2033: 81.2
+      2035: 117.0
+      uncertainty: normal(±20%)
+    }
+    variable dipendenza_big_tech {
+      2031: 48.45
+      2033: 40.0
+      2035: 31.5
+      uncertainty: normal(±15%)
+    }
+  }
+
+  branch "Digital sovereignty push" when digital_regulation_strength > 80 {
+    probability: 0.20
+    variable indice_sovranita_digitale {
+      2031: 49.45
+      2033: 62.4
+      2035: 75.0
+      uncertainty: normal(±15%)
+    }
+  }
+
+  simulate {
+    runs: 2000
+    method: monte_carlo
+    seed: 42
+    output: distribution
+    percentiles: [5, 25, 50, 75, 95]
+    convergence: 0.01
+  }
+}

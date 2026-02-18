@@ -1,0 +1,241 @@
+// ============================================================
+// SDL Scenario: AI e Consumo Energetico 2025-2040
+// ============================================================
+// Analizza l'impatto energetico dell'intelligenza artificiale:
+// consumo elettrico globale, emissioni CO2, quota sul consumo
+// mondiale, consumo idrico e costo per query.
+// ============================================================
+
+scenario "AI e Consumo Energetico 2025-2040" {
+  timeframe: 2025 -> 2040
+  resolution: yearly
+  confidence: 0.40
+  author: "Relatronica — Citizen Lab"
+  version: "1.0"
+  description: "Impatto energetico dell'AI: consumo elettrico, emissioni, acqua e costo per query"
+  tags: ["ai", "energia", "clima", "data-center", "sostenibilita"]
+  subtitle: "Data center, emissioni e tensione climatica 2025-2040"
+  category: tecnologia
+  icon: "🔌"
+  color: "#f59e0b"
+  difficulty: intermedio
+
+  // ── Parameters ──
+
+  parameter compute_growth {
+    value: 3.5
+    range: [1.5, 6.0]
+    step: 0.1
+    label: "Crescita domanda AI compute"
+    unit: "fattore"
+    source: "Epoch AI compute trends 2025; IEA World Energy Outlook"
+    format: "{value}x/anno"
+    control: slider
+    description: "Fattore annuo di crescita della domanda di calcolo per training e inferenza AI"
+  }
+
+  parameter chip_efficiency {
+    value: 25%
+    range: [5%, 50%]
+    step: 1%
+    label: "Efficienza chip (miglioramento annuo)"
+    unit: "%"
+    source: "NVIDIA/AMD roadmap; Epoch AI hardware analysis"
+    format: "{value}%/anno"
+    control: slider
+    description: "Percentuale annua di miglioramento dell'efficienza energetica dei chip AI (GPU/TPU)"
+  }
+
+  parameter renewable_share_dc {
+    value: 40%
+    range: [20%, 100%]
+    step: 5%
+    label: "Quota rinnovabili data center"
+    unit: "%"
+    source: "RE100 tracker; IEA Data Centres & Networks Report 2025"
+    format: "{value}%"
+    control: slider
+    description: "Percentuale di energia da fonti rinnovabili usata dai data center globali"
+  }
+
+  parameter carbon_price {
+    value: 0 EUR
+    range: [0 EUR, 60 EUR]
+    step: 5 EUR
+    label: "Prezzo carbonio (su AI compute)"
+    unit: "€/MWh"
+    source: "Ipotesi di policy — attualmente non esiste"
+    format: "{value} €/MWh"
+    control: slider
+    description: "Eventuale tassa carbonio applicata al consumo energetico dei data center (€/MWh)"
+  }
+
+  // ── Variables ──
+
+  variable consumo_elettrico_ai {
+    label: "Consumo elettrico AI"
+    description: "Consumo elettrico globale dell'AI"
+    unit: "TWh"
+    icon: "⚡"
+    color: "#f59e0b"
+
+    2025: 120
+    2028: 250
+    2031: 480
+    2034: 750
+    2037: 1050
+    2040: 1400
+
+    depends_on: compute_growth, chip_efficiency, carbon_price
+    uncertainty: normal(±18%)
+    interpolation: spline
+  }
+
+  variable emissioni_co2_ai {
+    label: "Emissioni CO₂"
+    description: "Emissioni CO2 annue del settore AI globale"
+    unit: "MtCO2"
+    icon: "☁"
+    color: "#ef4444"
+
+    2025: 50
+    2028: 85
+    2031: 135
+    2034: 180
+    2037: 210
+    2040: 240
+
+    depends_on: compute_growth, chip_efficiency, renewable_share_dc, carbon_price
+    uncertainty: normal(±20%)
+    interpolation: spline
+  }
+
+  variable quota_elettricita_globale {
+    label: "Quota elettricità globale"
+    description: "Quota AI sul consumo elettrico mondiale"
+    unit: "%"
+    icon: "🌍"
+    color: "#3b82f6"
+
+    2025: 0.4%
+    2028: 0.8%
+    2031: 1.4%
+    2034: 2.2%
+    2037: 3.0%
+    2040: 4.0%
+
+    depends_on: compute_growth, chip_efficiency
+    uncertainty: normal(±18%)
+    interpolation: spline
+  }
+
+  variable consumo_acqua_dc {
+    label: "Consumo acqua"
+    description: "Consumo idrico globale dei data center"
+    unit: "miliardi di litri"
+    icon: "💧"
+    color: "#3b82f6"
+
+    2025: 26
+    2028: 48
+    2031: 80
+    2034: 120
+    2037: 160
+    2040: 210
+
+    depends_on: compute_growth, chip_efficiency, carbon_price
+    uncertainty: normal(±22%)
+    interpolation: spline
+  }
+
+  variable costo_per_query {
+    label: "Costo per query"
+    description: "Costo energetico medio per query AI"
+    unit: "centesimi USD"
+    icon: "💰"
+    color: "#8b5cf6"
+
+    2025: 0.40
+    2028: 0.28
+    2031: 0.18
+    2034: 0.12
+    2037: 0.08
+    2040: 0.05
+
+    depends_on: compute_growth, chip_efficiency, renewable_share_dc, carbon_price
+    uncertainty: normal(±20%)
+    interpolation: spline
+  }
+
+  // ── Impacts ──
+
+  impact gap_net_zero {
+    label: "Gap net-zero"
+    description: "Gap tra obiettivo 100% rinnovabili e quota attuale AI"
+    unit: "punti percentuali"
+    icon: "🎯"
+    color: "#10b981"
+    derives_from: renewable_share_dc
+    formula: 100 - renewable_share_dc
+  }
+
+  // ── Branches ──
+
+  branch "Svolta efficienza chip" when chip_efficiency > 0.4 {
+    probability: 0.20
+
+    variable consumo_elettrico_ai {
+      2034: 487.5
+      2037: 577.5
+      2040: 700
+      uncertainty: normal(±18%)
+    }
+
+    variable costo_per_query {
+      2034: 0.06
+      2037: 0.028
+      2040: 0.0125
+      uncertainty: normal(±25%)
+    }
+  }
+
+  branch "Esplosione compute" when compute_growth > 5 {
+    probability: 0.18
+
+    variable consumo_elettrico_ai {
+      2034: 1200
+      2037: 2100
+      2040: 3500
+      uncertainty: normal(±25%)
+    }
+
+    variable quota_elettricita_globale {
+      2034: 3.96%
+      2037: 6.6%
+      2040: 10%
+      uncertainty: normal(±25%)
+    }
+  }
+
+  branch "Carbon tax su AI" when carbon_price > 30 {
+    probability: 0.15
+
+    variable emissioni_co2_ai {
+      2034: 126
+      2037: 115.5
+      2040: 108
+      uncertainty: normal(±20%)
+    }
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 2000
+    method: monte_carlo
+    seed: 42
+    output: distribution
+    percentiles: [5, 25, 50, 75, 95]
+    convergence: 0.01
+  }
+}

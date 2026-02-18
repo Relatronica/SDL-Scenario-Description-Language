@@ -9,6 +9,6 @@
  * - Checks type consistency
  * - Produces diagnostics
  */
-import { ScenarioNode, ValidationResult } from './types';
+import type { ScenarioNode, ValidationResult } from './types';
 export declare function validate(scenario: ScenarioNode): ValidationResult;
 //# sourceMappingURL=validator.d.ts.map

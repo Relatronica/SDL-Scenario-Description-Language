@@ -4,7 +4,7 @@
  *
  * Transforms SDL source text into a stream of tokens.
  */
-import { Token, Diagnostic } from './types';
+import type { Token, Diagnostic } from './types';
 export interface LexerResult {
     tokens: Token[];
     diagnostics: Diagnostic[];

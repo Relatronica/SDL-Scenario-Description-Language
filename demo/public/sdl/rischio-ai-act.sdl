@@ -1,0 +1,345 @@
+// ============================================================
+// SDL Example: EU AI Act — Rischio Compliance 2025-2035
+// ============================================================
+// Impatto dell'AI Act europeo: costi, sanzioni, conformità e fiducia.
+// Ispirato alla knowledge base Segno (GDPR + AI Act).
+// ============================================================
+
+scenario "EU AI Act — Rischio Compliance" {
+  timeframe: 2025 -> 2035
+  resolution: yearly
+  confidence: 0.35
+  author: "Relatronica — Citizen Lab"
+  version: "1.0"
+  description: "Impatto dell'AI Act europeo: costi, sanzioni, conformità e fiducia. Ispirato alla knowledge base Segno (GDPR + AI Act)."
+  tags: ["ai-act", "gdpr", "compliance", "regolamentazione", "europa"]
+  subtitle: "Costi, sanzioni e fiducia nell'era dell'AI Act"
+  category: regolamentazione
+  icon: "⚖️"
+  color: "#6366f1"
+  difficulty: avanzato
+
+  // ── Assumptions ──
+
+  assumption ai_act_enforcement_pace {
+    value: 0.70
+    source: "EU AI Act enforcement timeline 2025-2026"
+    confidence: 0.65
+    uncertainty: beta(5, 2)
+  }
+
+  assumption gdpr_enforcement_maturity {
+    value: 0.80
+    source: "EDPB annual report 2024"
+    confidence: 0.75
+    uncertainty: beta(7, 2)
+  }
+
+  // ── Parameters ──
+
+  parameter enforcement_intensity {
+    value: 60
+    range: [20, 100]
+    step: 5
+    label: "Intensità enforcement"
+    unit: "indice"
+    source: "Stima basata su enforcement GDPR 2018-2024; DPA annual reports"
+    format: "{value}/100"
+    control: slider
+    description: "Quanto aggressivamente le autorità UE applicano le sanzioni AI Act (0=morbido, 100=massimo rigore)"
+  }
+
+  parameter enterprise_readiness {
+    value: 35
+    range: [10, 80]
+    step: 5
+    label: "Prontezza aziende"
+    unit: "indice"
+    source: "Deloitte AI Governance Survey 2025; PwC AI Readiness Index"
+    format: "{value}/100"
+    control: slider
+    description: "Livello medio di preparazione delle imprese UE all'AI Act (0=impreparate, 100=pronte)"
+  }
+
+  parameter biometric_prevalence {
+    value: 15%
+    range: [5%, 40%]
+    step: 1%
+    label: "Diffusione sistemi biometrici"
+    unit: "%"
+    source: "EU biometric AI market report 2025; Segno knowledge base"
+    format: "{value}%"
+    control: slider
+    description: "Quota di aziende che usano identificazione biometrica AI — soggette a Art. 5/6 AI Act"
+  }
+
+  parameter human_oversight {
+    value: 40%
+    range: [10%, 90%]
+    step: 5%
+    label: "Supervisione umana"
+    unit: "%"
+    source: "Enterprise AI deployment surveys; Segno blueprint analysis"
+    format: "{value}%"
+    control: slider
+    description: "Quota di sistemi AI ad alto rischio con human-in-the-loop (Art. 14 AI Act)"
+  }
+
+  // ── Variables ──
+
+  variable compliance_cost {
+    description: "Costo medio annuo di compliance AI Act per azienda (>250 dip.)"
+    unit: "milioni EUR"
+    label: "Costo compliance"
+    icon: "💶"
+    color: "#f59e0b"
+
+    2025: 0.8
+    2026: 2.5
+    2027: 4.2
+    2028: 5.8
+    2029: 6.5
+    2031: 7.2
+    2033: 6.8
+    2035: 6.0
+
+    depends_on: enforcement_intensity, enterprise_readiness, biometric_prevalence, human_oversight
+    model: logistic(k=0.6, midpoint=2028)
+    uncertainty: lognormal(1.2, 0.4)
+    interpolation: spline
+  }
+
+  variable enterprises_compliant {
+    description: "Percentuale di imprese UE conformi all'AI Act"
+    unit: "percentuale"
+    label: "Aziende conformi"
+    icon: "✓"
+    color: "#10b981"
+
+    2025: 8
+    2026: 15
+    2027: 28
+    2028: 42
+    2029: 55
+    2031: 72
+    2033: 82
+    2035: 88
+
+    depends_on: enforcement_intensity, enterprise_readiness, biometric_prevalence, human_oversight
+    model: sigmoid(k=0.4, midpoint=2029)
+    uncertainty: normal(±12%)
+    interpolation: spline
+  }
+
+  variable penalties_issued {
+    description: "Sanzioni AI Act emesse (cumulativo UE)"
+    unit: "numero"
+    label: "Sanzioni emesse"
+    icon: "⚠"
+    color: "#ef4444"
+
+    2025: 0
+    2026: 5
+    2027: 35
+    2028: 120
+    2029: 280
+    2031: 550
+    2033: 780
+    2035: 950
+
+    depends_on: enforcement_intensity, enterprise_readiness, biometric_prevalence, human_oversight
+    uncertainty: lognormal(4.5, 0.5)
+    interpolation: spline
+  }
+
+  variable penalty_volume {
+    description: "Volume totale sanzioni AI Act (cumulativo)"
+    unit: "milioni EUR"
+    label: "Volume sanzioni"
+    icon: "💰"
+    color: "#dc2626"
+
+    2025: 0
+    2026: 2
+    2027: 45
+    2028: 180
+    2029: 520
+    2031: 1200
+    2033: 2100
+    2035: 3200
+
+    depends_on: enforcement_intensity, enterprise_readiness, biometric_prevalence, human_oversight
+    uncertainty: lognormal(5, 0.6)
+    interpolation: spline
+  }
+
+  variable prohibited_removed {
+    description: "Sistemi AI proibiti (Art. 5) rimossi dal mercato UE"
+    unit: "sistemi"
+    label: "Sistemi vietati rimossi"
+    icon: "🚫"
+    color: "#7c3aed"
+
+    2025: 12
+    2026: 85
+    2027: 240
+    2028: 420
+    2029: 580
+    2031: 750
+    2033: 850
+    2035: 900
+
+    depends_on: enforcement_intensity, enterprise_readiness, biometric_prevalence, human_oversight
+    uncertainty: normal(±25%)
+    interpolation: spline
+  }
+
+  variable public_trust {
+    description: "Fiducia pubblica nei sistemi AI nell'UE (0-100)"
+    unit: "indice"
+    label: "Fiducia pubblica AI"
+    icon: "🤝"
+    color: "#3b82f6"
+
+    2025: 38
+    2026: 40
+    2027: 43
+    2028: 47
+    2029: 52
+    2031: 58
+    2033: 63
+    2035: 68
+
+    depends_on: enforcement_intensity, enterprise_readiness, biometric_prevalence, human_oversight
+    model: sigmoid(k=0.3, midpoint=2030)
+    uncertainty: beta(4, 5)
+    interpolation: spline
+  }
+
+  variable market_exit_sme {
+    description: "PMI che abbandonano il mercato AI per costi compliance"
+    unit: "percentuale"
+    label: "PMI uscite dal mercato"
+    icon: "📉"
+    color: "#78716c"
+
+    2025: 2
+    2026: 5
+    2027: 9
+    2028: 14
+    2029: 18
+    2031: 22
+    2033: 20
+    2035: 16
+
+    depends_on: enforcement_intensity, enterprise_readiness, biometric_prevalence, human_oversight
+    uncertainty: normal(±20%)
+    interpolation: spline
+  }
+
+  // ── Impacts ──
+
+  impact compliance_gap {
+    description: "Gap di conformità: aziende non ancora conformi"
+    unit: "percentuale"
+    label: "Gap conformità"
+    icon: "⚡"
+    color: "#f97316"
+    derives_from: enterprises_compliant
+    formula: 100 - enterprises_compliant
+  }
+
+  impact costo_totale_eu {
+    description: "Costo totale compliance per l'ecosistema UE (~50k aziende >250 dip.)"
+    unit: "miliardi EUR"
+    label: "Costo totale UE"
+    icon: "💶"
+    color: "#eab308"
+    derives_from: compliance_cost
+    formula: compliance_cost * 50000 / 1000
+  }
+
+  impact bilancio_fiducia {
+    description: "Variazione fiducia pubblica rispetto al 2025"
+    unit: "punti"
+    label: "Δ fiducia pubblica"
+    icon: "📊"
+    color: "#2563eb"
+    derives_from: public_trust
+    formula: public_trust - 38
+  }
+
+  // ── Branches ──
+
+  branch "Enforcement Aggressivo" when enforcement_intensity > 80 {
+    probability: 0.20
+
+    variable penalties_issued {
+      2028: 252
+      2031: 1210
+      2035: 2185
+      uncertainty: lognormal(5, 0.4)
+    }
+
+    variable enterprises_compliant {
+      2029: 66
+      2031: 85
+      2035: 97
+      uncertainty: normal(±8%)
+    }
+
+    variable market_exit_sme {
+      2028: 22
+      2031: 35
+      2035: 22
+      uncertainty: normal(±15%)
+    }
+  }
+
+  branch "Enforcement Debole" when enforcement_intensity < 30 {
+    probability: 0.15
+
+    variable enterprises_compliant {
+      2029: 30
+      2031: 42
+      2035: 62
+      uncertainty: normal(±15%)
+    }
+
+    variable public_trust {
+      2029: 42
+      2031: 41
+      2035: 35
+      uncertainty: beta(3, 6)
+    }
+  }
+
+  branch "Crisi Biometrica" when biometric_prevalence > 30% {
+    probability: 0.12
+
+    variable prohibited_removed {
+      2028: 798
+      2031: 2475
+      2035: 3240
+      uncertainty: normal(±30%)
+    }
+
+    variable public_trust {
+      2028: 35
+      2031: 28
+      2035: 42
+      uncertainty: beta(3, 7)
+    }
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 2000
+    method: monte_carlo
+    seed: 42
+    output: distribution
+    percentiles: [5, 25, 50, 75, 95]
+    convergence: 0.01
+  }
+}

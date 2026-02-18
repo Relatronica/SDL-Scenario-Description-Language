@@ -73,7 +73,7 @@ scenario "Il mio scenario" {
     2035: 145
     2040: 170
 
-    depends_on: crescita_base
+    depends_on: crescita_base, intensita_investimento
     uncertainty: normal(±15%)
     interpolation: linear
   }
@@ -179,7 +179,7 @@ scenario "Crescita Economica Italia" {
     2035: 2120
     2040: 2250
 
-    depends_on: tasso_crescita_pil, investimenti_pnrr
+    depends_on: tasso_crescita_pil, investimenti_pnrr, spesa_pubblica_extra
     uncertainty: normal(±10%)
     interpolation: spline
   }
@@ -194,7 +194,7 @@ scenario "Crescita Economica Italia" {
     2035: 66
     2040: 67.5
 
-    depends_on: pil_reale, investimenti_pnrr
+    depends_on: pil_reale, investimenti_pnrr, spesa_pubblica_extra
     uncertainty: normal(±8%)
     interpolation: linear
   }
@@ -209,7 +209,7 @@ scenario "Crescita Economica Italia" {
     2035: 128
     2040: 122
 
-    depends_on: pil_reale, tasso_crescita_pil
+    depends_on: pil_reale, tasso_crescita_pil, aliquota_imprese
     uncertainty: normal(±12%)
     interpolation: linear
   }
@@ -359,7 +359,7 @@ scenario "Transizione Energetica Locale" {
     2040: 65
     2045: 78
 
-    depends_on: prezzo_carbonio, costo_solare
+    depends_on: prezzo_carbonio, costo_solare, sussidio_rinnovabili
     uncertainty: normal(±12%)
     interpolation: spline
   }
@@ -374,7 +374,7 @@ scenario "Transizione Energetica Locale" {
     2040: 110
     2045: 55
 
-    depends_on: quota_rinnovabili
+    depends_on: quota_rinnovabili, obiettivo_emissioni
     uncertainty: normal(±15%)
     interpolation: linear
   }
@@ -389,7 +389,7 @@ scenario "Transizione Energetica Locale" {
     2040: 78
     2045: 65
 
-    depends_on: quota_rinnovabili, costo_solare
+    depends_on: quota_rinnovabili, costo_solare, sussidio_rinnovabili
     uncertainty: normal(±18%)
     interpolation: spline
   }
@@ -516,7 +516,7 @@ scenario "Sfida Demografica" {
     2040: 55.4
     2050: 52.5
 
-    depends_on: tasso_natalita, saldo_migratorio
+    depends_on: tasso_natalita, saldo_migratorio, bonus_natalita, quota_immigrazione
     uncertainty: normal(±5%)
     interpolation: spline
   }
@@ -531,7 +531,7 @@ scenario "Sfida Demografica" {
     2040: 53
     2050: 62
 
-    depends_on: aspettativa_vita, tasso_natalita
+    depends_on: aspettativa_vita, tasso_natalita, bonus_natalita, quota_immigrazione
     uncertainty: normal(±8%)
     interpolation: linear
   }

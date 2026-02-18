@@ -4,7 +4,7 @@
  *
  * Transforms a token stream into an Abstract Syntax Tree (AST).
  */
-import { Token, Diagnostic, ScenarioNode } from './types';
+import type { Token, Diagnostic, ScenarioNode } from './types';
 export interface ParseResult {
     ast: ScenarioNode | null;
     diagnostics: Diagnostic[];

@@ -3,7 +3,7 @@
  * Abstract Syntax Tree Type Definitions
  *
  * Spec: v0.1
- * License: MIT
+ * License: GPL-3.0-only
  * (c) Relatronica 2026
  */
 // ============================================================
@@ -137,6 +137,16 @@ export var TokenType;
     TokenType["DerivesFrom"] = "DerivesFrom";
     TokenType["Formula"] = "Formula";
     TokenType["Compose"] = "Compose";
+    // Interactive / presentation keywords
+    TokenType["Label"] = "Label";
+    TokenType["Step"] = "Step";
+    TokenType["Format"] = "Format";
+    TokenType["Control"] = "Control";
+    TokenType["Icon"] = "Icon";
+    TokenType["Color"] = "Color";
+    TokenType["Category"] = "Category";
+    TokenType["Subtitle"] = "Subtitle";
+    TokenType["Difficulty"] = "Difficulty";
     // Simulation methods
     TokenType["MonteCarlo"] = "MonteCarlo";
     TokenType["LatinHypercube"] = "LatinHypercube";

@@ -1,0 +1,231 @@
+// ============================================================
+// SDL Example: Crisi Idrica Mediterraneo 2025-2045
+// ============================================================
+// Modelli della crisi idrica mediterranea: precipitazioni,
+// agricoltura, desalinizzazione e conflitti
+// ============================================================
+
+scenario "Crisi Idrica Mediterraneo 2025-2045" {
+  timeframe: 2025 -> 2045
+  resolution: yearly
+  confidence: 0.40
+  author: "Relatronica — Citizen Lab"
+  version: "1.0"
+  description: "Modelli della crisi idrica mediterranea: precipitazioni, agricoltura, desalinizzazione e conflitti"
+  tags: ["acqua", "clima", "agricoltura", "mediterraneo", "infrastrutture"]
+  subtitle: "Acqua, agricoltura e conflitti 2025-2045"
+  category: ambiente
+  icon: "💧"
+  color: "#10b981"
+  difficulty: avanzato
+
+  // ── Parameters ──
+
+  parameter rainfall_index {
+    value: 100
+    range: [50, 120]
+    step: 5
+    label: "Indice precipitazioni"
+    unit: "indice"
+    source: "Copernicus ERA5 Mediterranean precipitation baseline, 2020-2024"
+    format: "{value}"
+    control: slider
+    description: "Indice precipitazioni annuali nel Mediterraneo (100 = media 2020-2024). Valori bassi indicano siccità"
+  }
+
+  parameter temperature_anomaly {
+    value: 1.3
+    range: [0.8, 3.0]
+    step: 0.1
+    label: "Anomalia termica"
+    unit: "°C"
+    source: "IPCC AR6 Mediterranean hotspot"
+    format: "+{value}°C"
+    control: slider
+    description: "Anomalia di temperatura media rispetto al periodo pre-industriale in gradi Celsius"
+  }
+
+  parameter infra_investment {
+    value: 8B EUR
+    range: [2B EUR, 30B EUR]
+    step: 1B EUR
+    label: "Investimenti infrastruttura"
+    unit: "miliardi €"
+    source: "EU Water Framework Directive budget allocation"
+    format: "{value} mld €"
+    control: slider
+    description: "Investimento annuo EU + nazionale in infrastruttura idrica in miliardi di euro"
+  }
+
+  parameter irrigation_efficiency {
+    value: 75%
+    range: [40%, 95%]
+    step: 5%
+    label: "Efficienza irrigazione"
+    unit: "%"
+    source: "FAO AQUASTAT irrigation efficiency data"
+    format: "{value}%"
+    control: slider
+    description: "Target di efficienza irrigua per l'agricoltura mediterranea (% acqua effettivamente utilizzata)"
+  }
+
+  // ── Variables ──
+
+  variable water_stress {
+    description: "Indice stress idrico Mediterraneo (0=abbondante, 100=scarsità estrema)"
+    unit: "indice"
+    label: "Stress idrico"
+    icon: "🔥"
+    color: "#ef4444"
+
+    2025: 42
+    2028: 47
+    2030: 52
+    2035: 63
+    2040: 72
+    2045: 78
+
+    depends_on: rainfall_index, temperature_anomaly, infra_investment, irrigation_efficiency
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  variable desalination_capacity {
+    description: "Capacità desalinizzazione installata"
+    unit: "milioni m³/giorno"
+    label: "Desalinizzazione"
+    icon: "🏭"
+    color: "#3b82f6"
+
+    2025: 12
+    2028: 15
+    2030: 19
+    2035: 30
+    2040: 42
+    2045: 55
+
+    depends_on: infra_investment
+    uncertainty: normal(±18%)
+    interpolation: spline
+  }
+
+  variable agricultural_output {
+    description: "Produzione agricola mediterranea (2025=100)"
+    unit: "indice"
+    label: "Produzione agricola"
+    icon: "🌾"
+    color: "#10b981"
+
+    2025: 100
+    2028: 97
+    2030: 93
+    2035: 84
+    2040: 76
+    2045: 70
+
+    depends_on: rainfall_index, temperature_anomaly, infra_investment, irrigation_efficiency
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  variable population_at_risk {
+    description: "Popolazione sotto stress idrico elevato"
+    unit: "milioni"
+    label: "Popolazione a rischio"
+    icon: "⚠"
+    color: "#f59e0b"
+
+    2025: 80
+    2028: 95
+    2030: 110
+    2035: 142
+    2040: 165
+    2045: 180
+
+    depends_on: rainfall_index, temperature_anomaly, infra_investment, irrigation_efficiency
+    uncertainty: normal(±12%)
+    interpolation: linear
+  }
+
+  variable conflict_risk {
+    description: "Rischio conflitto idrico transfrontaliero (0-100)"
+    unit: "indice"
+    label: "Rischio conflitto"
+    icon: "⚔"
+    color: "#8b5cf6"
+
+    2025: 22
+    2028: 28
+    2030: 35
+    2035: 48
+    2040: 58
+    2045: 65
+
+    depends_on: rainfall_index, temperature_anomaly, infra_investment, irrigation_efficiency
+    uncertainty: beta(4, 4)
+    interpolation: spline
+  }
+
+  // ── Impacts ──
+
+  impact rischio_alimentare {
+    description: "Rischio sicurezza alimentare"
+    unit: "indice"
+    label: "Rischio alimentare"
+    icon: "🍽"
+    color: "#ef4444"
+    derives_from: agricultural_output
+    formula: 100 - agricultural_output
+  }
+
+  impact gap_infrastrutturale {
+    description: "Gap tra capacità desalinizzazione e fabbisogno"
+    unit: "milioni m³/giorno"
+    label: "Gap infrastrutturale"
+    icon: "🏗"
+    color: "#ef4444"
+    derives_from: desalination_capacity, population_at_risk
+    formula: (population_at_risk * 0.15) - desalination_capacity
+  }
+
+  // ── Branches ──
+
+  branch "Siccità estrema" when rainfall_index < 70 and temperature_anomaly > 2.0 {
+    probability: 0.18
+
+    variable water_stress {
+      2030: 65
+      2035: 80
+      2040: 90
+      uncertainty: normal(±10%)
+    }
+
+    variable agricultural_output {
+      2035: 65
+      2040: 50
+      uncertainty: normal(±20%)
+    }
+  }
+
+  branch "Piano Marshall idrico" when infra_investment > 15B EUR {
+    probability: 0.15
+
+    variable desalination_capacity {
+      2035: 45
+      2040: 70
+      2045: 95
+      uncertainty: normal(±15%)
+    }
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 2000
+    method: monte_carlo
+    seed: 2040
+    output: distribution
+    percentiles: [5, 25, 50, 75, 95]
+    convergence: 0.01
+  }
+}

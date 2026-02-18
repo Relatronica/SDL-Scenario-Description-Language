@@ -3,7 +3,7 @@
  * Abstract Syntax Tree Type Definitions
  *
  * Spec: v0.1
- * License: MIT
+ * License: GPL-3.0-only
  * (c) Relatronica 2026
  */
 export declare enum TokenType {
@@ -123,6 +123,15 @@ export declare enum TokenType {
     DerivesFrom = "DerivesFrom",
     Formula = "Formula",
     Compose = "Compose",
+    Label = "Label",
+    Step = "Step",
+    Format = "Format",
+    Control = "Control",
+    Icon = "Icon",
+    Color = "Color",
+    Category = "Category",
+    Subtitle = "Subtitle",
+    Difficulty = "Difficulty",
     MonteCarlo = "MonteCarlo",
     LatinHypercube = "LatinHypercube",
     Sobol = "Sobol",
@@ -159,6 +168,9 @@ export interface ScenarioNode extends BaseNode {
     metadata: ScenarioMetadata;
     declarations: Declaration[];
 }
+export type ScenarioCategory = 'tecnologia' | 'economia' | 'ambiente' | 'societa' | 'politica';
+export type DifficultyLevel = 'base' | 'intermedio' | 'avanzato';
+export type ControlType = 'slider' | 'toggle' | 'dropdown' | 'input';
 export interface ScenarioMetadata {
     timeframe?: TimeframeValue;
     resolution?: ResolutionValue;
@@ -167,6 +179,11 @@ export interface ScenarioMetadata {
     version?: string;
     description?: string;
     tags?: string[];
+    subtitle?: string;
+    category?: ScenarioCategory;
+    icon?: string;
+    color?: string;
+    difficulty?: DifficultyLevel;
 }
 export interface TimeframeValue {
     start: DateValue;
@@ -184,6 +201,9 @@ export interface VariableNode extends BaseNode {
     name: string;
     description?: string;
     unit?: string;
+    label?: string;
+    icon?: string;
+    color?: string;
     timeseries: TimeseriesEntry[];
     dependsOn?: string[];
     model?: ModelExpression;
@@ -222,6 +242,14 @@ export interface ParameterNode extends BaseNode {
         max: ExpressionNode;
     };
     description?: string;
+    label?: string;
+    unit?: string;
+    step?: ExpressionNode;
+    source?: string;
+    format?: string;
+    control?: ControlType;
+    icon?: string;
+    color?: string;
 }
 export interface BranchNode extends BaseNode {
     type: 'Branch';
@@ -236,6 +264,9 @@ export interface ImpactNode extends BaseNode {
     name: string;
     description?: string;
     unit?: string;
+    label?: string;
+    icon?: string;
+    color?: string;
     derivesFrom?: string[];
     formula?: ExpressionNode;
 }
@@ -284,7 +315,7 @@ export interface CalibrateNode extends BaseNode {
     updateFrequency?: RefreshRate;
 }
 export type CalibrationMethod = 'bayesian_update' | 'maximum_likelihood' | 'ensemble';
-export type RefreshRate = 'realtime' | 'hourly' | 'daily' | 'weekly' | 'monthly';
+export type RefreshRate = 'realtime' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly';
 export interface BindNode extends BaseNode {
     type: 'Bind';
     source?: string;

@@ -1,0 +1,326 @@
+// ============================================================
+// SDL Example: Chatbot & LLM — Transparency Obligations
+// ============================================================
+// Models the deployment of LLM-based chatbots in the EU and
+// the evolving requirements for transparency, disclosure, and
+// content moderation under AI Act Art. 50 and GDPR Art. 13-14.
+//
+// Blueprint origin: Segno "Chatbot LLM" + "RAG System"
+// Rules: aiact-transparency-chat (Art. 50), gdpr-information-duty (Art. 13-14)
+// ============================================================
+
+scenario "Chatbot LLM — Obblighi di Trasparenza" {
+  timeframe: 2025 -> 2033
+  resolution: yearly
+  confidence: 0.30
+  author: "Relatronica"
+  version: "1.0"
+  description: "Evoluzione dei chatbot LLM in Europa: adozione, incidenti
+                di trasparenza, compliance Art. 50 AI Act, e impatto
+                sulla fiducia degli utenti. Basato sui blueprint Segno."
+  tags: ["llm", "chatbot", "trasparenza", "art-50", "ai-act"]
+  subtitle: "Obblighi di trasparenza per chatbot e sistemi generativi"
+  category: tecnologia
+  icon: "💬"
+  color: "#06b6d4"
+  difficulty: base
+
+  // ── Assumptions ──
+
+  assumption llm_capability_growth {
+    value: 2.5
+    source: "GPT-5, Gemini Ultra, Claude 4 trajectory estimates; Epoch AI"
+    confidence: 0.40
+    uncertainty: lognormal(0.9, 0.3)
+  }
+
+  assumption enterprise_chatbot_adoption {
+    value: 0.52
+    source: "Gartner 2025 — 52% of enterprises plan chatbot deployment by 2026"
+    confidence: 0.55
+    uncertainty: beta(5, 4)
+  }
+
+  assumption user_awareness_ai {
+    value: 0.35
+    source: "Eurobarometer 2024 — 35% of users always realize they're talking to AI"
+    confidence: 0.45
+    uncertainty: beta(3, 5)
+  }
+
+  // ── Parameters ──
+
+  parameter disclosure_compliance {
+    value: 0.45
+    range: [0.10, 0.95]
+    label: "Compliance disclosure"
+    unit: "indice"
+    step: 0.05
+    source: "AI Act Art. 50(1) implementation estimates"
+    format: "{value}"
+    control: slider
+    description: "Quota di chatbot che informano correttamente l'utente di essere un sistema AI (Art. 50)"
+  }
+
+  parameter content_moderation {
+    value: 0.50
+    range: [0.10, 0.90]
+    label: "Moderazione contenuti"
+    unit: "indice"
+    step: 0.05
+    source: "DSA + AI Act content moderation requirements"
+    format: "{value}"
+    control: slider
+    description: "Livello di moderazione dei contenuti generati dai chatbot LLM"
+  }
+
+  parameter rag_adoption {
+    value: 0.30
+    range: [0.05, 0.80]
+    label: "Adozione RAG"
+    unit: "indice"
+    step: 0.05
+    source: "Enterprise RAG deployment trends 2025"
+    format: "{value}"
+    control: slider
+    description: "Quota di chatbot enterprise che usano Retrieval-Augmented Generation"
+  }
+
+  // ── Variables ──
+
+  variable active_chatbots_eu {
+    description: "Chatbot LLM attivi nell'UE (consumer + enterprise)"
+    unit: "milioni"
+    label: "Chatbot attivi"
+    icon: "💬"
+    color: "#06b6d4"
+
+    2025: 1.2
+    2026: 2.8
+    2027: 5.5
+    2028: 9.0
+    2029: 13.0
+    2031: 20.0
+    2033: 28.0
+
+    depends_on: llm_capability_growth, enterprise_chatbot_adoption
+    model: exponential(rate=0.35, base=1.2)
+    uncertainty: lognormal(0.8, 0.4)
+    interpolation: spline
+  }
+
+  variable transparency_violations {
+    description: "Violazioni Art. 50 documentate (chatbot che non dichiarano di essere AI)"
+    unit: "violazioni/anno"
+    label: "Violazioni Art. 50"
+    icon: "⚠"
+    color: "#ef4444"
+
+    2025: 500
+    2026: 2200
+    2027: 5500
+    2028: 8000
+    2029: 7000
+    2031: 4500
+    2033: 2500
+
+    depends_on: active_chatbots_eu, disclosure_compliance
+    uncertainty: lognormal(7, 0.5)
+    interpolation: spline
+  }
+
+  variable hallucination_incidents {
+    description: "Incidenti gravi di allucinazione LLM con impatto reale (legal, medical, financial)"
+    unit: "incidenti/anno"
+    label: "Allucinazioni gravi"
+    icon: "🌀"
+    color: "#f59e0b"
+
+    2025: 180
+    2026: 420
+    2027: 800
+    2028: 1200
+    2029: 1500
+    2031: 1800
+    2033: 1400
+
+    depends_on: active_chatbots_eu, rag_adoption, content_moderation
+    uncertainty: lognormal(6, 0.5)
+    interpolation: spline
+  }
+
+  variable user_trust_chatbot {
+    description: "Fiducia degli utenti UE nei chatbot AI (0-100)"
+    unit: "indice"
+    label: "Fiducia utenti"
+    icon: "🤝"
+    color: "#3b82f6"
+
+    2025: 42
+    2026: 45
+    2027: 48
+    2028: 50
+    2029: 52
+    2031: 56
+    2033: 60
+
+    depends_on: transparency_violations, hallucination_incidents, disclosure_compliance
+    model: sigmoid(k=0.2, midpoint=2029)
+    uncertainty: beta(4, 5)
+    interpolation: spline
+  }
+
+  variable art50_sanctions {
+    description: "Sanzioni per violazioni Art. 50 (cumulativo UE)"
+    unit: "milioni EUR"
+    label: "Sanzioni Art. 50"
+    icon: "💰"
+    color: "#dc2626"
+
+    2025: 0
+    2026: 5
+    2027: 25
+    2028: 80
+    2029: 160
+    2031: 300
+    2033: 420
+
+    depends_on: transparency_violations
+    uncertainty: lognormal(4, 0.6)
+    interpolation: spline
+  }
+
+  variable chatbot_with_disclaimer {
+    description: "Quota di chatbot con disclaimer AI conforme Art. 50"
+    unit: "percentuale"
+    label: "Chatbot con disclaimer"
+    icon: "✓"
+    color: "#10b981"
+
+    2025: 30
+    2026: 42
+    2027: 55
+    2028: 68
+    2029: 78
+    2031: 88
+    2033: 93
+
+    depends_on: disclosure_compliance, art50_sanctions
+    model: sigmoid(k=0.4, midpoint=2028)
+    uncertainty: normal(±10%)
+    interpolation: spline
+  }
+
+  // ── Branches ──
+
+  branch "Deepfake Crisis" when content_moderation < 0.25 {
+    probability: 0.15
+
+    variable hallucination_incidents {
+      2028: 3000
+      2029: 5000
+      2031: 8000
+      2033: 6000
+      uncertainty: lognormal(7.5, 0.5)
+    }
+
+    variable user_trust_chatbot {
+      2028: 35
+      2029: 28
+      2031: 22
+      2033: 25
+      uncertainty: beta(2, 6)
+    }
+  }
+
+  branch "Trasparenza Totale" when disclosure_compliance > 0.85 {
+    probability: 0.20
+
+    variable transparency_violations {
+      2028: 2000
+      2029: 800
+      2031: 200
+      2033: 50
+      uncertainty: lognormal(5, 0.5)
+    }
+
+    variable user_trust_chatbot {
+      2028: 58
+      2029: 65
+      2031: 72
+      2033: 78
+      uncertainty: beta(6, 3)
+    }
+
+    variable chatbot_with_disclaimer {
+      2028: 85
+      2029: 92
+      2031: 97
+      2033: 99
+      uncertainty: normal(±3%)
+    }
+  }
+
+  branch "RAG come Standard" when rag_adoption > 0.6 {
+    probability: 0.22
+
+    variable hallucination_incidents {
+      2028: 600
+      2029: 400
+      2031: 250
+      2033: 150
+      uncertainty: lognormal(5, 0.5)
+    }
+
+    variable user_trust_chatbot {
+      2029: 60
+      2031: 68
+      2033: 75
+      uncertainty: beta(5, 3)
+    }
+  }
+
+  // ── Impacts ──
+
+  impact transparency_gap {
+    description: "Chatbot senza disclaimer AI conforme"
+    unit: "percentuale"
+    label: "Gap trasparenza"
+    icon: "⚡"
+    color: "#f97316"
+    derives_from: chatbot_with_disclaimer
+    formula: 100 - chatbot_with_disclaimer
+  }
+
+  impact hallucination_risk_per_million {
+    description: "Incidenti gravi per milione di chatbot attivi"
+    unit: "incidenti/M"
+    label: "Rischio allucinazione"
+    icon: "🌀"
+    color: "#f59e0b"
+    derives_from: hallucination_incidents, active_chatbots_eu
+    formula: hallucination_incidents / active_chatbots_eu
+  }
+
+  impact indice_affidabilita {
+    description: "Indice composito di affidabilita' chatbot (trasparenza + trust + disclaimer)"
+    unit: "indice"
+    label: "Affidabilita' chatbot"
+    icon: "📊"
+    color: "#06b6d4"
+    derives_from: user_trust_chatbot, chatbot_with_disclaimer
+    formula: (user_trust_chatbot + chatbot_with_disclaimer) / 2
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 10000
+    method: monte_carlo
+    seed: 2026
+    output: distribution
+    percentiles: [5, 10, 25, 50, 75, 90, 95]
+    convergence: 0.01
+    timeout: 30s
+  }
+}

@@ -1,0 +1,222 @@
+// ============================================================
+// SDL Scenario: AI e Lavoro in Italia 2025-2035
+// ============================================================
+// Modella l'impatto dell'intelligenza artificiale sul mercato
+// del lavoro italiano, esplorando automazione, nuovi posti
+// digitali, competenze e contributo al PIL.
+// ============================================================
+
+scenario "AI e Lavoro in Italia 2025-2035" {
+  timeframe: 2025 -> 2035
+  resolution: yearly
+  confidence: 0.45
+  author: "Relatronica — Citizen Lab"
+  version: "1.0"
+  description: "Simulazione dell'impatto dell'AI sul mercato del lavoro italiano"
+  tags: ["italia", "ai", "lavoro", "automazione", "formazione"]
+  subtitle: "Automazione, occupazione e competenze 2025-2035"
+  category: tecnologia
+  icon: "🤖"
+  color: "#3b82f6"
+  difficulty: base
+
+  // ── Parameters ──
+
+  parameter ai_adoption_rate {
+    value: 14%
+    range: [3%, 35%]
+    step: 1%
+    label: "Velocità di adozione AI"
+    unit: "%"
+    source: "ISTAT Imprese e ICT, 2024; OECD AI adoption estimates"
+    format: "{value}%"
+    control: slider
+    description: "Percentuale annua di aziende italiane che adottano sistemi AI nei processi produttivi"
+  }
+
+  parameter training_investment {
+    value: 5B EUR
+    range: [1B EUR, 25B EUR]
+    step: 0.5B EUR
+    label: "Investimento in riqualificazione"
+    unit: "miliardi €"
+    source: "PNRR Componente M1C1 Digitalizzazione; Fondi europei FSE+"
+    format: "{value} mld €"
+    control: slider
+    description: "Spesa pubblica + privata annua per formazione digitale e riconversione professionale"
+  }
+
+  parameter regulation_level {
+    value: 50%
+    range: [0%, 100%]
+    step: 5%
+    label: "Livello di regolamentazione AI"
+    unit: "%"
+    source: "EU AI Act (Reg. 2024/1689); AgID linee guida AI nella PA"
+    format: "{value}%"
+    control: slider
+    description: "Intensità della regolamentazione: 0 = nessuna, 100 = restrizioni massime (stile EU AI Act pieno)"
+  }
+
+  parameter tech_progress {
+    value: 22
+    range: [5, 50]
+    step: 1
+    label: "Velocità progresso AI"
+    unit: "fattore"
+    source: "Epoch AI compute tracking; Our World in Data AI index"
+    format: "{value}"
+    control: slider
+    description: "Quanto velocemente migliorano le capacità AI (crescita potenza di calcolo e modelli)"
+  }
+
+  // ── Variables ──
+
+  variable posti_lavoro_a_rischio {
+    label: "Posti di lavoro a rischio"
+    description: "Posti di lavoro a rischio automazione"
+    unit: "milioni"
+    icon: "⚠"
+    color: "#ef4444"
+
+    2025: 0.8
+    2027: 1.6
+    2029: 2.8
+    2031: 4.0
+    2033: 4.8
+    2035: 5.5
+
+    depends_on: ai_adoption_rate, training_investment, regulation_level, tech_progress
+    uncertainty: normal(±18%)
+    interpolation: spline
+  }
+
+  variable nuovi_posti_digitali {
+    label: "Nuovi posti digitali"
+    description: "Nuovi posti di lavoro digitali"
+    unit: "milioni"
+    icon: "✦"
+    color: "#10b981"
+
+    2025: 0.2
+    2027: 0.6
+    2029: 1.2
+    2031: 2.0
+    2033: 2.8
+    2035: 3.6
+
+    depends_on: ai_adoption_rate, training_investment, regulation_level, tech_progress
+    uncertainty: normal(±20%)
+    interpolation: spline
+  }
+
+  variable indice_competenze_digitali {
+    label: "Competenze digitali"
+    description: "Indice competenze digitali DESI (0-100)"
+    unit: "indice"
+    icon: "◈"
+    color: "#8b5cf6"
+
+    2025: 36
+    2027: 40
+    2029: 47
+    2031: 54
+    2033: 61
+    2035: 68
+
+    depends_on: ai_adoption_rate, training_investment, regulation_level, tech_progress
+    uncertainty: normal(±10%)
+    interpolation: spline
+  }
+
+  variable impatto_pil {
+    label: "Impatto sul PIL"
+    description: "Contributo AI al PIL italiano"
+    unit: "miliardi EUR"
+    icon: "◆"
+    color: "#f59e0b"
+
+    2025: 5B EUR
+    2027: 18B EUR
+    2029: 40B EUR
+    2031: 68B EUR
+    2033: 100B EUR
+    2035: 135B EUR
+
+    depends_on: ai_adoption_rate, training_investment, regulation_level, tech_progress
+    uncertainty: normal(±22%)
+    interpolation: spline
+  }
+
+  // ── Impacts ──
+
+  impact bilancio_netto_occupazione {
+    label: "Bilancio netto occupazione"
+    description: "Bilancio netto: nuovi posti meno posti a rischio"
+    unit: "milioni"
+    icon: "⊕"
+    color: "#3b82f6"
+    derives_from: nuovi_posti_digitali, posti_lavoro_a_rischio
+    formula: nuovi_posti_digitali - posti_lavoro_a_rischio
+  }
+
+  // ── Branches ──
+
+  branch "Regolamentazione forte" when regulation_level > 0.7 {
+    probability: 0.40
+
+    variable posti_lavoro_a_rischio {
+      2031: 2.8
+      2033: 3.12
+      2035: 3.3
+      uncertainty: normal(±12%)
+    }
+  }
+
+  branch "Boom formazione" when training_investment > 15B EUR {
+    probability: 0.35
+
+    variable nuovi_posti_digitali {
+      2031: 2.8
+      2033: 4.2
+      2035: 5.76
+      uncertainty: normal(±18%)
+    }
+
+    variable indice_competenze_digitali {
+      2031: 64.8
+      2033: 76.25
+      2035: 88.4
+      uncertainty: normal(±8%)
+    }
+  }
+
+  branch "Accelerazione tecnologica" when tech_progress > 40 {
+    probability: 0.15
+
+    variable posti_lavoro_a_rischio {
+      2031: 5.2
+      2033: 7.2
+      2035: 9.35
+      uncertainty: normal(±30%)
+    }
+
+    variable impatto_pil {
+      2031: 88.4B EUR
+      2033: 150B EUR
+      2035: 229.5B EUR
+      uncertainty: normal(±25%)
+    }
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 2000
+    method: monte_carlo
+    seed: 42
+    output: distribution
+    percentiles: [5, 25, 50, 75, 95]
+    convergence: 0.01
+  }
+}

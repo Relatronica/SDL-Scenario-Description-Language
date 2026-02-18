@@ -5,7 +5,7 @@
  * Executes SDL scenarios via Monte Carlo simulation,
  * propagating uncertainty through the causal graph.
  */
-import { ScenarioNode, SimulationResult } from '../core/types';
+import type { ScenarioNode, SimulationResult } from '../core/types';
 export interface SimulationConfig {
     runs: number;
     method: 'monte_carlo' | 'latin_hypercube' | 'sobol';
@@ -14,6 +14,9 @@ export interface SimulationConfig {
     convergence: number;
     timeoutMs: number;
     onProgress?: (progress: SimulationProgress) => void;
+    /** Original default values for parameters, used by dependency modulation
+     *  to compute the delta when parameter values have been overridden. */
+    parameterDefaults?: Record<string, number>;
 }
 export interface SimulationProgress {
     completedRuns: number;

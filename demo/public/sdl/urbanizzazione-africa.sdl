@@ -1,0 +1,261 @@
+// ============================================================
+// SDL Example: Urbanizzazione Africana e Leapfrog 2025-2055
+// ============================================================
+// L'onda di urbanizzazione africana e il potenziale di leapfrog
+// tecnologico in finanza, energia e connettività
+// ============================================================
+
+scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
+  timeframe: 2025 -> 2055
+  resolution: yearly
+  confidence: 0.35
+  author: "Relatronica — Citizen Lab"
+  version: "1.0"
+  description: "L'onda di urbanizzazione africana e il potenziale di leapfrog tecnologico in finanza, energia e connettività"
+  tags: ["africa", "urbanizzazione", "leapfrog", "fintech", "solare"]
+  subtitle: "Megacities, leapfrog e crescita 2025-2055"
+  category: economia
+  icon: "🌍"
+  color: "#f59e0b"
+  difficulty: intermedio
+
+  // ── Parameters ──
+
+  parameter pop_growth {
+    value: 2.4%
+    range: [1.0%, 3.5%]
+    step: 0.1%
+    label: "Crescita demografica"
+    unit: "%"
+    source: "UN World Population Prospects 2024, Sub-Saharan Africa"
+    format: "{value}%"
+    control: slider
+    description: "Tasso annuo di crescita della popolazione in Africa sub-sahariana"
+  }
+
+  parameter climate_finance {
+    value: 15B USD
+    range: [3B USD, 50B USD]
+    step: 1B USD
+    label: "Finanza climatica"
+    unit: "miliardi $"
+    source: "UNFCCC climate finance flows to Africa, 2024"
+    format: "{value} mld $"
+    control: slider
+    description: "Flussi annui di finanza climatica verso l'Africa in miliardi USD"
+  }
+
+  parameter governance {
+    value: 42
+    range: [15, 80]
+    step: 5
+    label: "Qualità governance"
+    unit: "indice"
+    source: "Mo Ibrahim Index of African Governance, 2024"
+    format: "{value}/100"
+    control: slider
+    description: "Indice di qualità della governance africana (0=fallimento, 100=eccellente)"
+  }
+
+  parameter infra_spend {
+    value: 3.5%
+    range: [1%, 10%]
+    step: 0.5%
+    label: "Spesa infrastrutture"
+    unit: "% PIL"
+    source: "African Development Bank Infrastructure Index"
+    format: "{value}% PIL"
+    control: slider
+    description: "Spesa in infrastrutture come percentuale del PIL"
+  }
+
+  // ── Variables ──
+
+  variable urban_population {
+    description: "Popolazione urbana Africa sub-sahariana"
+    unit: "milioni"
+    label: "Popolazione urbana"
+    icon: "🏙"
+    color: "#3b82f6"
+
+    2025: 590
+    2030: 730
+    2035: 880
+    2040: 1050
+    2045: 1220
+    2050: 1400
+    2055: 1560
+
+    depends_on: pop_growth, governance
+    uncertainty: normal(±8%)
+    interpolation: spline
+  }
+
+  variable mobile_money {
+    description: "Account mobile money attivi"
+    unit: "milioni"
+    label: "Mobile money"
+    icon: "📱"
+    color: "#10b981"
+
+    2025: 220
+    2030: 400
+    2035: 640
+    2040: 850
+    2045: 1050
+    2050: 1200
+    2055: 1350
+
+    depends_on: pop_growth, climate_finance, governance, infra_spend
+    uncertainty: normal(±18%)
+    interpolation: spline
+  }
+
+  variable solar_offgrid {
+    description: "Capacità solare off-grid installata"
+    unit: "GW"
+    label: "Solare off-grid"
+    icon: "☀"
+    color: "#f59e0b"
+
+    2025: 6
+    2030: 20
+    2035: 52
+    2040: 95
+    2045: 140
+    2050: 185
+    2055: 220
+
+    depends_on: pop_growth, climate_finance, governance, infra_spend
+    uncertainty: normal(±22%)
+    interpolation: spline
+  }
+
+  variable gdp_per_capita {
+    description: "PIL pro capite medio (PPP)"
+    unit: "USD"
+    label: "PIL pro capite"
+    icon: "💰"
+    color: "#8b5cf6"
+
+    2025: 3800
+    2030: 4400
+    2035: 5200
+    2040: 6300
+    2045: 7600
+    2050: 9200
+    2055: 11000
+
+    depends_on: pop_growth, climate_finance, governance, infra_spend
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  variable electrification {
+    description: "Tasso di elettrificazione"
+    unit: "percentuale"
+    label: "Elettrificazione"
+    icon: "⚡"
+    color: "#10b981"
+
+    2025: 50
+    2030: 60
+    2035: 73
+    2040: 82
+    2045: 88
+    2050: 93
+    2055: 96
+
+    depends_on: pop_growth, climate_finance, governance, infra_spend
+    uncertainty: normal(±10%)
+    interpolation: spline
+  }
+
+  variable infra_gap {
+    description: "Gap infrastrutturale (100=massimo deficit)"
+    unit: "indice"
+    label: "Gap infrastrutturale"
+    icon: "🏗"
+    color: "#ef4444"
+
+    2025: 78
+    2030: 72
+    2035: 64
+    2040: 55
+    2045: 46
+    2050: 38
+    2055: 31
+
+    depends_on: pop_growth, climate_finance, governance, infra_spend
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  // ── Impacts ──
+
+  impact indice_leapfrog {
+    description: "Progresso leapfrog digitale (fintech + energia + connettività)"
+    unit: "indice"
+    label: "Indice leapfrog"
+    icon: "🚀"
+    color: "#3b82f6"
+    derives_from: mobile_money, electrification
+    formula: (mobile_money / 1500 * 50) + (electrification * 0.5)
+  }
+
+  impact convergenza_economica {
+    description: "PIL pro capite come % della media mondiale"
+    unit: "percentuale"
+    label: "Convergenza economica"
+    icon: "📈"
+    color: "#10b981"
+    derives_from: gdp_per_capita
+    formula: gdp_per_capita / 18000 * 100
+  }
+
+  // ── Branches ──
+
+  branch "Leapfrog digitale" when mobile_money > 800 and electrification > 75 {
+    probability: 0.28
+
+    variable gdp_per_capita {
+      2040: 7560
+      2045: 9880
+      2050: 12512
+      uncertainty: normal(±18%)
+    }
+  }
+
+  branch "Trappola urbana" when infra_gap > 65 and urban_population > 1000 {
+    probability: 0.25
+
+    variable gdp_per_capita {
+      2040: 5229
+      2045: 5776
+      2050: 6532
+      uncertainty: normal(±20%)
+    }
+  }
+
+  branch "Svolta governance" when governance > 60 {
+    probability: 0.18
+
+    variable gdp_per_capita {
+      2035: 5980
+      2040: 8001
+      2050: 13524
+      uncertainty: normal(±15%)
+    }
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 2000
+    method: latin_hypercube
+    seed: 2050
+    output: distribution
+    percentiles: [5, 25, 50, 75, 95]
+    convergence: 0.01
+  }
+}

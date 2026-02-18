@@ -4,7 +4,7 @@
  *
  * Transforms a token stream into an Abstract Syntax Tree (AST).
  */
-import { TokenType, } from './types';
+import { TokenType } from './types';
 import { tokenize } from './lexer';
 export class Parser {
     tokens;
@@ -27,12 +27,17 @@ export class Parser {
     }
     // ── Scenario ──
     parseScenario() {
+        // Handle top-level imports before scenario keyword
+        const topLevelImports = [];
+        while (this.check(TokenType.Import)) {
+            topLevelImports.push(this.parseImport());
+        }
         const start = this.current().span.start;
         this.expect(TokenType.Scenario);
         const name = this.expectString();
         this.expect(TokenType.LeftBrace);
         const metadata = {};
-        const declarations = [];
+        const declarations = [...topLevelImports];
         while (!this.check(TokenType.RightBrace) && !this.check(TokenType.EOF)) {
             if (this.isMetadataKey()) {
                 this.parseMetadata(metadata);
@@ -57,6 +62,8 @@ export class Parser {
         return [
             TokenType.Timeframe, TokenType.Resolution, TokenType.Confidence,
             TokenType.Author, TokenType.Version, TokenType.Description, TokenType.Tags,
+            TokenType.Subtitle, TokenType.Category, TokenType.Icon, TokenType.Color,
+            TokenType.Difficulty,
         ].includes(type);
     }
     parseMetadata(metadata) {
@@ -107,6 +114,40 @@ export class Parser {
                 metadata.tags = this.parseStringArray();
                 break;
             }
+            case TokenType.Subtitle: {
+                this.advance();
+                this.expect(TokenType.Colon);
+                metadata.subtitle = this.expectString();
+                break;
+            }
+            case TokenType.Category: {
+                this.advance();
+                this.expect(TokenType.Colon);
+                metadata.category = (this.check(TokenType.String)
+                    ? this.expectString()
+                    : this.expectIdentifier());
+                break;
+            }
+            case TokenType.Icon: {
+                this.advance();
+                this.expect(TokenType.Colon);
+                metadata.icon = this.expectString();
+                break;
+            }
+            case TokenType.Color: {
+                this.advance();
+                this.expect(TokenType.Colon);
+                metadata.color = this.expectString();
+                break;
+            }
+            case TokenType.Difficulty: {
+                this.advance();
+                this.expect(TokenType.Colon);
+                metadata.difficulty = (this.check(TokenType.String)
+                    ? this.expectString()
+                    : this.expectIdentifier());
+                break;
+            }
         }
     }
     // ── Declarations ──
@@ -155,6 +196,21 @@ export class Parser {
                 this.advance();
                 this.expect(TokenType.Colon);
                 node.unit = this.expectString();
+            }
+            else if (this.check(TokenType.Label)) {
+                this.advance();
+                this.expect(TokenType.Colon);
+                node.label = this.expectString();
+            }
+            else if (this.check(TokenType.Icon)) {
+                this.advance();
+                this.expect(TokenType.Colon);
+                node.icon = this.expectString();
+            }
+            else if (this.check(TokenType.Color)) {
+                this.advance();
+                this.expect(TokenType.Colon);
+                node.color = this.expectString();
             }
             else if (this.check(TokenType.DependsOn)) {
                 this.advance();
@@ -286,6 +342,48 @@ export class Parser {
                 this.expect(TokenType.Colon);
                 node.description = this.expectString();
             }
+            else if (this.check(TokenType.Label)) {
+                this.advance();
+                this.expect(TokenType.Colon);
+                node.label = this.expectString();
+            }
+            else if (this.check(TokenType.Unit)) {
+                this.advance();
+                this.expect(TokenType.Colon);
+                node.unit = this.expectString();
+            }
+            else if (this.check(TokenType.Step)) {
+                this.advance();
+                this.expect(TokenType.Colon);
+                node.step = this.parseExpression();
+            }
+            else if (this.check(TokenType.Source)) {
+                this.advance();
+                this.expect(TokenType.Colon);
+                node.source = this.expectString();
+            }
+            else if (this.check(TokenType.Format)) {
+                this.advance();
+                this.expect(TokenType.Colon);
+                node.format = this.expectString();
+            }
+            else if (this.check(TokenType.Control)) {
+                this.advance();
+                this.expect(TokenType.Colon);
+                node.control = (this.check(TokenType.String)
+                    ? this.expectString()
+                    : this.expectIdentifier());
+            }
+            else if (this.check(TokenType.Icon)) {
+                this.advance();
+                this.expect(TokenType.Colon);
+                node.icon = this.expectString();
+            }
+            else if (this.check(TokenType.Color)) {
+                this.advance();
+                this.expect(TokenType.Colon);
+                node.color = this.expectString();
+            }
             else {
                 this.advance();
             }
@@ -367,6 +465,21 @@ export class Parser {
                 this.advance();
                 this.expect(TokenType.Colon);
                 node.unit = this.expectString();
+            }
+            else if (this.check(TokenType.Label)) {
+                this.advance();
+                this.expect(TokenType.Colon);
+                node.label = this.expectString();
+            }
+            else if (this.check(TokenType.Icon)) {
+                this.advance();
+                this.expect(TokenType.Colon);
+                node.icon = this.expectString();
+            }
+            else if (this.check(TokenType.Color)) {
+                this.advance();
+                this.expect(TokenType.Colon);
+                node.color = this.expectString();
             }
             else if (this.check(TokenType.DerivesFrom)) {
                 this.advance();
@@ -1153,6 +1266,7 @@ export class Parser {
             [TokenType.Daily]: 'daily',
             [TokenType.Weekly]: 'weekly',
             [TokenType.Monthly]: 'monthly',
+            [TokenType.Yearly]: 'yearly',
         };
         const value = keywordMap[token.type];
         if (value) {
@@ -1318,6 +1432,9 @@ export class Parser {
         return [
             TokenType.Value, TokenType.Source, TokenType.Field,
             TokenType.Output, TokenType.Method, TokenType.Seed,
+            TokenType.Label, TokenType.Step, TokenType.Format,
+            TokenType.Control, TokenType.Icon, TokenType.Color,
+            TokenType.Category, TokenType.Subtitle, TokenType.Difficulty,
         ].includes(type);
     }
     spanFrom(start) {

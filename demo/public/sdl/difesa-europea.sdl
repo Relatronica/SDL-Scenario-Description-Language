@@ -1,0 +1,241 @@
+scenario "Autonomia Strategica Difesa Europea 2025-2038" {
+  timeframe: 2025 -> 2038
+  resolution: yearly
+  confidence: 0.25
+  author: "Relatronica — Citizen Lab"
+  version: "1.0"
+  description: "Traiettorie dell'autonomia strategica difensiva europea: relazioni transatlantiche, percezione minaccia, capacità industriale"
+  tags: ["difesa", "europa", "geopolitica", "NATO", "industria"]
+  subtitle: "NATO, industria e deterrenza 2025-2038"
+  category: politica
+  icon: "🛡"
+  color: "#ef4444"
+  difficulty: avanzato
+
+  parameter us_commitment {
+    label: "Impegno USA/NATO"
+    value: 65
+    range: [10, 100]
+    step: 5
+    unit: "%"
+    source: "US Congressional NATO support votes + postura esecutiva, 2025"
+    format: "{value}%"
+    control: slider
+    description: "Livello di impegno degli Stati Uniti verso la NATO e la difesa europea (0=disimpegno, 100=pieno impegno)"
+  }
+
+  parameter threat_level {
+    label: "Livello minaccia russa"
+    value: 70
+    range: [20, 100]
+    step: 5
+    unit: "%"
+    source: "EU INTCEN threat assessment, 2025"
+    format: "{value}%"
+    control: slider
+    description: "Percezione della minaccia russa secondo le intelligence europee (0=bassa, 100=massima)"
+  }
+
+  parameter eu_cohesion {
+    label: "Coesione politica UE"
+    value: 55
+    range: [15, 90]
+    step: 5
+    unit: "%"
+    source: "European Council CFSP unanimity rate, 2024"
+    format: "{value}%"
+    control: slider
+    description: "Tasso di unanimità del Consiglio Europeo sulle decisioni PESC (0=paralisi, 100=unanimità)"
+  }
+
+  parameter defense_budget {
+    label: "Obiettivo spesa difesa"
+    value: 2.5
+    range: [1.5, 4.5]
+    step: 0.1
+    unit: "% PIL"
+    source: "NATO Defence Expenditure Guidelines; EU Council conclusions"
+    format: "{value}% PIL"
+    control: slider
+    description: "Obiettivo medio di spesa per la difesa dei membri UE in percentuale del PIL"
+  }
+
+  variable defense_spending {
+    description: "Spesa difesa media UE (% PIL)"
+    unit: "percentuale PIL"
+    label: "Spesa difesa"
+    icon: "💰"
+    color: "#3b82f6"
+    2025: 1.9
+    2027: 2.1
+    2029: 2.3
+    2031: 2.5
+    2033: 2.7
+    2035: 2.9
+    2038: 3.1
+    depends_on: us_commitment, threat_level, eu_cohesion, defense_budget
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  variable ammo_production {
+    description: "Capacità produzione munizioni UE (2025=100)"
+    unit: "indice"
+    label: "Produzione munizioni"
+    icon: "🏭"
+    color: "#f59e0b"
+    2025: 100
+    2027: 130
+    2029: 175
+    2031: 230
+    2033: 290
+    2035: 350
+    2038: 420
+    depends_on: us_commitment, threat_level, eu_cohesion, defense_budget
+    uncertainty: normal(±20%)
+    interpolation: spline
+  }
+
+  variable us_dependency {
+    description: "Dipendenza da equipaggiamento USA (% procurement)"
+    unit: "percentuale"
+    label: "Dipendenza USA"
+    icon: "🇺🇸"
+    color: "#ef4444"
+    2025: 55
+    2027: 52
+    2029: 48
+    2031: 43
+    2033: 38
+    2035: 33
+    2038: 28
+    depends_on: us_commitment, threat_level, eu_cohesion, defense_budget
+    uncertainty: normal(±12%)
+    interpolation: linear
+  }
+
+  variable rapid_deployment {
+    description: "Capacità di schieramento rapido (truppe in 30 giorni)"
+    unit: "migliaia"
+    label: "Schieramento rapido"
+    icon: "⚔"
+    color: "#10b981"
+    2025: 5
+    2027: 12
+    2029: 22
+    2031: 35
+    2033: 48
+    2035: 60
+    2038: 70
+    depends_on: us_commitment, threat_level, eu_cohesion, defense_budget
+    uncertainty: normal(±25%)
+    interpolation: spline
+  }
+
+  variable cyber_readiness {
+    description: "Prontezza cyber-difesa collettiva UE (0-100)"
+    unit: "indice"
+    label: "Cyber difesa"
+    icon: "🔒"
+    color: "#8b5cf6"
+    2025: 42
+    2027: 50
+    2029: 58
+    2031: 65
+    2033: 72
+    2035: 78
+    2038: 84
+    depends_on: us_commitment, threat_level, eu_cohesion, defense_budget
+    uncertainty: normal(±18%)
+    interpolation: spline
+  }
+
+  variable defense_employment {
+    description: "Occupazione industria difesa UE"
+    unit: "migliaia"
+    label: "Occupazione difesa"
+    icon: "👷"
+    color: "#10b981"
+    2025: 470
+    2027: 510
+    2029: 560
+    2031: 620
+    2033: 680
+    2035: 740
+    2038: 800
+    depends_on: us_commitment, threat_level, eu_cohesion, defense_budget
+    uncertainty: normal(±12%)
+    interpolation: linear
+  }
+
+  impact autonomia_strategica {
+    description: "Indice composito autonomia difensiva UE"
+    unit: "indice"
+    label: "Autonomia strategica"
+    icon: "🇪🇺"
+    color: "#3b82f6"
+    derives_from: us_dependency, rapid_deployment, cyber_readiness
+    formula: ((100 - us_dependency) * 0.33) + (rapid_deployment / 80 * 33) + (cyber_readiness * 0.34)
+  }
+
+  impact credibilita_deterrenza {
+    description: "Indice credibilità di deterrenza UE"
+    unit: "indice"
+    label: "Credibilità deterrenza"
+    icon: "⚡"
+    color: "#ef4444"
+    derives_from: defense_spending, ammo_production, rapid_deployment
+    formula: (defense_spending / 3 * 30) + (ammo_production / 500 * 40) + (rapid_deployment / 80 * 30)
+  }
+
+  branch "Ritiro USA" when us_commitment < 35 {
+    probability: 0.15
+    variable defense_spending {
+      2029: 2.81
+      2031: 3.30
+      2035: 3.80
+      uncertainty: normal(±12%)
+    }
+    variable us_dependency {
+      2031: 31.82
+      2035: 14.85
+      uncertainty: normal(±15%)
+    }
+  }
+
+  branch "Esercito europeo" when eu_cohesion > 75 and defense_spending > 2.8 {
+    probability: 0.10
+    variable rapid_deployment {
+      2031: 45.15
+      2035: 79.80
+      2038: 95.20
+      uncertainty: normal(±15%)
+    }
+  }
+
+  branch "Escalation orientale" when threat_level > 85 {
+    probability: 0.18
+    variable defense_spending {
+      2027: 2.50
+      2029: 2.99
+      2031: 3.50
+      2035: 4.00
+      uncertainty: normal(±10%)
+    }
+    variable ammo_production {
+      2029: 250.25
+      2031: 400.20
+      2035: 651.00
+      uncertainty: normal(±20%)
+    }
+  }
+
+  simulate {
+    runs: 2000
+    method: monte_carlo
+    seed: 2035
+    output: distribution
+    percentiles: [5, 25, 50, 75, 95]
+    convergence: 0.01
+  }
+}

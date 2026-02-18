@@ -51,7 +51,8 @@ export type ScenarioCategory =
   | 'economia'
   | 'ambiente'
   | 'societa'
-  | 'politica';
+  | 'politica'
+  | 'regolamentazione';
 
 export const CATEGORY_LABELS: Record<ScenarioCategory, string> = {
   tecnologia: 'Tecnologia',
@@ -59,6 +60,7 @@ export const CATEGORY_LABELS: Record<ScenarioCategory, string> = {
   ambiente: 'Ambiente',
   societa: 'Società',
   politica: 'Politica',
+  regolamentazione: 'Regolamentazione AI',
 };
 
 export const CATEGORY_COLORS: Record<ScenarioCategory, string> = {
@@ -67,13 +69,6 @@ export const CATEGORY_COLORS: Record<ScenarioCategory, string> = {
   ambiente: '#10b981',
   societa: '#8b5cf6',
   politica: '#ef4444',
+  regolamentazione: '#6366f1',
 };
 
-// ─── Full Scenario Definition ───
-
-export interface ScenarioDefinition {
-  meta: ScenarioMeta;
-  sliders: SliderDef[];
-  variables: VariableDisplay[];
-  generateSDL: (values: Record<string, number>) => string;
-}

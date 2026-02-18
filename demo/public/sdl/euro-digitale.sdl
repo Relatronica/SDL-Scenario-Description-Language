@@ -1,0 +1,235 @@
+// ============================================================
+// SDL Scenario: Euro Digitale — Adozione CBDC 2025-2032
+// ============================================================
+// Simula l'adozione dell'Euro Digitale e il suo impatto su
+// banche, inclusione finanziaria, depositi e filiali bancarie
+// nell'eurozona.
+// ============================================================
+
+scenario "Euro Digitale — Adozione CBDC 2025-2032" {
+  timeframe: 2025 -> 2032
+  resolution: yearly
+  confidence: 0.50
+  author: "Relatronica — Citizen Lab"
+  version: "1.0"
+  description: "Simulazione dell'adozione dell'Euro Digitale e impatto su banche, inclusione e depositi"
+  tags: ["finanza", "cbdc", "eurozona", "banche", "inclusione"]
+  subtitle: "Adozione CBDC, banche e inclusione 2025-2032"
+  category: economia
+  icon: "💶"
+  color: "#f59e0b"
+  difficulty: base
+
+  // ── Parameters ──
+
+  parameter ecb_commitment {
+    value: 85%
+    range: [20%, 100%]
+    step: 5%
+    label: "Impegno BCE"
+    unit: "%"
+    source: "ECB Digital Euro project, fase di preparazione 2025"
+    format: "{value}%"
+    control: slider
+    description: "Probabilità e decisione della BCE di lanciare l'Euro Digitale (0=annullamento, 100=lancio pieno)"
+  }
+
+  parameter privacy_level {
+    value: 70%
+    range: [10%, 100%]
+    step: 5%
+    label: "Tutela privacy"
+    unit: "%"
+    source: "EU Digital Euro Regulation proposal, 2024"
+    format: "{value}%"
+    control: slider
+    description: "Livello di privacy garantito nelle transazioni (0=trasparenza totale, 100=anonimato simil-contante)"
+  }
+
+  parameter holding_limit {
+    value: 3000 EUR
+    range: [500 EUR, 10000 EUR]
+    step: 500 EUR
+    label: "Limite di detenzione"
+    unit: "€"
+    source: "ECB proposta di limite individuale, 2025"
+    format: "{value} €"
+    control: slider
+    description: "Importo massimo detenibile in Euro Digitale per persona, in euro"
+  }
+
+  parameter offline_capability {
+    value: 60%
+    range: [10%, 100%]
+    step: 5%
+    label: "Capacità offline"
+    unit: "%"
+    source: "Requisiti tecnici BCE per offline payments"
+    format: "{value}%"
+    control: slider
+    description: "Livello di supporto per pagamenti offline senza connessione internet"
+  }
+
+  // ── Variables ──
+
+  variable wallet_adoption {
+    label: "Adozione wallet"
+    description: "Percentuale adulti eurozona con wallet Euro Digitale"
+    unit: "%"
+    icon: "📱"
+    color: "#3b82f6"
+
+    2025: 0%
+    2026: 2%
+    2027: 8%
+    2028: 18%
+    2029: 32%
+    2030: 45%
+    2031: 55%
+    2032: 62%
+
+    depends_on: ecb_commitment, privacy_level, holding_limit, offline_capability
+    uncertainty: normal(±20%)
+    interpolation: spline
+  }
+
+  variable daily_transactions {
+    label: "Transazioni giornaliere"
+    description: "Transazioni giornaliere medie in milioni"
+    unit: "milioni"
+    icon: "💳"
+    color: "#10b981"
+
+    2025: 0
+    2026: 0.5
+    2027: 3
+    2028: 12
+    2029: 35
+    2030: 70
+    2031: 110
+    2032: 150
+
+    depends_on: ecb_commitment, privacy_level, holding_limit, offline_capability
+    uncertainty: normal(±25%)
+    interpolation: spline
+  }
+
+  variable bank_branch_count {
+    label: "Filiali bancarie"
+    description: "Filiali bancarie nell'eurozona (migliaia)"
+    unit: "migliaia"
+    icon: "🏦"
+    color: "#ef4444"
+
+    2025: 125
+    2026: 122
+    2027: 118
+    2028: 112
+    2029: 105
+    2030: 97
+    2031: 90
+    2032: 84
+
+    depends_on: ecb_commitment, privacy_level, holding_limit, offline_capability
+    uncertainty: normal(±8%)
+    interpolation: linear
+  }
+
+  variable bank_deposits_shift {
+    label: "Shift depositi"
+    description: "Depositi retail migrati da banche a CBDC (%)"
+    unit: "%"
+    icon: "↗"
+    color: "#f59e0b"
+
+    2025: 0%
+    2026: 0.3%
+    2027: 1.2%
+    2028: 2.8%
+    2029: 4.5%
+    2030: 6.0%
+    2031: 7.2%
+    2032: 8.0%
+
+    depends_on: ecb_commitment, privacy_level, holding_limit, offline_capability
+    uncertainty: normal(±15%)
+    interpolation: linear
+  }
+
+  variable financial_inclusion {
+    label: "Inclusione finanziaria"
+    description: "Indice inclusione finanziaria (0-100)"
+    unit: "indice"
+    icon: "🤝"
+    color: "#8b5cf6"
+
+    2025: 62
+    2026: 63
+    2027: 66
+    2028: 70
+    2029: 74
+    2030: 78
+    2031: 81
+    2032: 84
+
+    depends_on: ecb_commitment, privacy_level, holding_limit, offline_capability
+    uncertainty: normal(±10%)
+    interpolation: spline
+  }
+
+  // ── Impacts ──
+
+  impact disruption_bancaria {
+    label: "Disruption bancaria"
+    description: "Indice di disruption del settore bancario"
+    unit: "indice"
+    icon: "⚡"
+    color: "#ef4444"
+    derives_from: bank_deposits_shift, bank_branch_count
+    formula: (bank_deposits_shift * 10) + ((125 - bank_branch_count) / 125 * 100)
+  }
+
+  impact guadagno_inclusione {
+    label: "Guadagno inclusione"
+    description: "Guadagno netto in inclusione finanziaria"
+    unit: "punti"
+    icon: "↑"
+    color: "#10b981"
+    derives_from: financial_inclusion
+    formula: financial_inclusion - 62
+  }
+
+  // ── Branches ──
+
+  branch "Adozione massiva" when wallet_adoption > 50% and daily_transactions > 100 {
+    probability: 0.25
+
+    variable bank_deposits_shift {
+      2031: 10.08%
+      2032: 14%
+      uncertainty: normal(±20%)
+    }
+  }
+
+  branch "Rivolta privacy" when privacy_level < 40% {
+    probability: 0.15
+
+    variable wallet_adoption {
+      2030: 22.5%
+      2031: 24.75%
+      2032: 27.9%
+      uncertainty: normal(±15%)
+    }
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 2000
+    method: monte_carlo
+    seed: 2026
+    output: distribution
+    percentiles: [5, 25, 50, 75, 95]
+    convergence: 0.02
+  }
+}

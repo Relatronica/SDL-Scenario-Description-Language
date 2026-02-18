@@ -94,6 +94,16 @@ const KEYWORDS = {
     derives_from: TokenType.DerivesFrom,
     formula: TokenType.Formula,
     compose: TokenType.Compose,
+    // Interactive / presentation keywords
+    label: TokenType.Label,
+    step: TokenType.Step,
+    format: TokenType.Format,
+    control: TokenType.Control,
+    icon: TokenType.Icon,
+    color: TokenType.Color,
+    category: TokenType.Category,
+    subtitle: TokenType.Subtitle,
+    difficulty: TokenType.Difficulty,
     // Simulation methods
     monte_carlo: TokenType.MonteCarlo,
     latin_hypercube: TokenType.LatinHypercube,
@@ -321,13 +331,17 @@ export class Lexer {
             this.advance();
             return this.makeToken(TokenType.Percentage, value, start);
         }
-        // Check for magnitude suffix + currency (e.g., 5M EUR)
+        // Check for magnitude suffix + currency (e.g., 5M EUR) or plain magnitude (e.g., 1.5M)
         if (MAGNITUDE_SUFFIXES.has(this.peek())) {
             const mag = this.peek();
+            const magPos = this.pos;
             this.advance();
+            // Check if magnitude is immediately followed by alphanumeric (not a standalone magnitude)
+            const charAfterMag = this.peek();
+            const isMagStandalone = !this.isAlphaNumeric(charAfterMag) || charAfterMag === ' '
+                || charAfterMag === '\t' || charAfterMag === '\n' || charAfterMag === '\r';
             this.skipInlineWhitespace();
             if (this.isAlpha(this.peek())) {
-                const currStart = this.pos;
                 let curr = '';
                 while (!this.isAtEnd() && this.isAlpha(this.peek())) {
                     curr += this.peek();
@@ -336,12 +350,18 @@ export class Lexer {
                 if (CURRENCY_CODES.has(curr)) {
                     return this.makeToken(TokenType.Currency, `${value}${mag} ${curr}`, start);
                 }
-                // Not a currency — backtrack
-                this.pos = currStart;
+                // Not a currency — backtrack to after magnitude
+                this.pos = magPos + 1;
                 this.recalculatePosition();
             }
-            // Magnitude without currency — treat as number + identifier
-            this.pos -= 1;
+            // Plain magnitude without currency (e.g., 1.5M, 65B)
+            if (isMagStandalone) {
+                const multipliers = { K: 1e3, M: 1e6, B: 1e9, T: 1e12 };
+                const numValue = parseFloat(value) * multipliers[mag];
+                return this.makeToken(TokenType.Number, String(numValue), start);
+            }
+            // Otherwise backtrack magnitude
+            this.pos = magPos;
             this.recalculatePosition();
         }
         // Check for currency code directly after number (e.g., 150 EUR)
@@ -350,7 +370,6 @@ export class Lexer {
         const savedCol = this.column;
         this.skipInlineWhitespace();
         if (this.isAlpha(this.peek())) {
-            const wordStart = this.pos;
             let word = '';
             while (!this.isAtEnd() && this.isAlpha(this.peek())) {
                 word += this.peek();

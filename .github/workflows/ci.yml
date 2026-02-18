@@ -34,3 +34,34 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+  build-demo:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install core dependencies
+        run: npm ci
+
+      - name: Build core
+        run: npm run build
+
+      - name: Install demo dependencies
+        working-directory: demo
+        run: npm ci
+
+      - name: Type check demo
+        working-directory: demo
+        run: npx tsc --noEmit
+
+      - name: Build demo
+        working-directory: demo
+        run: npx vite build

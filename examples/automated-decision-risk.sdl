@@ -1,0 +1,329 @@
+// ============================================================
+// SDL Example: Automated Decision-Making — Risk & Oversight
+// ============================================================
+// Models the evolution of AI-driven automated decisions
+// (credit scoring, hiring, welfare) and the growing tension
+// with GDPR Art. 22 and AI Act Art. 14 requirements for
+// human oversight. Based on Segno knowledge base patterns.
+//
+// Blueprint origin: Segno "Decisione Automatica" + "Human-in-the-loop"
+// Rules: gdpr-automated-decision (Art. 22), aiact-highrisk-systems (Art. 6)
+// ============================================================
+
+scenario "Decisioni Automatizzate — Rischio e Supervisione" {
+  timeframe: 2025 -> 2035
+  resolution: yearly
+  confidence: 0.35
+  author: "Relatronica"
+  version: "1.0"
+  description: "Simula l'impatto delle decisioni automatizzate AI su credito,
+                lavoro e welfare nell'UE, e l'efficacia della supervisione umana
+                come mitigazione. Ispirato ai blueprint Segno."
+  tags: ["decisioni-automatizzate", "human-in-the-loop", "art-22", "gdpr", "ai-act"]
+  subtitle: "Credito, assunzioni e welfare nell'era delle decisioni AI"
+  category: politica
+  icon: "🤖"
+  color: "#a855f7"
+  difficulty: intermedio
+
+  // ── Assumptions ──
+
+  assumption ai_decision_adoption {
+    value: 0.38
+    source: "McKinsey AI Survey 2025 — 38% of enterprises use AI for operational decisions"
+    confidence: 0.55
+    uncertainty: beta(4, 6)
+  }
+
+  assumption gdpr_art22_awareness {
+    value: 0.45
+    source: "DPA survey 2024 — less than half of data subjects know their Art. 22 rights"
+    confidence: 0.40
+    uncertainty: beta(4, 5)
+  }
+
+  assumption algorithmic_bias_rate {
+    value: 0.18
+    source: "AI Now Institute 2024 — est. 15-20% of deployed models show significant bias"
+    confidence: 0.35
+    uncertainty: beta(3, 12)
+  }
+
+  // ── Parameters ──
+
+  parameter human_oversight_rate {
+    value: 0.40
+    range: [0.05, 0.95]
+    label: "Tasso supervisione umana"
+    unit: "indice"
+    step: 0.05
+    source: "Enterprise AI deployment surveys 2025"
+    format: "{value}"
+    control: slider
+    description: "Quota di sistemi AI decisionali con human-in-the-loop effettivo"
+  }
+
+  parameter sector_spread {
+    value: 0.30
+    range: [0.10, 0.70]
+    label: "Diffusione intersettoriale"
+    unit: "indice"
+    step: 0.05
+    source: "AI adoption by sector (finance, HR, public admin)"
+    format: "{value}"
+    control: slider
+    description: "Quanto le decisioni automatizzate si diffondono oltre finanza e HR"
+  }
+
+  parameter transparency_mandate {
+    value: 0.50
+    range: [0.10, 0.90]
+    label: "Obbligo di spiegabilita'"
+    unit: "indice"
+    step: 0.05
+    source: "AI Act Art. 13 + national transparency laws"
+    format: "{value}"
+    control: slider
+    description: "Rigore dell'obbligo di spiegare le decisioni AI agli interessati"
+  }
+
+  // ── Variables ──
+
+  variable automated_decisions_daily {
+    description: "Decisioni AI automatizzate al giorno nell'UE (stima)"
+    unit: "milioni"
+    label: "Decisioni AI/giorno"
+    icon: "⚡"
+    color: "#a855f7"
+
+    2025: 85
+    2027: 150
+    2029: 280
+    2031: 450
+    2033: 620
+    2035: 800
+
+    depends_on: ai_decision_adoption, sector_spread
+    model: exponential(rate=0.22, base=85)
+    uncertainty: lognormal(4.4, 0.3)
+    interpolation: spline
+  }
+
+  variable art22_complaints {
+    description: "Reclami Art. 22 GDPR per decisioni automatizzate (annui UE)"
+    unit: "reclami"
+    label: "Reclami Art. 22"
+    icon: "⚖"
+    color: "#ef4444"
+
+    2025: 8500
+    2027: 15000
+    2029: 28000
+    2031: 42000
+    2033: 38000
+    2035: 30000
+
+    depends_on: automated_decisions_daily, gdpr_art22_awareness, human_oversight_rate
+    uncertainty: lognormal(9, 0.4)
+    interpolation: spline
+  }
+
+  variable bias_incidents {
+    description: "Incidenti documentati di bias algoritmico con impatto legale"
+    unit: "casi"
+    label: "Incidenti bias"
+    icon: "⚠"
+    color: "#f59e0b"
+
+    2025: 320
+    2027: 580
+    2029: 950
+    2031: 1400
+    2033: 1200
+    2035: 900
+
+    depends_on: automated_decisions_daily, algorithmic_bias_rate, human_oversight_rate
+    uncertainty: lognormal(5.5, 0.5)
+    interpolation: spline
+  }
+
+  variable human_oversight_effective {
+    description: "Sistemi con supervisione umana realmente efficace (non solo formale)"
+    unit: "percentuale"
+    label: "Oversight effettivo"
+    icon: "👤"
+    color: "#10b981"
+
+    2025: 22
+    2027: 30
+    2029: 42
+    2031: 55
+    2033: 65
+    2035: 72
+
+    depends_on: human_oversight_rate, transparency_mandate
+    model: sigmoid(k=0.35, midpoint=2030)
+    uncertainty: normal(±12%)
+    interpolation: spline
+  }
+
+  variable explainability_adoption {
+    description: "Quota di sistemi AI decisionali con spiegabilita' verificabile"
+    unit: "percentuale"
+    label: "Spiegabilita' AI"
+    icon: "🔍"
+    color: "#3b82f6"
+
+    2025: 12
+    2027: 22
+    2029: 38
+    2031: 52
+    2033: 65
+    2035: 75
+
+    depends_on: transparency_mandate, human_oversight_rate
+    model: sigmoid(k=0.3, midpoint=2029)
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  variable sanctions_art22 {
+    description: "Sanzioni per violazione Art. 22 / AI Act Art. 14 (cumulativo)"
+    unit: "milioni EUR"
+    label: "Sanzioni Art. 22"
+    icon: "💰"
+    color: "#dc2626"
+
+    2025: 45
+    2027: 120
+    2029: 280
+    2031: 480
+    2033: 650
+    2035: 800
+
+    depends_on: art22_complaints, human_oversight_effective
+    uncertainty: lognormal(4.8, 0.5)
+    interpolation: spline
+  }
+
+  // ── Branches ──
+
+  branch "Oversight come Formalita'" when human_oversight_rate < 0.15 {
+    probability: 0.18
+
+    variable bias_incidents {
+      2029: 1800
+      2031: 3200
+      2033: 4500
+      2035: 4000
+      uncertainty: lognormal(7, 0.5)
+    }
+
+    variable art22_complaints {
+      2029: 55000
+      2031: 85000
+      2033: 100000
+      2035: 90000
+      uncertainty: lognormal(10, 0.4)
+    }
+
+    variable sanctions_art22 {
+      2029: 600
+      2031: 1500
+      2033: 2800
+      2035: 4000
+      uncertainty: lognormal(6.5, 0.5)
+    }
+  }
+
+  branch "Oversight Rigoroso" when human_oversight_rate > 0.80 {
+    probability: 0.15
+
+    variable bias_incidents {
+      2029: 400
+      2031: 300
+      2033: 200
+      2035: 120
+      uncertainty: lognormal(4.5, 0.5)
+    }
+
+    variable art22_complaints {
+      2029: 12000
+      2031: 8000
+      2033: 5000
+      2035: 3000
+      uncertainty: lognormal(8, 0.4)
+    }
+
+    variable human_oversight_effective {
+      2029: 65
+      2031: 80
+      2033: 88
+      2035: 92
+      uncertainty: normal(±8%)
+    }
+  }
+
+  branch "Scandalo Bias Sistemico" when algorithmic_bias_rate > 0.25 {
+    probability: 0.12
+
+    variable bias_incidents {
+      2029: 2500
+      2031: 4000
+      2033: 3000
+      2035: 2000
+      uncertainty: lognormal(7, 0.6)
+    }
+
+    variable automated_decisions_daily {
+      2031: 300
+      2033: 350
+      2035: 400
+      uncertainty: lognormal(5.5, 0.4)
+    }
+  }
+
+  // ── Impacts ──
+
+  impact gap_oversight {
+    description: "Gap tra supervisione formale e effettiva"
+    unit: "punti percentuali"
+    label: "Gap oversight"
+    icon: "⚡"
+    color: "#f97316"
+    derives_from: human_oversight_effective
+    formula: 100 - human_oversight_effective
+  }
+
+  impact rischio_bias_per_milione {
+    description: "Incidenti bias per milione di decisioni AI giornaliere"
+    unit: "incidenti/M"
+    label: "Rischio bias unitario"
+    icon: "📊"
+    color: "#a855f7"
+    derives_from: bias_incidents, automated_decisions_daily
+    formula: bias_incidents / automated_decisions_daily
+  }
+
+  impact indice_fiducia_decisionale {
+    description: "Indice composito di fiducia nelle decisioni AI"
+    unit: "indice"
+    label: "Fiducia nelle decisioni AI"
+    icon: "🤝"
+    color: "#3b82f6"
+    derives_from: human_oversight_effective, explainability_adoption
+    formula: (human_oversight_effective + explainability_adoption) / 2
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 10000
+    method: monte_carlo
+    seed: 2026
+    output: distribution
+    percentiles: [5, 10, 25, 50, 75, 90, 95]
+    convergence: 0.01
+    timeout: 30s
+  }
+}

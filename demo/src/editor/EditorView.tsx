@@ -24,39 +24,7 @@ import { validate } from '@sdl/core/validator';
 import { simulate } from '@sdl/engine/monte-carlo';
 import type { SimulationResult, ScenarioNode, ParameterNode, ExpressionNode } from '@sdl/core/types';
 import { EDITOR_TEMPLATES, type SDLTemplate } from './templates';
-
-// ═══════════════════════════════════════════
-// Chart helpers (same as demo App)
-// ═══════════════════════════════════════════
-
-interface FanChartPoint {
-  year: number; base: number; outerLower: number;
-  innerLower: number; innerUpper: number; outerUpper: number; p50: number;
-}
-
-function extractFanData(result: SimulationResult, name: string, type: 'variable' | 'impact'): FanChartPoint[] {
-  const src = type === 'impact' ? result.impacts.get(name) : result.variables.get(name);
-  if (!src) return [];
-  return src.timeseries.map((ts) => {
-    const p = ts.distribution.percentiles;
-    const p5 = p.get(5) ?? ts.distribution.mean - 2 * ts.distribution.std;
-    const p25 = p.get(25) ?? ts.distribution.mean - 0.674 * ts.distribution.std;
-    const p50 = p.get(50) ?? ts.distribution.mean;
-    const p75 = p.get(75) ?? ts.distribution.mean + 0.674 * ts.distribution.std;
-    const p95 = p.get(95) ?? ts.distribution.mean + 2 * ts.distribution.std;
-    return { year: ts.date.getFullYear(), base: p5, outerLower: p25 - p5, innerLower: p50 - p25, innerUpper: p75 - p50, outerUpper: p95 - p75, p50 };
-  });
-}
-
-function formatValue(v: number): string {
-  if (Math.abs(v) >= 1e9) return `${(v / 1e9).toFixed(0)}B`;
-  if (Math.abs(v) >= 1e6) return `${(v / 1e6).toFixed(0)}M`;
-  if (Math.abs(v) >= 1e4) return `${(v / 1e3).toFixed(0)}K`;
-  if (Math.abs(v) >= 1e3) return `${(v / 1e3).toFixed(1)}K`;
-  if (Math.abs(v) < 0.01 && v !== 0) return v.toExponential(1);
-  if (Math.abs(v) < 1) return v.toFixed(2);
-  return v.toFixed(1);
-}
+import { extractFanData, formatValue, type FanChartPoint } from '../lib/simulation';
 
 // Colors for auto-generated variable charts
 const CHART_COLORS = [
@@ -475,6 +443,13 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
   // Extract interactive parameters from AST
   const params = useMemo<ParamDef[]>(() => (ast ? extractParams(ast) : []), [ast]);
 
+  // Capture original parameter defaults for dependency modulation
+  const parameterDefaults = useMemo<Record<string, number>>(() => {
+    const defaults: Record<string, number> = {};
+    for (const p of params) defaults[p.name] = p.value;
+    return defaults;
+  }, [params]);
+
   // Parse SDL source with debounce
   const parseSource = useCallback((src: string) => {
     const diags: DiagnosticItem[] = [];
@@ -532,7 +507,12 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
     setTimeout(() => {
       try {
         const effectiveAst = applyOverrides(ast, paramOverrides);
-        const res = simulate(effectiveAst, { runs: 2000, seed: 42 });
+        const hasOverridesNow = Object.keys(paramOverrides).length > 0;
+        const res = simulate(effectiveAst, {
+          runs: 2000,
+          seed: 42,
+          parameterDefaults: hasOverridesNow ? parameterDefaults : undefined,
+        });
         setResult(res);
         setSimElapsed(res.elapsedMs);
         setSimRuns(res.runs);
@@ -542,32 +522,39 @@ export default function EditorView({ initialTemplate }: EditorViewProps) {
         setIsSimulating(false);
       }
     }, 30);
-  }, [ast, paramOverrides]);
+  }, [ast, paramOverrides, parameterDefaults]);
 
   // Parameter change handlers
   const autoSimTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const handleParamChange = useCallback((name: string, value: number) => {
-    setParamOverrides(prev => {
-      const next = { ...prev, [name]: value };
-      // Auto re-simulate after slider change (debounced)
-      if (ast) {
-        clearTimeout(autoSimTimerRef.current);
-        autoSimTimerRef.current = setTimeout(() => {
-          try {
-            const effectiveAst = applyOverrides(ast, next);
-            const res = simulate(effectiveAst, { runs: 2000, seed: 42 });
-            setResult(res);
-            setSimElapsed(res.elapsedMs);
-            setSimRuns(res.runs);
-          } catch (e) {
-            console.error('Simulazione auto fallita:', e);
-          }
-        }, 300);
+    setParamOverrides(prev => ({ ...prev, [name]: value }));
+  }, []);
+
+  // Auto-simulate when slider overrides change
+  useEffect(() => {
+    if (!ast || Object.keys(paramOverrides).length === 0) return;
+
+    clearTimeout(autoSimTimerRef.current);
+    autoSimTimerRef.current = setTimeout(() => {
+      try {
+        const effectiveAst = applyOverrides(ast, paramOverrides);
+        const res = simulate(effectiveAst, {
+          runs: 2000,
+          seed: 42,
+          parameterDefaults,
+        });
+        setResult(res);
+        setSimElapsed(res.elapsedMs);
+        setSimRuns(res.runs);
+        setActiveTab('results');
+      } catch (e) {
+        console.error('Simulazione auto fallita:', e);
       }
-      return next;
-    });
-  }, [ast]);
+    }, 300);
+
+    return () => clearTimeout(autoSimTimerRef.current);
+  }, [ast, paramOverrides, parameterDefaults]);
 
   const handleParamReset = useCallback(() => {
     setParamOverrides({});

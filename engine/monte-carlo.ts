@@ -187,8 +187,19 @@ function extractNumber(expr: ExpressionNode): number {
 // Model Evaluation
 // ============================================================
 
-function evaluateModel(model: ModelExpression, t: number, t0: number): number {
-  const params = new Map(model.params.map(p => [p.name, extractNumber(p.value)]));
+function evaluateModel(
+  model: ModelExpression,
+  t: number,
+  t0: number,
+  state?: Map<string, Map<number, number>>,
+  year?: number,
+): number {
+  const params = new Map(model.params.map(p => [
+    p.name,
+    state && year != null
+      ? evaluateExpression(p.value, state, year)
+      : extractNumber(p.value),
+  ]));
   const dt = t - t0;
 
   switch (model.model) {
@@ -313,6 +324,9 @@ export interface SimulationConfig {
   convergence: number;
   timeoutMs: number;
   onProgress?: (progress: SimulationProgress) => void;
+  /** Original default values for parameters, used by dependency modulation
+   *  to compute the delta when parameter values have been overridden. */
+  parameterDefaults?: Record<string, number>;
 }
 
 export interface SimulationProgress {
@@ -335,9 +349,9 @@ export function simulate(
   scenario: ScenarioNode,
   configOverride?: Partial<SimulationConfig>
 ): SimulationResult {
-  const config: SimulationConfig = { ...DEFAULT_CONFIG, ...configOverride };
+  const config: SimulationConfig = { ...DEFAULT_CONFIG };
 
-  // Extract simulation config from scenario
+  // Extract simulation config from scenario AST
   const simNode = scenario.declarations.find(d => d.type === 'Simulate') as SimulateNode | undefined;
   if (simNode) {
     if (simNode.runs) config.runs = simNode.runs;
@@ -346,6 +360,9 @@ export function simulate(
     if (simNode.percentiles) config.percentiles = simNode.percentiles;
     if (simNode.convergence) config.convergence = simNode.convergence;
   }
+
+  // Programmatic overrides take priority over AST values
+  if (configOverride) Object.assign(config, configOverride);
 
   // Validate first
   const validation = validate(scenario);
@@ -483,20 +500,40 @@ export function simulate(
             varNode.interpolation || 'linear'
           ) ?? 0;
         } else if (varNode.model) {
-          baseValue = evaluateModel(varNode.model, year, t0);
+          baseValue = evaluateModel(varNode.model, year, t0, state, year);
         } else {
           baseValue = 0;
         }
 
         // Apply dependency modulation
-        if (varNode.dependsOn && varNode.model) {
+        if (varNode.dependsOn) {
           let modulation = 1;
           for (const dep of varNode.dependsOn) {
             const baseName = dep.split('.')[0];
             const depState = state.get(baseName);
-            if (depState) {
-              const depValue = depState.get(year) ?? 0;
-              modulation *= (1 + depValue * 0.01);
+            if (!depState) continue;
+
+            const depValue = depState.get(year) ?? 0;
+            const paramDef = parameters.get(baseName);
+            const assumpDef = assumptions.get(baseName);
+
+            if (paramDef) {
+              const defaultVal = config.parameterDefaults?.[baseName]
+                ?? (paramDef.value ? extractNumber(paramDef.value) : 0);
+              if (defaultVal !== 0) {
+                const delta = (depValue - defaultVal) / Math.abs(defaultVal);
+                modulation *= (1 + delta * 0.3);
+              }
+            } else if (assumpDef) {
+              const defaultVal = assumpDef.value ? extractNumber(assumpDef.value) : 0;
+              if (defaultVal !== 0) {
+                const delta = (depValue - defaultVal) / Math.abs(defaultVal);
+                modulation *= (1 + delta * 0.3);
+              }
+            } else if (variables.has(baseName)) {
+              if (depValue !== 0) {
+                modulation *= (1 + depValue * 0.001);
+              }
             }
           }
           baseValue *= modulation;

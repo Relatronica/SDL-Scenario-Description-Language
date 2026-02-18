@@ -13,10 +13,15 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { parse } from '../core/parser';
 import type { SimulationConfig } from '../engine/monte-carlo';
 import { simulate } from '../engine/monte-carlo';
 import type { SimulationResult } from '../core/types';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ── Helper ──
 
@@ -470,4 +475,307 @@ describe('Engine — Dependency Chain', () => {
     assert.ok(result.variables.get('upstream')!.timeseries.length > 0);
     assert.ok(result.variables.get('downstream')!.timeseries.length > 0);
   });
+});
+
+// ============================================================
+// 8. Parameter Propagation
+// ============================================================
+
+describe('Engine — Parameter Propagation', () => {
+  it('should modulate timeseries variable when parameter changes', () => {
+    const sdlSource = `
+      scenario "ParamPropagation" {
+        timeframe: 2025 -> 2030
+        resolution: yearly
+
+        parameter investment {
+          value: 100
+          control: slider
+        }
+
+        variable output {
+          2025: 100
+          2030: 200
+          depends_on: investment
+          uncertainty: normal(±5%)
+        }
+
+        simulate { runs: 500 seed: 42 }
+      }
+    `;
+
+    const resultDefault = runScenario(sdlSource, {
+      parameterDefaults: { investment: 50 },
+    });
+
+    const ts = resultDefault.variables.get('output')!.timeseries;
+    const lastMean = ts[ts.length - 1].distribution.mean;
+
+    // Parameter is 100 vs default 50 → +100% delta, 30% sensitivity → +30% modulation
+    assert.ok(
+      lastMean > 200 * 1.1,
+      `Expected mean significantly above 200, got ${lastMean}`,
+    );
+  });
+
+  it('should not modulate when parameter equals its default', () => {
+    const source = `
+      scenario "NoModulation" {
+        timeframe: 2025 -> 2030
+        resolution: yearly
+
+        parameter rate {
+          value: 50
+          control: slider
+        }
+
+        variable output {
+          2025: 100
+          2030: 200
+          depends_on: rate
+        }
+
+        simulate { runs: 100 seed: 42 }
+      }
+    `;
+
+    const result = runScenario(source, {
+      parameterDefaults: { rate: 50 },
+    });
+    const ts = result.variables.get('output')!.timeseries;
+    const lastMean = ts[ts.length - 1].distribution.mean;
+
+    // At default value, delta is 0, modulation = 1. Mean should be close to 200.
+    assert.ok(
+      Math.abs(lastMean - 200) < 5,
+      `Expected mean close to 200, got ${lastMean}`,
+    );
+  });
+
+  it('should decrease output when parameter drops below default', () => {
+    const sdlSource = `
+      scenario "ParamDecrease" {
+        timeframe: 2025 -> 2030
+        resolution: yearly
+
+        parameter funding {
+          value: 25
+          control: slider
+        }
+
+        variable result_var {
+          2025: 100
+          2030: 200
+          depends_on: funding
+          uncertainty: normal(±5%)
+        }
+
+        simulate { runs: 500 seed: 42 }
+      }
+    `;
+
+    const result = runScenario(sdlSource, {
+      parameterDefaults: { funding: 50 },
+    });
+    const ts = result.variables.get('result_var')!.timeseries;
+    const lastMean = ts[ts.length - 1].distribution.mean;
+
+    // Parameter 25 vs default 50 → -50% delta, 30% sensitivity → -15% modulation
+    assert.ok(
+      lastMean < 200 * 0.95,
+      `Expected mean below ~190, got ${lastMean}`,
+    );
+  });
+
+  it('should resolve parameter references in model expressions', () => {
+    const source = `
+      scenario "ModelRef" {
+        timeframe: 2025 -> 2030
+        resolution: yearly
+
+        parameter growth_rate {
+          value: 5
+          control: slider
+        }
+
+        variable population {
+          depends_on: growth_rate
+          model: exponential(rate=0.01, base=1000)
+        }
+
+        simulate { runs: 100 seed: 42 }
+      }
+    `;
+
+    const result = runScenario(source);
+    const ts = result.variables.get('population')!.timeseries;
+
+    assert.ok(ts.length > 0, 'Should have timeseries results');
+    const lastMean = ts[ts.length - 1].distribution.mean;
+    assert.ok(lastMean > 1000, `Expected growth above base, got ${lastMean}`);
+  });
+
+  it('should modulate proportionally across multiple dependencies', () => {
+    const sdlSource = `
+      scenario "MultiDep" {
+        timeframe: 2025 -> 2030
+        resolution: yearly
+
+        parameter alpha {
+          value: 100
+          control: slider
+        }
+
+        parameter beta_param {
+          value: 100
+          control: slider
+        }
+
+        variable combined {
+          2025: 100
+          2030: 200
+          depends_on: alpha, beta_param
+          uncertainty: normal(±3%)
+        }
+
+        simulate { runs: 500 seed: 42 }
+      }
+    `;
+
+    const resultBothHigh = runScenario(sdlSource, {
+      parameterDefaults: { alpha: 50, beta_param: 50 },
+    });
+
+    const ts = resultBothHigh.variables.get('combined')!.timeseries;
+    const highMean = ts[ts.length - 1].distribution.mean;
+
+    // Both parameters doubled → each +100% delta, 30% sensitivity → ~1.3 * 1.3 ≈ 1.69x
+    assert.ok(
+      highMean > 200 * 1.2,
+      `Expected mean significantly above 200, got ${highMean}`,
+    );
+  });
+});
+
+// ============================================================
+// 9. Integration — Green Transition Italy (SDL Native)
+// ============================================================
+
+describe('Integration — Green Transition Italy Parameter Propagation', () => {
+  const sdlPath = path.resolve(__dirname, '..', 'demo', 'public', 'sdl', 'green-transition-italy.sdl');
+  let sdlSource: string;
+
+  try {
+    sdlSource = fs.readFileSync(sdlPath, 'utf8');
+  } catch {
+    sdlSource = '';
+  }
+
+  it('should parse and simulate the SDL native scenario', () => {
+    assert.ok(sdlSource.length > 0, 'SDL file should exist and be non-empty');
+    const { ast, diagnostics } = parse(sdlSource);
+    const errors = diagnostics.filter(d => d.severity === 'error');
+    assert.ok(ast, 'AST should be parsed successfully');
+    assert.equal(errors.length, 0, `Expected no parse errors, got: ${errors.map(e => e.message).join(', ')}`);
+
+    const result = simulate(ast!, { runs: 500, seed: 42 });
+    assert.ok(result.variables.has('renewable_share'), 'Should have renewable_share variable');
+    assert.ok(result.variables.has('co2_emissions'), 'Should have co2_emissions variable');
+    assert.ok(result.variables.get('renewable_share')!.timeseries.length > 0, 'Should produce timeseries data');
+  });
+
+  it('should respond to subsidy_rate parameter change via parameterDefaults', () => {
+    if (!sdlSource) return;
+    const { ast } = parse(sdlSource);
+    if (!ast) return;
+
+    // Default simulation: subsidy_rate = 0.3 (30%), parameterDefaults says original was also 0.3 → no delta
+    const resultDefault = simulate(ast, { runs: 500, seed: 42, parameterDefaults: { subsidy_rate: 0.3 } });
+
+    // Boosted: subsidy_rate = 0.3 in AST but parameterDefaults says original was 0.15 → +100% delta
+    const resultBoosted = simulate(ast, { runs: 500, seed: 42, parameterDefaults: { subsidy_rate: 0.15 } });
+
+    // Reduced: subsidy_rate = 0.3 in AST but parameterDefaults says original was 0.5 → -40% delta
+    const resultReduced = simulate(ast, { runs: 500, seed: 42, parameterDefaults: { subsidy_rate: 0.5 } });
+
+    const getMean = (result: SimulationResult, varName: string) => {
+      const v = result.variables.get(varName)!;
+      return v.timeseries[v.timeseries.length - 1].distribution.mean;
+    };
+
+    const defaultMean = getMean(resultDefault, 'renewable_share');
+    const boostedMean = getMean(resultBoosted, 'renewable_share');
+    const reducedMean = getMean(resultReduced, 'renewable_share');
+
+    assert.ok(
+      boostedMean > defaultMean,
+      `Expected boosted (${boostedMean.toFixed(2)}) > default (${defaultMean.toFixed(2)})`,
+    );
+    assert.ok(
+      defaultMean > reducedMean,
+      `Expected default (${defaultMean.toFixed(2)}) > reduced (${reducedMean.toFixed(2)})`,
+    );
+  });
+
+  it('should respond to retraining_budget parameter change', () => {
+    if (!sdlSource) return;
+    const { ast } = parse(sdlSource);
+    if (!ast) return;
+
+    // green_employment depends_on: renewable_share, retraining_budget
+    // retraining_budget default = 3B EUR = 3_000_000_000
+    const resultDefault = simulate(ast, { runs: 500, seed: 42, parameterDefaults: { retraining_budget: 3_000_000_000 } });
+    const resultBoosted = simulate(ast, { runs: 500, seed: 42, parameterDefaults: { retraining_budget: 1_500_000_000 } });
+
+    const getMean = (result: SimulationResult, varName: string) => {
+      const v = result.variables.get(varName)!;
+      return v.timeseries[v.timeseries.length - 1].distribution.mean;
+    };
+
+    const defaultMean = getMean(resultDefault, 'green_employment');
+    const boostedMean = getMean(resultBoosted, 'green_employment');
+
+    // retraining_budget=3B vs default 1.5B → +100% delta → green_employment should increase
+    assert.ok(
+      boostedMean > defaultMean,
+      `Expected boosted green employment (${boostedMean.toFixed(2)}) > default (${defaultMean.toFixed(2)})`,
+    );
+  });
+});
+
+// ============================================================
+// 10. SDL File Validation — All scenarios parse successfully
+// ============================================================
+
+describe('SDL Files — All scenarios parse and simulate', () => {
+  const sdlDir = path.resolve(__dirname, '..', 'demo', 'public', 'sdl');
+  let sdlFiles: string[] = [];
+
+  try {
+    sdlFiles = fs.readdirSync(sdlDir).filter(f => f.endsWith('.sdl')).sort();
+  } catch {
+    sdlFiles = [];
+  }
+
+  it('should have SDL scenario files', () => {
+    assert.ok(sdlFiles.length >= 15, `Expected at least 15 SDL files, found ${sdlFiles.length}`);
+  });
+
+  for (const file of sdlFiles) {
+    it(`should parse ${file} without errors`, () => {
+      const source = fs.readFileSync(path.join(sdlDir, file), 'utf8');
+      const { ast, diagnostics } = parse(source);
+      const errors = diagnostics.filter(d => d.severity === 'error');
+      assert.ok(ast, `AST should be returned for ${file}`);
+      assert.equal(errors.length, 0, `Parse errors in ${file}: ${errors.map(e => `[L${e.span?.start.line}] ${e.message}`).join('; ')}`);
+    });
+
+    it(`should simulate ${file} successfully`, () => {
+      const source = fs.readFileSync(path.join(sdlDir, file), 'utf8');
+      const { ast } = parse(source);
+      if (!ast) return;
+      const result = simulate(ast, { runs: 100, seed: 42 });
+      assert.ok(result.variables.size > 0, `${file} should produce variable results`);
+    });
+  }
 });

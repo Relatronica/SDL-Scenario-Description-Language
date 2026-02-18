@@ -9,7 +9,7 @@
  *
  * @module sdl
  * @version 0.1.0
- * @license MIT
+ * @license GPL-3.0-only
  */
 // Core: lexer, parser, validator, types
 export * from './core/index';

@@ -1,0 +1,169 @@
+scenario "Demografia e Pensioni Italia 2025-2050" {
+  timeframe: 2025 -> 2050
+  resolution: yearly
+  confidence: 0.50
+  author: "Relatronica — Citizen Lab"
+  version: "1.0"
+  description: "Proiezioni demografiche e sostenibilità del sistema pensionistico italiano"
+  tags: ["italia", "demografia", "pensioni", "invecchiamento", "immigrazione"]
+  subtitle: "Popolazione, invecchiamento e welfare 2025-2050"
+  category: societa
+  icon: "👥"
+  color: "#8b5cf6"
+  difficulty: intermedio
+
+  parameter fertility_rate {
+    label: "Tasso di fecondità"
+    value: 1.24
+    range: [0.9, 2.2]
+    step: 0.05
+    unit: "figli/donna"
+    source: "ISTAT Indicatori demografici 2024; Eurostat"
+    format: "{value}"
+    control: slider
+    description: "Numero medio di figli per donna. L'Italia è a 1.24, tra i più bassi al mondo. Servono 2.1 per il ricambio generazionale"
+  }
+
+  parameter immigration_net {
+    label: "Immigrazione netta annua"
+    value: 230
+    range: [50, 500]
+    step: 10
+    unit: "migliaia"
+    source: "ISTAT Bilancio demografico 2024; Ministero Interno"
+    format: "{value}K/anno"
+    control: slider
+    description: "Differenza tra ingressi e uscite di residenti stranieri per anno"
+  }
+
+  parameter retirement_age {
+    label: "Età pensionabile media"
+    value: 64
+    range: [62, 72]
+    step: 0.5
+    unit: "anni"
+    source: "INPS Rapporto Annuale 2024; Ragioneria dello Stato"
+    format: "{value} anni"
+    control: slider
+    description: "Età media effettiva di pensionamento, considerando tutte le forme previdenziali"
+  }
+
+  parameter health_spending {
+    label: "Spesa sanitaria pubblica"
+    value: 6.8
+    range: [5, 10]
+    step: 0.1
+    unit: "% PIL"
+    source: "OECD Health at a Glance 2024; MEF DEF 2024"
+    format: "{value}% PIL"
+    control: slider
+    description: "Spesa sanitaria pubblica in rapporto al PIL. Italia: 6.8% vs media OECD: 7.5%"
+  }
+
+  variable popolazione_totale {
+    description: "Popolazione residente in Italia"
+    unit: "milioni"
+    label: "Popolazione"
+    icon: "👥"
+    color: "#3b82f6"
+    2025: 59.0
+    2030: 58.2
+    2035: 57.0
+    2040: 55.5
+    2045: 53.8
+    2050: 52.0
+    depends_on: fertility_rate, immigration_net, health_spending
+    uncertainty: normal(±5%)
+    interpolation: spline
+  }
+
+  variable indice_dipendenza {
+    description: "Rapporto anziani (65+) su popolazione attiva (15-64)"
+    unit: "percentuale"
+    label: "Indice di dipendenza"
+    icon: "⚖"
+    color: "#ef4444"
+    2025: 37
+    2030: 42
+    2035: 48
+    2040: 55
+    2045: 62
+    2050: 68
+    depends_on: fertility_rate, immigration_net, retirement_age
+    uncertainty: normal(±10%)
+    interpolation: spline
+  }
+
+  variable spesa_pensioni_pil {
+    description: "Spesa pensionistica in rapporto al PIL"
+    unit: "percentuale PIL"
+    label: "Spesa pensioni / PIL"
+    icon: "💰"
+    color: "#f59e0b"
+    2025: 16.0
+    2030: 16.8
+    2035: 17.5
+    2040: 18.5
+    2045: 19.2
+    2050: 20.0
+    depends_on: fertility_rate, immigration_net, retirement_age
+    uncertainty: normal(±12%)
+    interpolation: spline
+  }
+
+  variable aspettativa_vita {
+    description: "Aspettativa di vita alla nascita"
+    unit: "anni"
+    label: "Aspettativa di vita"
+    icon: "❤"
+    color: "#10b981"
+    2025: 83.6
+    2030: 84.2
+    2035: 84.8
+    2040: 85.3
+    2045: 85.8
+    2050: 86.2
+    depends_on: health_spending
+    uncertainty: normal(±3%)
+    interpolation: spline
+  }
+
+  impact pressione_fiscale_previdenza {
+    description: "Differenza di spesa pensionistica rispetto al 2025"
+    unit: "punti % PIL"
+    label: "Pressione aggiuntiva"
+    icon: "↑"
+    color: "#ef4444"
+    derives_from: spesa_pensioni_pil
+    formula: spesa_pensioni_pil - 16
+  }
+
+  branch "Baby boom" when fertility_rate > 1.8 {
+    probability: 0.10
+    variable popolazione_totale {
+      2040: 58.28
+      2045: 58.10
+      2050: 58.24
+      uncertainty: normal(±5%)
+    }
+  }
+
+  branch "Riforma pensioni forte" when retirement_age > 68 {
+    probability: 0.30
+    variable spesa_pensioni_pil {
+      2040: 16.28
+      2045: 16.32
+      2050: 16.40
+      uncertainty: normal(±10%)
+    }
+  }
+
+  simulate {
+    runs: 2000
+    method: monte_carlo
+    seed: 42
+    output: distribution
+    percentiles: [5, 25, 50, 75, 95]
+    convergence: 0.01
+  }
+}

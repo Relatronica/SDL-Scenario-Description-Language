@@ -9,7 +9,7 @@
  *
  * @module sdl
  * @version 0.1.0
- * @license MIT
+ * @license GPL-3.0-only
  */
 export * from './core/index';
 export { simulate } from './engine/monte-carlo';

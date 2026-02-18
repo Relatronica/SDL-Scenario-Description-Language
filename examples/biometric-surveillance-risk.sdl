@@ -1,0 +1,357 @@
+// ============================================================
+// SDL Example: Biometric Surveillance — Risk & Regulation
+// ============================================================
+// Models the tension between the deployment of biometric AI
+// surveillance systems and regulatory pushback in the EU,
+// exploring scenarios for privacy erosion, civil liberties,
+// and market dynamics under AI Act Art. 5 prohibitions.
+//
+// Inspired by the Segno knowledge base:
+//   - aiact-prohibited-biometric (Art. 5)
+//   - aiact-highrisk-biometric (Art. 6 & Annex III)
+//   - gdpr-special-categories (Art. 9)
+//   - gdpr-automated-decision (Art. 22)
+// ============================================================
+
+scenario "Sorveglianza Biometrica — Rischio e Regolazione" {
+  timeframe: 2025 -> 2035
+  resolution: yearly
+  confidence: 0.30
+  author: "Relatronica"
+  version: "1.0"
+  description: "Simula l'evoluzione della sorveglianza biometrica AI in Europa:
+                diffusione, incidenti, pressione regolatoria, e impatto su
+                diritti civili. Basato su AI Act Art. 5-6 e GDPR Art. 9, 22."
+  tags: ["biometrica", "sorveglianza", "ai-act", "gdpr", "diritti-civili"]
+  subtitle: "Riconoscimento facciale, privacy e diritti nell'UE"
+  category: politica
+  icon: "👁"
+  color: "#7c3aed"
+  difficulty: avanzato
+
+  // ── Assumptions ──
+
+  assumption facial_recognition_accuracy {
+    value: 0.92
+    source: "NIST FRVT 2024 — top algorithms >99% on controlled, ~92% in-the-wild"
+    confidence: 0.70
+    uncertainty: beta(10, 1)
+  }
+
+  assumption cctv_density_eu {
+    value: 35
+    source: "Comparitech 2024 — avg 35 cameras per 1000 people in major EU cities"
+    confidence: 0.55
+    uncertainty: normal(±20%)
+  }
+
+  assumption civil_society_pressure {
+    value: 0.65
+    source: "EDRi, Reclaim Your Face campaign, ECI success 2024"
+    confidence: 0.45
+    uncertainty: beta(5, 3)
+  }
+
+  assumption law_enforcement_demand {
+    value: 0.55
+    source: "Europol/national police demand surveys; post-2024 security priorities"
+    confidence: 0.40
+    uncertainty: beta(4, 4)
+  }
+
+  // ── Parameters ──
+
+  parameter regulatory_strictness {
+    value: 0.70
+    range: [0.2, 1.0]
+    label: "Rigore regolatorio"
+    unit: "indice"
+    step: 0.05
+    source: "AI Act Art. 5 prohibition + national implementation"
+    format: "{value}"
+    control: slider
+    description: "Livello di rigore con cui gli stati UE applicano il divieto di sorveglianza biometrica (Art. 5)"
+  }
+
+  parameter exception_scope {
+    value: 0.15
+    range: [0.05, 0.50]
+    label: "Ampiezza eccezioni"
+    unit: "indice"
+    step: 0.05
+    source: "AI Act Art. 5(1)(h) exceptions — terrorism, missing persons"
+    format: "{value}"
+    control: slider
+    description: "Quanto ampiamente gli stati interpretano le eccezioni al divieto (terrorismo, persone scomparse, etc.)"
+  }
+
+  parameter technology_investment {
+    value: 4.5
+    range: [1.0, 12.0]
+    label: "Investimento tecnologie biometriche"
+    unit: "miliardi EUR"
+    step: 0.5
+    source: "EU biometric market forecast 2025"
+    format: "{value} mld €"
+    control: slider
+    description: "Investimento annuo europeo in tecnologie di identificazione biometrica"
+  }
+
+  // ── Variables ──
+
+  variable deployed_biometric_systems {
+    description: "Sistemi biometrici AI attivi nell'UE (forze dell'ordine + privati)"
+    unit: "sistemi"
+    label: "Sistemi attivi"
+    icon: "📷"
+    color: "#8b5cf6"
+
+    2025: 4200
+    2026: 3800
+    2027: 3200
+    2028: 2800
+    2029: 2600
+    2031: 2200
+    2033: 2000
+    2035: 1900
+
+    depends_on: regulatory_strictness, law_enforcement_demand, technology_investment
+    uncertainty: normal(±18%)
+    interpolation: spline
+  }
+
+  variable false_identification_incidents {
+    description: "Casi annui di identificazione errata con conseguenze legali"
+    unit: "casi"
+    label: "Falsi positivi gravi"
+    icon: "⚠"
+    color: "#ef4444"
+
+    2025: 850
+    2026: 720
+    2027: 580
+    2028: 450
+    2029: 380
+    2031: 250
+    2033: 180
+    2035: 120
+
+    depends_on: deployed_biometric_systems, facial_recognition_accuracy
+    uncertainty: lognormal(5.5, 0.5)
+    interpolation: spline
+  }
+
+  variable privacy_violation_complaints {
+    description: "Reclami formali alle DPA per violazioni biometriche"
+    unit: "reclami"
+    label: "Reclami privacy"
+    icon: "📋"
+    color: "#f59e0b"
+
+    2025: 12000
+    2026: 18000
+    2027: 25000
+    2028: 32000
+    2029: 28000
+    2031: 22000
+    2033: 16000
+    2035: 12000
+
+    depends_on: deployed_biometric_systems, civil_society_pressure, regulatory_strictness
+    uncertainty: lognormal(9, 0.4)
+    interpolation: spline
+  }
+
+  variable sanctions_biometric {
+    description: "Sanzioni per violazione Art. 5 (divieto biometria real-time)"
+    unit: "milioni EUR"
+    label: "Sanzioni Art. 5"
+    icon: "💰"
+    color: "#dc2626"
+
+    2025: 0
+    2026: 15
+    2027: 85
+    2028: 220
+    2029: 380
+    2031: 550
+    2033: 680
+    2035: 750
+
+    depends_on: regulatory_strictness, deployed_biometric_systems
+    uncertainty: lognormal(4.5, 0.6)
+    interpolation: spline
+  }
+
+  variable civil_liberties_index {
+    description: "Indice percezione diritti civili digitali (0-100, baseline UE)"
+    unit: "indice"
+    label: "Diritti civili digitali"
+    icon: "🛡"
+    color: "#3b82f6"
+
+    2025: 62
+    2026: 60
+    2027: 63
+    2028: 67
+    2029: 70
+    2031: 74
+    2033: 77
+    2035: 80
+
+    depends_on: regulatory_strictness, privacy_violation_complaints, false_identification_incidents
+    model: sigmoid(k=0.25, midpoint=2029)
+    uncertainty: beta(5, 4)
+    interpolation: spline
+  }
+
+  variable compliant_biometric_market {
+    description: "Fatturato del mercato biometrico conforme (non real-time, registrato)"
+    unit: "miliardi EUR"
+    label: "Mercato conforme"
+    icon: "✓"
+    color: "#10b981"
+
+    2025: 1.2
+    2026: 1.8
+    2027: 2.8
+    2028: 4.0
+    2029: 5.5
+    2031: 7.8
+    2033: 9.5
+    2035: 11.2
+
+    depends_on: technology_investment, regulatory_strictness
+    model: logistic(k=0.4, midpoint=2030)
+    uncertainty: lognormal(1.5, 0.3)
+    interpolation: spline
+  }
+
+  // ── Branches ──
+
+  branch "Interpretazione Larga delle Eccezioni" when exception_scope > 0.35 {
+    probability: 0.18
+
+    variable deployed_biometric_systems {
+      2028: 4200
+      2029: 4500
+      2031: 5000
+      2033: 5200
+      2035: 5000
+      uncertainty: normal(±20%)
+    }
+
+    variable false_identification_incidents {
+      2028: 700
+      2029: 900
+      2031: 1200
+      2033: 1100
+      2035: 900
+      uncertainty: lognormal(6, 0.5)
+    }
+
+    variable civil_liberties_index {
+      2028: 55
+      2029: 50
+      2031: 45
+      2033: 42
+      2035: 40
+      uncertainty: beta(3, 6)
+    }
+  }
+
+  branch "Divieto Totale Effettivo" when regulatory_strictness > 0.9 {
+    probability: 0.15
+
+    variable deployed_biometric_systems {
+      2027: 1500
+      2029: 500
+      2031: 200
+      2033: 100
+      2035: 50
+      uncertainty: normal(±30%)
+    }
+
+    variable privacy_violation_complaints {
+      2028: 8000
+      2029: 4000
+      2031: 2000
+      2033: 1000
+      2035: 500
+      uncertainty: lognormal(7, 0.5)
+    }
+
+    variable civil_liberties_index {
+      2028: 75
+      2029: 80
+      2031: 85
+      2033: 88
+      2035: 92
+      uncertainty: beta(7, 2)
+    }
+  }
+
+  branch "Attacco Terroristico Catalizzatore" when law_enforcement_demand > 0.7 and exception_scope > 0.25 {
+    probability: 0.10
+
+    variable deployed_biometric_systems {
+      2029: 5500
+      2031: 7000
+      2033: 6500
+      2035: 5500
+      uncertainty: normal(±25%)
+    }
+
+    variable civil_liberties_index {
+      2029: 48
+      2031: 42
+      2033: 45
+      2035: 50
+      uncertainty: beta(3, 5)
+    }
+  }
+
+  // ── Impacts ──
+
+  impact rischio_diritti_civili {
+    description: "Erosione diritti civili digitali rispetto al baseline 2025"
+    unit: "punti"
+    label: "Erosione diritti"
+    icon: "⚡"
+    color: "#ef4444"
+    derives_from: civil_liberties_index
+    formula: 62 - civil_liberties_index
+  }
+
+  impact efficacia_enforcement {
+    description: "Riduzione percentuale sistemi biometrici rispetto al 2025"
+    unit: "percentuale"
+    label: "Efficacia enforcement"
+    icon: "📊"
+    color: "#10b981"
+    derives_from: deployed_biometric_systems
+    formula: (4200 - deployed_biometric_systems) / 4200 * 100
+  }
+
+  impact costo_sociale_errori {
+    description: "Costo sociale stimato dei falsi positivi (danno reputazionale + legale)"
+    unit: "milioni EUR"
+    label: "Costo sociale errori"
+    icon: "💶"
+    color: "#f59e0b"
+    derives_from: false_identification_incidents
+    formula: false_identification_incidents * 0.025
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 10000
+    method: monte_carlo
+    seed: 2026
+    output: distribution
+    percentiles: [5, 10, 25, 50, 75, 90, 95]
+    convergence: 0.01
+    timeout: 30s
+  }
+}

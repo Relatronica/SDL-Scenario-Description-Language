@@ -1,0 +1,392 @@
+// ============================================================
+// SDL Example: GDPR & AI Data Governance
+// ============================================================
+// Models the evolution of GDPR compliance for AI systems
+// processing personal, biometric, and health data across the EU.
+// Explores trade-offs between data utility, privacy protection,
+// and the cost of governance frameworks.
+//
+// Inspired by the Segno knowledge base:
+//   - gdpr-data-transfer-usa (Art. 44-49, Schrems II)
+//   - gdpr-security-storage (Art. 32)
+//   - gdpr-special-categories (Art. 9)
+//   - gdpr-privacy-by-design (Art. 25)
+//   - gdpr-dpia (Art. 35)
+//   - gdpr-storage-limitation (Art. 5(1)(e))
+// ============================================================
+
+scenario "GDPR e Governance Dati AI" {
+  timeframe: 2025 -> 2035
+  resolution: yearly
+  confidence: 0.35
+  author: "Relatronica"
+  version: "1.0"
+  description: "Simula l'evoluzione della governance dati per sistemi AI
+                nell'UE: trasferimenti extra-UE, data breach, costi DPIA,
+                e adozione della privacy by design.
+                Basato sulla knowledge base Segno (6 regole GDPR)."
+  tags: ["gdpr", "privacy", "data-governance", "schrems-ii", "dpia"]
+  subtitle: "Privacy, trasferimenti dati e AI nell'era post-Schrems II"
+  category: politica
+  icon: "🔒"
+  color: "#0891b2"
+  difficulty: intermedio
+
+  // ── Assumptions ──
+
+  assumption eu_data_sovereignty_push {
+    value: 0.65
+    source: "GAIA-X, EU Data Act 2024, European Cloud Federation roadmap"
+    confidence: 0.55
+    uncertainty: beta(5, 3)
+  }
+
+  assumption schrems_iii_risk {
+    value: 0.35
+    source: "DPF adequacy review timeline; CJEU pending cases 2025"
+    confidence: 0.30
+    uncertainty: beta(3, 5)
+  }
+
+  assumption ai_data_volume_growth {
+    value: 2.8
+    source: "IDC Data Sphere forecast — AI training data doubles ~every 2.5 years"
+    confidence: 0.50
+    uncertainty: lognormal(1, 0.3)
+  }
+
+  assumption privacy_tech_maturity {
+    value: 0.40
+    source: "PETs adoption: differential privacy, federated learning, HE (Gartner 2025)"
+    confidence: 0.45
+    uncertainty: beta(4, 5)
+  }
+
+  // ── Parameters ──
+
+  parameter data_localization_pressure {
+    value: 0.50
+    range: [0.1, 0.9]
+    label: "Pressione localizzazione dati"
+    unit: "indice"
+    step: 0.05
+    source: "EU data sovereignty policy trajectory"
+    format: "{value}"
+    control: slider
+    description: "Quanto forte è la spinta a mantenere i dati AI su infrastrutture UE (0=libero mercato, 1=obbligo UE)"
+  }
+
+  parameter encryption_adoption {
+    value: 0.55
+    range: [0.2, 0.95]
+    label: "Adozione cifratura BYOK"
+    unit: "indice"
+    step: 0.05
+    source: "Cloud security reports — BYOK/HYOK adoption rates"
+    format: "{value}"
+    control: slider
+    description: "Quota di aziende che adottano cifratura con chiavi proprietarie (Bring Your Own Key)"
+  }
+
+  parameter dpia_automation {
+    value: 0.25
+    range: [0.05, 0.80]
+    label: "Automazione DPIA"
+    unit: "indice"
+    step: 0.05
+    source: "Privacy tech vendors survey 2025"
+    format: "{value}"
+    control: slider
+    description: "Livello di automazione nella valutazione d'impatto sulla protezione dati (Art. 35)"
+  }
+
+  parameter human_in_the_loop_rate {
+    value: 0.40
+    range: [0.10, 0.90]
+    label: "Supervisione umana AI"
+    unit: "indice"
+    step: 0.05
+    source: "Enterprise AI deployment practices 2025"
+    format: "{value}"
+    control: slider
+    description: "Quota di sistemi AI con supervisione umana sulle decisioni automatizzate (Art. 22 GDPR)"
+  }
+
+  // ── Variables ──
+
+  variable data_transfers_extra_eu {
+    description: "Volume trasferimenti dati AI verso paesi terzi (US, UK, etc.)"
+    unit: "exabyte/anno"
+    label: "Trasferimenti extra-UE"
+    icon: "🌐"
+    color: "#6366f1"
+
+    2025: 12.5
+    2026: 14.0
+    2027: 13.5
+    2028: 12.0
+    2029: 10.5
+    2031: 8.5
+    2033: 7.0
+    2035: 6.0
+
+    depends_on: data_localization_pressure, eu_data_sovereignty_push, schrems_iii_risk
+    uncertainty: lognormal(2.4, 0.3)
+    interpolation: spline
+  }
+
+  variable eu_cloud_ai_share {
+    description: "Quota di workload AI su infrastrutture cloud con sede UE"
+    unit: "percentuale"
+    label: "Cloud AI in UE"
+    icon: "☁"
+    color: "#3b82f6"
+
+    2025: 18
+    2026: 22
+    2027: 28
+    2028: 35
+    2029: 42
+    2031: 55
+    2033: 62
+    2035: 68
+
+    depends_on: eu_data_sovereignty_push, data_localization_pressure
+    model: sigmoid(k=0.35, midpoint=2030)
+    uncertainty: normal(±12%)
+    interpolation: spline
+  }
+
+  variable data_breach_ai_systems {
+    description: "Data breach significativi in sistemi AI (notificati alle DPA)"
+    unit: "breach/anno"
+    label: "Data breach AI"
+    icon: "🔓"
+    color: "#ef4444"
+
+    2025: 340
+    2026: 420
+    2027: 480
+    2028: 510
+    2029: 490
+    2031: 420
+    2033: 350
+    2035: 280
+
+    depends_on: ai_data_volume_growth, encryption_adoption, privacy_tech_maturity
+    uncertainty: lognormal(5.5, 0.4)
+    interpolation: spline
+  }
+
+  variable gdpr_fines_ai {
+    description: "Sanzioni GDPR specifiche per trattamenti AI (cumulativo)"
+    unit: "milioni EUR"
+    label: "Sanzioni GDPR-AI"
+    icon: "💰"
+    color: "#f59e0b"
+
+    2025: 180
+    2026: 320
+    2027: 550
+    2028: 850
+    2029: 1200
+    2031: 1900
+    2033: 2500
+    2035: 3100
+
+    depends_on: data_breach_ai_systems, data_transfers_extra_eu
+    uncertainty: lognormal(6, 0.5)
+    interpolation: spline
+  }
+
+  variable dpia_completion_rate {
+    description: "Percentuale di sistemi AI ad alto rischio con DPIA completata"
+    unit: "percentuale"
+    label: "DPIA completate"
+    icon: "📋"
+    color: "#10b981"
+
+    2025: 22
+    2026: 30
+    2027: 40
+    2028: 52
+    2029: 62
+    2031: 75
+    2033: 83
+    2035: 88
+
+    depends_on: dpia_automation, privacy_tech_maturity
+    model: sigmoid(k=0.4, midpoint=2029)
+    uncertainty: normal(±10%)
+    interpolation: spline
+  }
+
+  variable privacy_by_design_adoption {
+    description: "Quota di nuovi sistemi AI progettati con privacy by design (Art. 25)"
+    unit: "percentuale"
+    label: "Privacy by design"
+    icon: "🛡"
+    color: "#0d9488"
+
+    2025: 15
+    2026: 20
+    2027: 28
+    2028: 38
+    2029: 48
+    2031: 62
+    2033: 72
+    2035: 80
+
+    depends_on: privacy_tech_maturity, dpia_automation, encryption_adoption
+    model: sigmoid(k=0.35, midpoint=2029)
+    uncertainty: normal(±12%)
+    interpolation: spline
+  }
+
+  variable automated_decision_complaints {
+    description: "Reclami Art. 22 per decisioni automatizzate AI senza supervisione"
+    unit: "reclami/anno"
+    label: "Reclami Art. 22"
+    icon: "⚖"
+    color: "#a855f7"
+
+    2025: 8500
+    2026: 12000
+    2027: 16000
+    2028: 18000
+    2029: 17000
+    2031: 14000
+    2033: 10000
+    2035: 7000
+
+    depends_on: human_in_the_loop_rate, ai_data_volume_growth
+    uncertainty: lognormal(9, 0.4)
+    interpolation: spline
+  }
+
+  // ── Branches ──
+
+  branch "Schrems III" when schrems_iii_risk > 0.5 {
+    probability: 0.25
+
+    variable data_transfers_extra_eu {
+      2028: 6.0
+      2029: 3.5
+      2031: 2.0
+      2033: 1.5
+      2035: 1.2
+      uncertainty: lognormal(1, 0.5)
+    }
+
+    variable eu_cloud_ai_share {
+      2028: 50
+      2029: 65
+      2031: 80
+      2033: 88
+      2035: 92
+      uncertainty: normal(±8%)
+    }
+
+    variable gdpr_fines_ai {
+      2028: 1500
+      2029: 2800
+      2031: 4500
+      2033: 5500
+      2035: 6200
+      uncertainty: lognormal(7, 0.4)
+    }
+  }
+
+  branch "PETs Breakthrough" when privacy_tech_maturity > 0.7 {
+    probability: 0.20
+
+    variable data_breach_ai_systems {
+      2029: 300
+      2031: 180
+      2033: 100
+      2035: 60
+      uncertainty: lognormal(4, 0.5)
+    }
+
+    variable privacy_by_design_adoption {
+      2029: 65
+      2031: 82
+      2033: 92
+      2035: 96
+      uncertainty: normal(±5%)
+    }
+
+    variable automated_decision_complaints {
+      2029: 10000
+      2031: 6000
+      2033: 3000
+      2035: 1500
+      uncertainty: lognormal(7, 0.4)
+    }
+  }
+
+  branch "Stallo Governance" when data_localization_pressure < 0.2 and encryption_adoption < 0.3 {
+    probability: 0.12
+
+    variable data_breach_ai_systems {
+      2028: 700
+      2029: 900
+      2031: 1100
+      2033: 1000
+      2035: 850
+      uncertainty: lognormal(6, 0.4)
+    }
+
+    variable dpia_completion_rate {
+      2029: 35
+      2031: 42
+      2033: 50
+      2035: 55
+      uncertainty: normal(±15%)
+    }
+  }
+
+  // ── Impacts ──
+
+  impact data_sovereignty_index {
+    description: "Indice composito di sovranità dati AI dell'UE"
+    unit: "indice"
+    label: "Sovranità dati AI"
+    icon: "🇪🇺"
+    color: "#1d4ed8"
+    derives_from: eu_cloud_ai_share, data_transfers_extra_eu
+    formula: eu_cloud_ai_share * 0.7 + (1 - data_transfers_extra_eu / 15) * 30
+  }
+
+  impact rischio_sanzioni_annuo {
+    description: "Incremento annuo medio delle sanzioni GDPR-AI"
+    unit: "milioni EUR"
+    label: "Δ sanzioni annuo"
+    icon: "📈"
+    color: "#dc2626"
+    derives_from: gdpr_fines_ai
+    formula: gdpr_fines_ai / 10
+  }
+
+  impact privacy_maturity {
+    description: "Indice di maturità privacy complessivo per sistemi AI"
+    unit: "indice"
+    label: "Maturità privacy"
+    icon: "✦"
+    color: "#059669"
+    derives_from: dpia_completion_rate, privacy_by_design_adoption, encryption_adoption
+    formula: (dpia_completion_rate + privacy_by_design_adoption) / 2
+  }
+
+  // ── Simulation ──
+
+  simulate {
+    runs: 10000
+    method: monte_carlo
+    seed: 2026
+    output: distribution
+    percentiles: [5, 10, 25, 50, 75, 90, 95]
+    convergence: 0.01
+    timeout: 30s
+  }
+}

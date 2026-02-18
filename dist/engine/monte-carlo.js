@@ -146,8 +146,13 @@ function extractNumber(expr) {
 // ============================================================
 // Model Evaluation
 // ============================================================
-function evaluateModel(model, t, t0) {
-    const params = new Map(model.params.map(p => [p.name, extractNumber(p.value)]));
+function evaluateModel(model, t, t0, state, year) {
+    const params = new Map(model.params.map(p => [
+        p.name,
+        state && year != null
+            ? evaluateExpression(p.value, state, year)
+            : extractNumber(p.value),
+    ]));
     const dt = t - t0;
     switch (model.model) {
         case 'linear': {
@@ -380,20 +385,41 @@ export function simulate(scenario, configOverride) {
                     baseValue = interpolateTimeseries(tsEntries, year, varNode.interpolation || 'linear') ?? 0;
                 }
                 else if (varNode.model) {
-                    baseValue = evaluateModel(varNode.model, year, t0);
+                    baseValue = evaluateModel(varNode.model, year, t0, state, year);
                 }
                 else {
                     baseValue = 0;
                 }
                 // Apply dependency modulation
-                if (varNode.dependsOn && varNode.model) {
+                if (varNode.dependsOn) {
                     let modulation = 1;
                     for (const dep of varNode.dependsOn) {
                         const baseName = dep.split('.')[0];
                         const depState = state.get(baseName);
-                        if (depState) {
-                            const depValue = depState.get(year) ?? 0;
-                            modulation *= (1 + depValue * 0.01);
+                        if (!depState)
+                            continue;
+                        const depValue = depState.get(year) ?? 0;
+                        const paramDef = parameters.get(baseName);
+                        const assumpDef = assumptions.get(baseName);
+                        if (paramDef) {
+                            const defaultVal = config.parameterDefaults?.[baseName]
+                                ?? (paramDef.value ? extractNumber(paramDef.value) : 0);
+                            if (defaultVal !== 0) {
+                                const delta = (depValue - defaultVal) / Math.abs(defaultVal);
+                                modulation *= (1 + delta * 0.3);
+                            }
+                        }
+                        else if (assumpDef) {
+                            const defaultVal = assumpDef.value ? extractNumber(assumpDef.value) : 0;
+                            if (defaultVal !== 0) {
+                                const delta = (depValue - defaultVal) / Math.abs(defaultVal);
+                                modulation *= (1 + delta * 0.3);
+                            }
+                        }
+                        else if (variables.has(baseName)) {
+                            if (depValue !== 0) {
+                                modulation *= (1 + depValue * 0.001);
+                            }
                         }
                     }
                     baseValue *= modulation;
@@ -408,12 +434,10 @@ export function simulate(scenario, configOverride) {
         }
         // 4. Evaluate branches
         for (const branch of branches) {
-            let activated = false;
             for (const ts of timesteps) {
                 const year = ts.getFullYear();
                 if (evaluateCondition(branch.condition, state, year)) {
                     if (rng.next() < (branch.probability ?? 0.5)) {
-                        activated = true;
                         branchActivations.set(branch.name, (branchActivations.get(branch.name) || 0) + 1);
                         break;
                     }

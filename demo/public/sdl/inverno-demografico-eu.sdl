@@ -1,0 +1,225 @@
+scenario "Inverno Demografico Europeo 2025-2060" {
+  timeframe: 2025 -> 2060
+  resolution: yearly
+  confidence: 0.45
+  author: "Relatronica — Citizen Lab"
+  version: "1.0"
+  description: "Proiezioni demografiche EU-27: popolazione, forza lavoro, pensioni e crescita economica"
+  tags: ["europa", "demografia", "pensioni", "migrazione", "fiscale"]
+  subtitle: "Popolazione, pensioni e forza lavoro EU 2025-2060"
+  category: societa
+  icon: "🧓"
+  color: "#8b5cf6"
+  difficulty: intermedio
+
+  parameter fertility_rate {
+    label: "Tasso di fecondità EU"
+    value: 1.46
+    range: [1.0, 2.2]
+    step: 0.05
+    unit: "figli/donna"
+    source: "Eurostat, EU-27 Total Fertility Rate 2024"
+    format: "{value}"
+    control: slider
+    description: "Tasso di fecondità medio EU-27. Attualmente 1.46, servirebbero 2.1 per il ricambio generazionale"
+  }
+
+  parameter net_migration {
+    label: "Immigrazione netta annua"
+    value: 1500
+    range: [200, 4000]
+    step: 100
+    unit: "migliaia"
+    source: "Eurostat migration statistics 2024"
+    format: "{value}K/anno"
+    control: slider
+    description: "Saldo migratorio netto annuo nell'UE-27 in migliaia di persone"
+  }
+
+  parameter retirement_age {
+    label: "Età pensionabile media"
+    value: 65
+    range: [62, 72]
+    step: 0.5
+    unit: "anni"
+    source: "European Commission Ageing Report 2024"
+    format: "{value} anni"
+    control: slider
+    description: "Età media effettiva di pensionamento nell'UE"
+  }
+
+  parameter productivity_growth {
+    label: "Crescita produttività"
+    value: 1.2
+    range: [0.2, 3.0]
+    step: 0.1
+    unit: "%"
+    source: "European Commission Ageing Report 2024; OECD Productivity"
+    format: "{value}%"
+    control: slider
+    description: "Tasso annuo di crescita della produttività del lavoro in percentuale"
+  }
+
+  variable total_population {
+    description: "Popolazione totale EU-27"
+    unit: "milioni"
+    label: "Popolazione EU"
+    icon: "👥"
+    color: "#3b82f6"
+    2025: 448
+    2030: 446
+    2035: 442
+    2040: 436
+    2045: 428
+    2050: 418
+    2055: 407
+    2060: 395
+    depends_on: fertility_rate, net_migration, productivity_growth
+    uncertainty: normal(±3%)
+    interpolation: spline
+  }
+
+  variable working_age_pop {
+    description: "Popolazione in età lavorativa (15-64)"
+    unit: "milioni"
+    label: "Forza lavoro"
+    icon: "👷"
+    color: "#10b981"
+    2025: 290
+    2030: 280
+    2035: 268
+    2040: 255
+    2045: 242
+    2050: 228
+    2055: 216
+    2060: 205
+    depends_on: fertility_rate, net_migration, retirement_age
+    uncertainty: normal(±5%)
+    interpolation: spline
+  }
+
+  variable dependency_ratio {
+    description: "Rapporto di dipendenza anziani (65+ / 15-64)"
+    unit: "percentuale"
+    label: "Indice dipendenza"
+    icon: "⚖"
+    color: "#ef4444"
+    2025: 33
+    2030: 37
+    2035: 43
+    2040: 48
+    2045: 53
+    2050: 57
+    2055: 59
+    2060: 60
+    depends_on: fertility_rate, net_migration, retirement_age
+    uncertainty: normal(±8%)
+    interpolation: spline
+  }
+
+  variable pension_expenditure {
+    description: "Spesa pensionistica pubblica (% PIL)"
+    unit: "percentuale PIL"
+    label: "Spesa pensioni / PIL"
+    icon: "💰"
+    color: "#f59e0b"
+    2025: 12.5
+    2030: 13.2
+    2035: 14.1
+    2040: 15.0
+    2045: 15.8
+    2050: 16.4
+    2055: 16.8
+    2060: 17.0
+    depends_on: fertility_rate, net_migration, retirement_age, productivity_growth
+    uncertainty: normal(±12%)
+    interpolation: spline
+  }
+
+  variable gdp_growth {
+    description: "Tasso di crescita reale PIL EU-27"
+    unit: "percentuale"
+    label: "Crescita PIL"
+    icon: "📈"
+    color: "#10b981"
+    2025: 1.4
+    2030: 1.1
+    2035: 0.8
+    2040: 0.5
+    2045: 0.3
+    2050: 0.1
+    2055: -0.1
+    2060: -0.3
+    depends_on: fertility_rate, net_migration, retirement_age, productivity_growth
+    uncertainty: normal(±25%)
+    interpolation: spline
+  }
+
+  variable labor_shortage {
+    description: "Indice carenza manodopera (2025=100)"
+    unit: "indice"
+    label: "Carenza manodopera"
+    icon: "🔍"
+    color: "#8b5cf6"
+    2025: 100
+    2030: 115
+    2035: 135
+    2040: 155
+    2045: 172
+    2050: 185
+    2055: 192
+    2060: 198
+    depends_on: fertility_rate, net_migration, retirement_age, productivity_growth
+    uncertainty: normal(±15%)
+    interpolation: spline
+  }
+
+  impact pressione_fiscale {
+    description: "Aumento spesa pensionistica rispetto al 2025"
+    unit: "punti % PIL"
+    label: "Pressione aggiuntiva"
+    icon: "↑"
+    color: "#ef4444"
+    derives_from: pension_expenditure
+    formula: pension_expenditure - 12.5
+  }
+
+  impact declino_forza_lavoro {
+    description: "Calo cumulativo della popolazione in età lavorativa"
+    unit: "milioni"
+    label: "Declino forza lavoro"
+    icon: "↓"
+    color: "#ef4444"
+    derives_from: working_age_pop
+    formula: 290 - working_age_pop
+  }
+
+  branch "Apertura migratoria" when net_migration > 2500 {
+    probability: 0.20
+    variable working_age_pop {
+      2035: 278.72
+      2040: 270.30
+      2050: 255.36
+      uncertainty: normal(±6%)
+    }
+  }
+
+  branch "Stagnazione secolare" when gdp_growth < 0.3 and dependency_ratio > 50 {
+    probability: 0.30
+    variable pension_expenditure {
+      2045: 17.38
+      2050: 18.86
+      2060: 21.25
+      uncertainty: normal(±15%)
+    }
+  }
+
+  simulate {
+    runs: 2000
+    method: monte_carlo
+    seed: 2050
+    output: distribution
+    percentiles: [5, 25, 50, 75, 95]
+    convergence: 0.01
+  }
+}
