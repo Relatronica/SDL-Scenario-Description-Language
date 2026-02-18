@@ -9,6 +9,7 @@ import SdlScenarioView from './components/SdlScenarioView';
 import WelcomePage from './components/WelcomePage';
 import EditorView from './editor/EditorView';
 import GuideView, { type GuideSectionId } from './guide/GuideView';
+import WizardView from './ai/WizardView';
 
 export default function App() {
   const [mode, setMode] = useState<AppMode>('demo');
@@ -49,6 +50,26 @@ export default function App() {
     mainRef.current?.scrollTo(0, 0);
   }, []);
 
+  const handleWizardSelect = useCallback(() => {
+    setMode('wizard');
+    setSelectedId(null);
+    setEditorTemplateId(null);
+    setGuideSectionId(null);
+    setSidebarOpen(false);
+    mainRef.current?.scrollTo(0, 0);
+  }, []);
+
+  const handleWizardOpenInEditor = useCallback((sdlSource: string) => {
+    setMode('editor');
+    setEditorTemplateId('__ai_generated__');
+    setSelectedId(null);
+    setGuideSectionId(null);
+    mainRef.current?.scrollTo(0, 0);
+    aiGeneratedRef.current = sdlSource;
+  }, []);
+
+  const aiGeneratedRef = useRef<string | null>(null);
+
   return (
     <div className="flex h-screen overflow-hidden bg-zinc-950 text-zinc-100">
       <Sidebar
@@ -59,6 +80,7 @@ export default function App() {
         onSelect={handleSelect}
         onEditorSelect={handleEditorSelect}
         onGuideSelect={handleGuideSelect}
+        onWizardSelect={handleWizardSelect}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
@@ -82,16 +104,25 @@ export default function App() {
           {mode === 'editor' && (
             <span className="ml-auto text-[11px] text-emerald-400 truncate max-w-[40%]">Editor</span>
           )}
+          {mode === 'wizard' && (
+            <span className="ml-auto text-[11px] text-violet-400 truncate max-w-[40%]">AI Wizard</span>
+          )}
           {mode === 'guide' && (
             <span className="ml-auto text-[11px] text-amber-400 truncate max-w-[40%]">Guida SDL</span>
           )}
         </div>
 
         {/* Page content */}
-        {mode === 'guide' && guideSectionId ? (
+        {mode === 'wizard' ? (
+          <WizardView onOpenInEditor={handleWizardOpenInEditor} />
+        ) : mode === 'guide' && guideSectionId ? (
           <GuideView key={guideSectionId} initialSection={guideSectionId} />
         ) : mode === 'editor' && editorTemplateId ? (
-          <EditorView key={editorTemplateId} initialTemplate={editorTemplateId} />
+          <EditorView
+            key={editorTemplateId}
+            initialTemplate={editorTemplateId}
+            aiGeneratedSource={editorTemplateId === '__ai_generated__' ? aiGeneratedRef.current ?? undefined : undefined}
+          />
         ) : mode === 'demo' && selectedScenario ? (
           <SdlScenarioView key={selectedScenario.id} sdlSource={selectedScenario.source} sdlId={selectedScenario.id} />
         ) : (

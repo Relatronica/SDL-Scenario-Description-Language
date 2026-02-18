@@ -14,7 +14,7 @@ import { SdlIcon } from '../lib/icons';
 
 // ─── Types ───
 
-export type AppMode = 'demo' | 'editor' | 'guide';
+export type AppMode = 'demo' | 'editor' | 'guide' | 'wizard';
 
 export interface SidebarProps {
   mode: AppMode;
@@ -24,6 +24,7 @@ export interface SidebarProps {
   onSelect: (id: string) => void;
   onEditorSelect: (templateId: string) => void;
   onGuideSelect: (sectionId: GuideSectionId) => void;
+  onWizardSelect: () => void;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -58,7 +59,7 @@ interface ScenarioMeta {
   category: ScenarioCategory;
 }
 
-export default function Sidebar({ mode, selectedId, editorTemplateId, guideSectionId, onSelect, onEditorSelect, onGuideSelect, isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ mode, selectedId, editorTemplateId, guideSectionId, onSelect, onEditorSelect, onGuideSelect, onWizardSelect, isOpen, onClose }: SidebarProps) {
   const [expandedCategories, setExpandedCategories] = useState<Set<ScenarioCategory>>(new Set());
   const [editorExpanded, setEditorExpanded] = useState(false);
   const [guideExpanded, setGuideExpanded] = useState(false);
@@ -292,6 +293,44 @@ export default function Sidebar({ mode, selectedId, editorTemplateId, guideSecti
                 })}
               </div>
             )}
+          </div>
+
+          {/* ─── Divider ─── */}
+          <div className="my-5 border-t border-zinc-800/60" />
+
+          {/* ─── AI WIZARD Section ─── */}
+          <div className="flex items-center gap-2 px-2 mb-3">
+            <svg className="w-4 h-4 text-violet-500/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
+            </svg>
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-zinc-500">AI Wizard</span>
+            <span className="ml-auto text-[10px] text-violet-500/60 bg-violet-500/10 px-1.5 py-0.5 rounded-full">AI</span>
+          </div>
+
+          <div className="space-y-0.5 mb-1">
+            <button
+              onClick={() => { onWizardSelect(); onClose(); }}
+              className={`
+                w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all duration-150
+                ${mode === 'wizard'
+                  ? 'bg-violet-500/10 border border-violet-500/20 text-violet-300'
+                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/40 border border-transparent'
+                }
+              `}
+            >
+              <svg className={`w-4 h-4 ${mode === 'wizard' ? 'text-violet-400' : 'text-zinc-500'} transition-colors`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+              </svg>
+              <div className="min-w-0 flex-1">
+                <p className={`text-[12px] font-medium leading-tight truncate ${mode === 'wizard' ? 'text-violet-300' : 'text-zinc-300'}`}>
+                  Genera con AI
+                </p>
+                <p className="text-[10px] text-zinc-600 truncate mt-0.5">Wizard guidato in 5 step</p>
+              </div>
+              {mode === 'wizard' && (
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-400 shrink-0 animate-pulse" />
+              )}
+            </button>
           </div>
 
           {/* ─── Divider ─── */}

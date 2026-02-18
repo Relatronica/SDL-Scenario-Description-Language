@@ -424,16 +424,21 @@ function CodeMirrorEditor({ value, onChange }: {
 
 interface EditorViewProps {
   initialTemplate?: string;
+  aiGeneratedSource?: string;
 }
 
-export default function EditorView({ initialTemplate }: EditorViewProps) {
+export default function EditorView({ initialTemplate, aiGeneratedSource }: EditorViewProps) {
   const initialTpl = useMemo(
     () => EDITOR_TEMPLATES.find(t => t.id === initialTemplate) ?? EDITOR_TEMPLATES[0],
     [initialTemplate],
   );
 
-  const [source, setSource] = useState(initialTpl.source);
-  const [currentTemplate, setCurrentTemplate] = useState(initialTpl);
+  const [source, setSource] = useState(aiGeneratedSource ?? initialTpl.source);
+  const [currentTemplate, setCurrentTemplate] = useState(
+    aiGeneratedSource
+      ? { id: '__ai_generated__', name: 'Generato con AI', description: 'Scenario creato con AI Wizard', icon: 'sparkles', source: aiGeneratedSource }
+      : initialTpl,
+  );
   const [diagnostics, setDiagnostics] = useState<DiagnosticItem[]>([]);
   const [ast, setAst] = useState<ScenarioNode | null>(null);
   const [result, setResult] = useState<SimulationResult | null>(null);
