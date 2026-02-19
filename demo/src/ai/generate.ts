@@ -7,7 +7,7 @@
 
 import { parse } from '@sdl/core/parser';
 import { SDL_SYSTEM_PROMPT, buildUserPrompt, type WizardData } from './system-prompt';
-import { getProvider, type AIConfig } from './providers';
+import { getProvider, isLocalProvider, type AIConfig } from './providers';
 
 export interface GenerateResult {
   sdl: string;
@@ -24,26 +24,35 @@ async function callOpenAICompatible(
   model: string,
   messages: { role: string; content: string }[],
   signal?: AbortSignal,
+  local?: boolean,
 ): Promise<string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (!local) {
+    headers['Authorization'] = `Bearer ${apiKey}`;
+    headers['HTTP-Referer'] = window.location.origin;
+    headers['X-Title'] = 'Segno SDL Citizen Lab';
+  }
+
   const res = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-      'HTTP-Referer': window.location.origin,
-      'X-Title': 'Segno SDL Citizen Lab',
-    },
+    headers,
     body: JSON.stringify({
       model,
       messages,
       temperature: 0.7,
-      max_tokens: 4096,
+      ...(local ? { num_predict: 4096 } : { max_tokens: 4096 }),
     }),
     signal,
   });
 
   if (!res.ok) {
     const body = await res.text().catch(() => '');
+    if (local) {
+      throw new Error(`Ollama non raggiungibile (${res.status}). Verifica che Ollama sia in esecuzione e il modello "${model}" sia scaricato.`);
+    }
     throw new Error(`API error ${res.status}: ${body.slice(0, 200)}`);
   }
 
@@ -111,7 +120,8 @@ async function callLLM(
     return callGemini(config.apiKey, config.modelId, system, user, signal);
   }
 
-  return callOpenAICompatible(provider.baseUrl, config.apiKey, config.modelId, messages, signal);
+  const local = isLocalProvider(config.providerId);
+  return callOpenAICompatible(provider.baseUrl, config.apiKey, config.modelId, messages, signal, local);
 }
 
 export async function generateSDL(

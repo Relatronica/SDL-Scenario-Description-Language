@@ -296,6 +296,18 @@ The full formal specification is available at [`spec/SDL-SPEC-v0.1.md`](./spec/S
 - [ ] Collaborative editing
 - [ ] Accuracy tracking and leaderboards
 
+## Support the Project
+
+SDL is free software. No paywall, no premium tier, no vendor lock-in — just open code for open futures.
+
+Building and maintaining a computational language takes time: writing specs, fixing parsers, running simulations, writing documentation, keeping dependencies alive. This is volunteer work, driven by the conviction that foresight tools should belong to everyone — not just to those who can afford consulting firms.
+
+If SDL is useful to you — as a researcher, educator, activist, policy maker, or simply as someone who believes the future should be a public conversation — you can support its development:
+
+[![Support on Buy Me a Coffee](https://img.shields.io/badge/Support%20this%20project-Buy%20Me%20a%20Coffee-orange?logo=buymeacoffee&logoColor=white)](https://buymeacoffee.com/relatronica)
+
+Every contribution, however small, helps keep SDL independent, open, and free.
+
 ## License
 
 GPL-3.0 — Created by [Relatronica](https://relatronica.com)

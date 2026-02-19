@@ -67,9 +67,21 @@ export default function WelcomePage({ onSelect }: { onSelect: (id: string) => vo
       </div>
 
       <footer className="shrink-0 border-t border-zinc-800/40 px-6 py-6">
-        <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-zinc-600">
-          <p>Segno — SDL Citizen Lab</p>
-          <p>Simulazioni eseguite nel tuo browser. Nessun dato inviato a terzi.</p>
+        <div className="max-w-3xl mx-auto flex flex-col items-center gap-3 text-[11px] text-zinc-600">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
+            <p>Segno — SDL Citizen Lab</p>
+            <p>Simulazioni eseguite nel tuo browser. Nessun dato inviato a terzi.</p>
+          </div>
+          <p className="text-zinc-600">
+            Un progetto aperto di{' '}
+            <a href="https://relatronica.com" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-zinc-300 transition-colors">
+              Relatronica
+            </a>
+            {' '}—{' '}
+            <a href="https://relatronica.com/about" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-zinc-300 transition-colors">
+              Sostieni lo sviluppo
+            </a>
+          </p>
         </div>
       </footer>
     </div>

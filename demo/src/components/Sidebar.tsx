@@ -408,16 +408,30 @@ export default function Sidebar({ mode, selectedId, editorTemplateId, guideSecti
             </p>
             <p className="text-[10px] text-zinc-700 mt-0.5">GPL-3.0 License</p>
           </div>
-          <button
-            onClick={onHelpOpen}
-            className="p-1.5 rounded-lg text-zinc-600 hover:text-blue-400 hover:bg-zinc-800 transition-colors"
-            aria-label="Cos'è Segno?"
-            title="Cos'è Segno?"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-1">
+            <a
+              href="https://relatronica.com/about"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 rounded-lg text-zinc-600 hover:text-rose-400 hover:bg-zinc-800 transition-colors"
+              aria-label="Sostieni il progetto"
+              title="Sostieni il progetto"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </a>
+            <button
+              onClick={onHelpOpen}
+              className="p-1.5 rounded-lg text-zinc-600 hover:text-blue-400 hover:bg-zinc-800 transition-colors"
+              aria-label="Cos'è Segno?"
+              title="Cos'è Segno?"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+          </div>
         </div>
       </aside>
     </>

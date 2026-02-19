@@ -13,7 +13,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   Sparkles, ChevronRight, ChevronLeft, Wand2, Settings2,
   Loader2, CheckCircle2, AlertCircle, ExternalLink, Trash2,
-  Copy, ArrowRight, Key,
+  Copy, ArrowRight, Key, Wifi, WifiOff, HardDrive,
   Microscope, TrendingUp, Globe, Users, Shield, Scale,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -22,7 +22,8 @@ import { simulate } from '@sdl/engine/monte-carlo';
 import type { SimulationResult, ScenarioNode } from '@sdl/core/types';
 import {
   AI_PROVIDERS, loadAIConfig, saveAIConfig, clearAIConfig,
-  type AIConfig,
+  isLocalProvider, probeOllama,
+  type AIConfig, type OllamaStatus,
 } from './providers';
 import { generateSDL } from './generate';
 import type { WizardData } from './system-prompt';
@@ -183,9 +184,13 @@ export default function WizardView({ onOpenInEditor }: WizardViewProps) {
   // AI config
   const [aiConfig, setAiConfig] = useState<AIConfig | null>(() => loadAIConfig());
   const [showApiConfig, setShowApiConfig] = useState(false);
-  const [tempProvider, setTempProvider] = useState(aiConfig?.providerId ?? 'openai');
-  const [tempModel, setTempModel] = useState(aiConfig?.modelId ?? 'gpt-4o');
+  const [tempProvider, setTempProvider] = useState(aiConfig?.providerId ?? 'ollama');
+  const [tempModel, setTempModel] = useState(aiConfig?.modelId ?? '');
   const [tempKey, setTempKey] = useState(aiConfig?.apiKey ?? '');
+
+  // Ollama local state
+  const [ollamaStatus, setOllamaStatus] = useState<OllamaStatus>({ online: false, models: [] });
+  const [ollamaProbing, setOllamaProbing] = useState(false);
 
   // Generation state
   const [isGenerating, setIsGenerating] = useState(false);
@@ -202,8 +207,25 @@ export default function WizardView({ onOpenInEditor }: WizardViewProps) {
   const abortRef = useRef<AbortController | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
 
-  // Sync provider → model
+  // Probe Ollama on mount and when switching to local provider
   useEffect(() => {
+    if (!isLocalProvider(tempProvider)) return;
+    let cancelled = false;
+    setOllamaProbing(true);
+    probeOllama().then(status => {
+      if (cancelled) return;
+      setOllamaStatus(status);
+      setOllamaProbing(false);
+      if (status.online && status.models.length > 0 && !status.models.find(m => m.id === tempModel)) {
+        setTempModel(status.models[0].id);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [tempProvider]);
+
+  // Sync provider → model for cloud providers
+  useEffect(() => {
+    if (isLocalProvider(tempProvider)) return;
     const prov = AI_PROVIDERS.find(p => p.id === tempProvider);
     if (prov && !prov.models.find(m => m.id === tempModel)) {
       setTempModel(prov.models[0].id);
@@ -211,9 +233,14 @@ export default function WizardView({ onOpenInEditor }: WizardViewProps) {
   }, [tempProvider]);
 
   const currentProvider = AI_PROVIDERS.find(p => p.id === tempProvider);
+  const isLocal = isLocalProvider(tempProvider);
+  const ollamaModels = ollamaStatus.online && ollamaStatus.models.length > 0
+    ? ollamaStatus.models
+    : currentProvider?.models ?? [];
 
   const saveConfig = useCallback(() => {
-    const config: AIConfig = { providerId: tempProvider, modelId: tempModel, apiKey: tempKey };
+    const key = isLocalProvider(tempProvider) ? 'ollama-local' : tempKey;
+    const config: AIConfig = { providerId: tempProvider, modelId: tempModel, apiKey: key };
     saveAIConfig(config);
     setAiConfig(config);
     setShowApiConfig(false);
@@ -248,7 +275,11 @@ export default function WizardView({ onOpenInEditor }: WizardViewProps) {
       case 1: return topic.trim().length >= 5;
       case 2: return selectedVars.size > 0 || customVars.trim().length > 0;
       case 3: return selectedParams.size > 0 || customParams.trim().length > 0;
-      case 4: return !!aiConfig?.apiKey;
+      case 4: {
+        if (!aiConfig) return false;
+        if (isLocalProvider(aiConfig.providerId)) return true;
+        return !!aiConfig.apiKey;
+      }
       default: return true;
     }
   }, [step, topic, selectedVars, customVars, selectedParams, customParams, aiConfig]);
@@ -597,7 +628,10 @@ export default function WizardView({ onOpenInEditor }: WizardViewProps) {
               <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-800/60">
                 <div className="flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg bg-violet-500/15 flex items-center justify-center">
-                    <Key size={14} className="text-violet-400" />
+                    {aiConfig && isLocalProvider(aiConfig.providerId)
+                      ? <HardDrive size={14} className="text-violet-400" />
+                      : <Key size={14} className="text-violet-400" />
+                    }
                   </div>
                   <div>
                     <h3 className="text-xs font-semibold text-zinc-200">Configurazione AI</h3>
@@ -608,7 +642,7 @@ export default function WizardView({ onOpenInEditor }: WizardViewProps) {
                         }
                       </p>
                     ) : (
-                      <p className="text-[10px] text-amber-400">Nessuna API key configurata</p>
+                      <p className="text-[10px] text-amber-400">Nessun provider configurato</p>
                     )}
                   </div>
                 </div>
@@ -626,7 +660,7 @@ export default function WizardView({ onOpenInEditor }: WizardViewProps) {
                   {/* Provider */}
                   <div>
                     <label className="text-[11px] text-zinc-400 font-medium mb-2 block">Provider</label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       {AI_PROVIDERS.map(p => (
                         <button
                           key={p.id}
@@ -637,71 +671,147 @@ export default function WizardView({ onOpenInEditor }: WizardViewProps) {
                               : 'border-zinc-700/40 bg-zinc-800/30 hover:border-zinc-600'
                           }`}
                         >
-                          <p className={`font-semibold ${tempProvider === p.id ? 'text-violet-300' : 'text-zinc-300'}`}>{p.name}</p>
+                          <div className="flex items-center gap-1.5">
+                            {p.isLocal && <HardDrive size={11} className={tempProvider === p.id ? 'text-violet-400' : 'text-zinc-500'} />}
+                            <p className={`font-semibold ${tempProvider === p.id ? 'text-violet-300' : 'text-zinc-300'}`}>{p.name}</p>
+                          </div>
                           <p className="text-[10px] text-zinc-500 mt-0.5 line-clamp-1">{p.description}</p>
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  {/* Model */}
-                  {currentProvider && (
-                    <div>
-                      <label className="text-[11px] text-zinc-400 font-medium mb-2 block">Modello</label>
-                      <div className="space-y-1.5">
-                        {currentProvider.models.map(m => (
+                  {/* Ollama status panel */}
+                  {isLocal && (
+                    <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border text-xs ${
+                      ollamaProbing
+                        ? 'border-zinc-700 bg-zinc-800/40'
+                        : ollamaStatus.online
+                          ? 'border-emerald-500/20 bg-emerald-500/5'
+                          : 'border-amber-500/20 bg-amber-500/5'
+                    }`}>
+                      {ollamaProbing ? (
+                        <>
+                          <Loader2 size={14} className="text-zinc-400 animate-spin" />
+                          <span className="text-zinc-400">Ricerca Ollama in corso...</span>
+                        </>
+                      ) : ollamaStatus.online ? (
+                        <>
+                          <Wifi size={14} className="text-emerald-400" />
+                          <span className="text-emerald-300">
+                            Ollama connesso — {ollamaStatus.models.length} modell{ollamaStatus.models.length === 1 ? 'o' : 'i'} disponibil{ollamaStatus.models.length === 1 ? 'e' : 'i'}
+                          </span>
                           <button
-                            key={m.id}
-                            onClick={() => setTempModel(m.id)}
-                            className={`w-full text-left px-3 py-2 rounded-lg border text-xs transition-all ${
-                              tempModel === m.id
-                                ? 'border-violet-500/30 bg-violet-500/8'
-                                : 'border-zinc-800 hover:border-zinc-600'
-                            }`}
+                            onClick={() => {
+                              setOllamaProbing(true);
+                              probeOllama().then(s => { setOllamaStatus(s); setOllamaProbing(false); });
+                            }}
+                            className="ml-auto text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors"
                           >
-                            <span className={`font-medium ${tempModel === m.id ? 'text-violet-300' : 'text-zinc-300'}`}>{m.name}</span>
-                            <span className="text-zinc-500 ml-2">{m.description}</span>
+                            Aggiorna
                           </button>
-                        ))}
-                      </div>
+                        </>
+                      ) : (
+                        <>
+                          <WifiOff size={14} className="text-amber-400" />
+                          <div>
+                            <span className="text-amber-300">Ollama non rilevato</span>
+                            <p className="text-[10px] text-zinc-500 mt-0.5">
+                              Installa da{' '}
+                              <a href="https://ollama.ai" target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300">
+                                ollama.ai
+                              </a>
+                              {' '}e avvia con <code className="text-zinc-300 bg-zinc-800 px-1 rounded">ollama serve</code>
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setOllamaProbing(true);
+                              probeOllama().then(s => { setOllamaStatus(s); setOllamaProbing(false); });
+                            }}
+                            className="ml-auto text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors"
+                          >
+                            Riprova
+                          </button>
+                        </>
+                      )}
                     </div>
                   )}
 
-                  {/* API Key */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="text-[11px] text-zinc-400 font-medium">API Key</label>
-                      {currentProvider && (
-                        <a
-                          href={currentProvider.keyUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[10px] text-violet-400 hover:text-violet-300 flex items-center gap-1 transition-colors"
-                        >
-                          Ottieni una chiave <ExternalLink size={10} />
-                        </a>
+                  {/* Model selection */}
+                  {currentProvider && (
+                    <div>
+                      <label className="text-[11px] text-zinc-400 font-medium mb-2 block">
+                        Modello {isLocal && ollamaStatus.online && ollamaStatus.models.length > 0 ? '(installati)' : ''}
+                      </label>
+                      {isLocal && !ollamaStatus.online ? (
+                        <p className="text-xs text-zinc-500 italic">Avvia Ollama per vedere i modelli disponibili.</p>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {(isLocal ? ollamaModels : currentProvider.models).map(m => (
+                            <button
+                              key={m.id}
+                              onClick={() => setTempModel(m.id)}
+                              className={`w-full text-left px-3 py-2 rounded-lg border text-xs transition-all ${
+                                tempModel === m.id
+                                  ? 'border-violet-500/30 bg-violet-500/8'
+                                  : 'border-zinc-800 hover:border-zinc-600'
+                              }`}
+                            >
+                              <span className={`font-medium ${tempModel === m.id ? 'text-violet-300' : 'text-zinc-300'}`}>{m.name}</span>
+                              <span className="text-zinc-500 ml-2">{m.description}</span>
+                            </button>
+                          ))}
+                        </div>
                       )}
                     </div>
-                    <input
-                      type="password"
-                      value={tempKey}
-                      onChange={e => setTempKey(e.target.value)}
-                      placeholder={currentProvider?.keyPlaceholder ?? 'Inserisci la tua API key...'}
-                      className="w-full bg-zinc-900/60 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/50 font-mono"
-                    />
-                    <p className="text-[10px] text-zinc-600 mt-1.5 flex items-center gap-1">
+                  )}
+
+                  {/* API Key — only for cloud providers */}
+                  {!isLocal && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-[11px] text-zinc-400 font-medium">API Key</label>
+                        {currentProvider && (
+                          <a
+                            href={currentProvider.keyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] text-violet-400 hover:text-violet-300 flex items-center gap-1 transition-colors"
+                          >
+                            Ottieni una chiave <ExternalLink size={10} />
+                          </a>
+                        )}
+                      </div>
+                      <input
+                        type="password"
+                        value={tempKey}
+                        onChange={e => setTempKey(e.target.value)}
+                        placeholder={currentProvider?.keyPlaceholder ?? 'Inserisci la tua API key...'}
+                        className="w-full bg-zinc-900/60 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/50 font-mono"
+                      />
+                      <p className="text-[10px] text-zinc-600 mt-1.5 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        La chiave resta nel tuo browser (localStorage). Non viene inviata a nessun server nostro.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Local provider privacy note */}
+                  {isLocal && ollamaStatus.online && (
+                    <p className="text-[10px] text-zinc-600 flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      La chiave resta nel tuo browser (localStorage). Non viene inviata a nessun server nostro.
+                      Nessun dato lascia il tuo computer. L'elaborazione avviene interamente in locale.
                     </p>
-                  </div>
+                  )}
 
                   {/* Save / Delete */}
                   <div className="flex items-center gap-3">
                     <button
                       onClick={saveConfig}
-                      disabled={!tempKey.trim()}
+                      disabled={isLocal ? (!ollamaStatus.online || !tempModel) : !tempKey.trim()}
                       className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
-                        tempKey.trim()
+                        (isLocal ? (ollamaStatus.online && !!tempModel) : tempKey.trim())
                           ? 'bg-violet-600 text-white hover:bg-violet-500'
                           : 'bg-zinc-700 text-zinc-500 cursor-not-allowed'
                       }`}
@@ -726,9 +836,9 @@ export default function WizardView({ onOpenInEditor }: WizardViewProps) {
             {/* Generate button */}
             <button
               onClick={handleGenerate}
-              disabled={!aiConfig?.apiKey || isGenerating}
+              disabled={!canProceed || isGenerating}
               className={`w-full flex items-center justify-center gap-3 px-6 py-4 text-sm font-bold rounded-xl transition-all ${
-                !aiConfig?.apiKey || isGenerating
+                !canProceed || isGenerating
                   ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                   : 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-500 hover:to-fuchsia-500 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30'
               }`}
@@ -737,9 +847,15 @@ export default function WizardView({ onOpenInEditor }: WizardViewProps) {
                 <>
                   <Loader2 size={18} className="animate-spin" />
                   {genStatus || 'Generazione in corso...'}
-                  <button onClick={handleCancel} className="ml-2 text-xs underline opacity-70 hover:opacity-100">
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => { e.stopPropagation(); handleCancel(); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleCancel(); }}
+                    className="ml-2 text-xs underline opacity-70 hover:opacity-100 cursor-pointer"
+                  >
                     Annulla
-                  </button>
+                  </span>
                 </>
               ) : (
                 <>
@@ -749,9 +865,9 @@ export default function WizardView({ onOpenInEditor }: WizardViewProps) {
               )}
             </button>
 
-            {!aiConfig?.apiKey && !showApiConfig && (
+            {!aiConfig && !showApiConfig && (
               <p className="text-center text-xs text-amber-400/80">
-                Configura prima la tua API key per generare lo scenario.
+                Configura un provider AI per generare lo scenario.
               </p>
             )}
 
