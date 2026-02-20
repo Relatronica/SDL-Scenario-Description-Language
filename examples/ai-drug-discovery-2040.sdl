@@ -41,7 +41,7 @@ scenario "AI-Driven Drug Discovery 2040" {
     uncertainty: normal(±12%)
 
     bind {
-      source: "https://api.evaluate.com/pharma/global-rd-spend"
+      source: "sdl:fallback/pharma-rd-spend"
       refresh: yearly
       field: "total_rd_spend_usd_billions"
       fallback: 260
@@ -444,7 +444,7 @@ scenario "AI-Driven Drug Discovery 2040" {
   // ── Calibration ──
 
   calibrate ai_assisted_drug_approvals {
-    historical: "https://api.fda.gov/drug/approvals/ai-assisted/2020-2025"
+    historical: "sdl:fallback/fda-novel-approvals"
     method: bayesian_update
     window: 3y
     prior: lognormal(2.5, 0.5)
@@ -452,7 +452,7 @@ scenario "AI-Driven Drug Discovery 2040" {
   }
 
   calibrate clinical_trial_success_rate {
-    historical: "https://api.bio.org/clinical-success-rates/2015-2025"
+    historical: "sdl:fallback/fda-novel-approvals"
     method: bayesian_update
     window: 5y
     prior: beta(4, 12)

@@ -14,7 +14,13 @@ export interface FanChartPoint {
   innerUpper: number;
   outerUpper: number;
   p50: number;
+  absP5: number;
+  absP25: number;
+  absP75: number;
+  absP95: number;
 }
+
+export type UncertaintyLevel = 'bassa' | 'media' | 'alta' | 'molto alta';
 
 export function extractFanData(
   result: SimulationResult,
@@ -38,6 +44,10 @@ export function extractFanData(
       innerUpper: p75 - p50,
       outerUpper: p95 - p75,
       p50,
+      absP5: p5,
+      absP25: p25,
+      absP75: p75,
+      absP95: p95,
     };
   });
 }
@@ -53,12 +63,46 @@ export function getFinalMedian(
   return last.distribution.percentiles.get(50) ?? last.distribution.mean;
 }
 
+export function getFinalRange(
+  result: SimulationResult,
+  name: string,
+  type: 'variable' | 'impact',
+): { p5: number; p95: number } | null {
+  const src = type === 'impact' ? result.impacts.get(name) : result.variables.get(name);
+  if (!src || src.timeseries.length === 0) return null;
+  const last = src.timeseries[src.timeseries.length - 1];
+  const p = last.distribution.percentiles;
+  return {
+    p5: p.get(5) ?? last.distribution.mean - 2 * last.distribution.std,
+    p95: p.get(95) ?? last.distribution.mean + 2 * last.distribution.std,
+  };
+}
+
+export function getUncertaintyLevel(data: FanChartPoint[]): UncertaintyLevel {
+  if (!data || data.length === 0) return 'media';
+  const last = data[data.length - 1];
+  const median = Math.abs(last.p50) || 1;
+  const spread = (last.absP95 - last.absP5) / median;
+  if (spread < 0.1) return 'bassa';
+  if (spread < 0.3) return 'media';
+  if (spread < 0.6) return 'alta';
+  return 'molto alta';
+}
+
 export function formatValue(v: number): string {
   if (Math.abs(v) >= 1e9) return `${(v / 1e9).toFixed(0)}B`;
   if (Math.abs(v) >= 1e6) return `${(v / 1e6).toFixed(0)}M`;
   if (Math.abs(v) >= 1e4) return `${(v / 1e3).toFixed(0)}K`;
   if (Math.abs(v) >= 1e3) return `${(v / 1e3).toFixed(1)}K`;
   if (Math.abs(v) < 0.01 && v !== 0) return v.toExponential(1);
+  if (Math.abs(v) < 1) return v.toFixed(2);
+  return v.toFixed(1);
+}
+
+export function formatValueFull(v: number): string {
+  if (Math.abs(v) >= 1e9) return `${(v / 1e9).toFixed(1)} miliardi`;
+  if (Math.abs(v) >= 1e6) return `${(v / 1e6).toFixed(1)} milioni`;
+  if (Math.abs(v) >= 1e3) return `${(v / 1e3).toFixed(1)} mila`;
   if (Math.abs(v) < 1) return v.toFixed(2);
   return v.toFixed(1);
 }

@@ -37,6 +37,13 @@ scenario "European Defense Autonomy 2035" {
     source: "EU Intelligence and Situation Centre (INTCEN) assessment, 2025"
     confidence: 0.3
     uncertainty: beta(5, 3)
+
+    bind {
+      source: "https://data.worldbank.org/indicator/MS.MIL.XPND.GD.ZS"
+      refresh: yearly
+      field: "eu_avg_defense_gdp_pct"
+      fallback: 1.9
+    }
   }
 
   assumption eu_political_cohesion {
@@ -377,6 +384,16 @@ scenario "European Defense Autonomy 2035" {
     color: "#f59e0b"
     derives_from: us_equipment_dependency, defense_industry_employment, joint_procurement_share
     formula: ((100 - us_equipment_dependency) * 0.4) + (defense_industry_employment / 1000 * 30) + (joint_procurement_share * 0.3)
+  }
+
+  // ── Calibration ──
+
+  calibrate avg_defense_spending_gdp {
+    historical: "https://data.worldbank.org/indicator/MS.MIL.XPND.GD.ZS"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±10%)
+    update_frequency: yearly
   }
 
   // ── Simulation ──

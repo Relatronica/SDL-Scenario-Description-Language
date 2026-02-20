@@ -104,7 +104,10 @@ function extractSliders(ast: ScenarioNode): SliderDefWithDivisor[] {
     const hasRange = !!p.range;
     const min = hasRange ? exprToDisplayValue(p.range!.min).value : Math.round(value * 0.1);
     const max = hasRange ? exprToDisplayValue(p.range!.max).value : Math.round(value * 3);
-    const step = p.step ? exprToNumber(p.step) : Math.max(0.1, Math.round((max - min) / 100 * 10) / 10);
+    const stepDisplay = p.step ? exprToDisplayValue(p.step).value : 0;
+    const step = stepDisplay > 0
+      ? stepDisplay
+      : Math.max(0.1, Math.round((max - min) / 100 * 10) / 10);
 
     const fmt = p.format ?? '{value}';
     const unit = p.unit ?? '';
@@ -223,6 +226,7 @@ export interface RenderedScenario {
   sliders: SliderDef[];
   variables: VariableDisplay[];
   simulate: (overrides?: Record<string, number>) => SimulationResult | null;
+  simulateWith: (baseAst: ScenarioNode, overrides?: Record<string, number>) => SimulationResult | null;
 }
 
 export function renderSDL(sdlSource: string, sdlId: string): RenderedScenario | null {
@@ -242,25 +246,29 @@ export function renderSDL(sdlSource: string, sdlId: string): RenderedScenario | 
     parameterDefaults[s.id] = s.default * (s._divisor ?? 1);
   }
 
+  const doSimulate = (baseAst: ScenarioNode, overrides?: Record<string, number>) => {
+    try {
+      const effectiveAst = overrides
+        ? applyOverrides(baseAst, overrides, divisorMap)
+        : baseAst;
+      return simulate(effectiveAst, {
+        runs: 2000,
+        seed: 42,
+        parameterDefaults: overrides ? parameterDefaults : undefined,
+      });
+    } catch {
+      return null;
+    }
+  };
+
   return {
     ast,
     meta,
     sliders,
     variables,
-    simulate: (overrides?: Record<string, number>) => {
-      try {
-        const effectiveAst = overrides
-          ? applyOverrides(ast, overrides, divisorMap)
-          : ast;
-        return simulate(effectiveAst, {
-          runs: 2000,
-          seed: 42,
-          parameterDefaults: overrides ? parameterDefaults : undefined,
-        });
-      } catch {
-        return null;
-      }
-    },
+    simulate: (overrides?: Record<string, number>) => doSimulate(ast, overrides),
+    simulateWith: (baseAst: ScenarioNode, overrides?: Record<string, number>) =>
+      doSimulate(baseAst, overrides),
   };
 }
 

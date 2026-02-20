@@ -37,6 +37,18 @@ scenario "Digital Euro Adoption 2030" {
     source: "EU Digital Euro Regulation proposal, 2024"
     confidence: 0.6
     uncertainty: beta(5, 3)
+
+    bind {
+      source: "https://ec.europa.eu/eurostat/databrowser/view/isoc_ci_ifp_iu"
+      refresh: yearly
+      field: "digital_payment_adoption_pct"
+      fallback: 0.70
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.7
+      error when: actual < assumed * 0.5
+    }
   }
 
   assumption holding_limit {
@@ -259,6 +271,16 @@ scenario "Digital Euro Adoption 2030" {
     color: "#3b82f6"
     derives_from: daily_transactions
     formula: daily_transactions / 850 * 100
+  }
+
+  // ── Calibration ──
+
+  calibrate wallet_adoption {
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/isoc_ci_ifp_iu"
+    method: bayesian_update
+    window: 3y
+    prior: normal(±20%)
+    update_frequency: quarterly
   }
 
   // ── Simulation ──

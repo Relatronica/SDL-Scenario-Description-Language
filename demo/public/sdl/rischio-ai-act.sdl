@@ -2,7 +2,7 @@
 // SDL Example: EU AI Act — Rischio Compliance 2025-2035
 // ============================================================
 // Impatto dell'AI Act europeo: costi, sanzioni, conformità e fiducia.
-// Ispirato alla knowledge base Segno (GDPR + AI Act).
+// Ispirato alla knowledge base Rebica (GDPR + AI Act).
 // ============================================================
 
 scenario "EU AI Act — Rischio Compliance" {
@@ -11,7 +11,7 @@ scenario "EU AI Act — Rischio Compliance" {
   confidence: 0.35
   author: "Relatronica — Citizen Lab"
   version: "1.0"
-  description: "Impatto dell'AI Act europeo: costi, sanzioni, conformità e fiducia. Ispirato alla knowledge base Segno (GDPR + AI Act)."
+  description: "Impatto dell'AI Act europeo: costi, sanzioni, conformità e fiducia. Ispirato alla knowledge base Rebica (GDPR + AI Act)."
   tags: ["ai-act", "gdpr", "compliance", "regolamentazione", "europa"]
   subtitle: "Costi, sanzioni e fiducia nell'era dell'AI Act"
   category: regolamentazione
@@ -28,11 +28,42 @@ scenario "EU AI Act — Rischio Compliance" {
     uncertainty: beta(5, 2)
   }
 
+  assumption digital_skills_index_eu {
+    value: 52
+    source: "Eurostat isoc_ci_in_h — digital skills households"
+    confidence: 0.6
+    uncertainty: normal(±15%)
+
+    bind {
+      source: "https://ec.europa.eu/eurostat/databrowser/view/isoc_ci_in_h"
+      refresh: yearly
+      field: "digital_skills_index"
+      fallback: 52
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.85
+      error when: actual < assumed * 0.7
+    }
+  }
+
   assumption gdpr_enforcement_maturity {
     value: 0.80
     source: "EDPB annual report 2024"
     confidence: 0.75
     uncertainty: beta(7, 2)
+
+    bind {
+      source: "sdl:fallback/edpb-enforcement"
+      refresh: quarterly
+      field: "maturity_index"
+      fallback: 0.80
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.8
+      error when: actual < assumed * 0.6
+    }
   }
 
   // ── Parameters ──
@@ -67,7 +98,7 @@ scenario "EU AI Act — Rischio Compliance" {
     step: 1%
     label: "Diffusione sistemi biometrici"
     unit: "%"
-    source: "EU biometric AI market report 2025; Segno knowledge base"
+    source: "EU biometric AI market report 2025; Rebica knowledge base"
     format: "{value}%"
     control: slider
     description: "Quota di aziende che usano identificazione biometrica AI — soggette a Art. 5/6 AI Act"
@@ -79,7 +110,7 @@ scenario "EU AI Act — Rischio Compliance" {
     step: 5%
     label: "Supervisione umana"
     unit: "%"
-    source: "Enterprise AI deployment surveys; Segno blueprint analysis"
+    source: "Enterprise AI deployment surveys; Rebica blueprint analysis"
     format: "{value}%"
     control: slider
     description: "Quota di sistemi AI ad alto rischio con human-in-the-loop (Art. 14 AI Act)"
@@ -330,6 +361,16 @@ scenario "EU AI Act — Rischio Compliance" {
       2035: 42
       uncertainty: beta(3, 7)
     }
+  }
+
+  // ── Calibrazione ──
+
+  calibrate enterprises_compliant {
+    historical: "sdl:fallback/edpb-enforcement"
+    method: bayesian_update
+    window: 3y
+    prior: beta(5, 5)
+    update_frequency: quarterly
   }
 
   // ── Simulation ──

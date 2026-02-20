@@ -18,3 +18,7 @@ export * from './core/index';
 // Engine: Monte Carlo simulation
 export { simulate } from './engine/monte-carlo';
 export type { SimulationConfig, SimulationProgress } from './engine/monte-carlo';
+
+// Pulse: live data binding, calibration, monitoring
+export { pulse } from './pulse/index';
+export type { PulseResult, PulseOptions, ObservedTimeseries, WatchAlert, CalibrationResult } from './pulse/index';

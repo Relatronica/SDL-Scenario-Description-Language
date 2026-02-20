@@ -33,7 +33,7 @@ async function callOpenAICompatible(
   if (!local) {
     headers['Authorization'] = `Bearer ${apiKey}`;
     headers['HTTP-Referer'] = window.location.origin;
-    headers['X-Title'] = 'Segno SDL Citizen Lab';
+    headers['X-Title'] = 'Rebica SDL Citizen Lab';
   }
 
   const res = await fetch(`${baseUrl}/chat/completions`, {

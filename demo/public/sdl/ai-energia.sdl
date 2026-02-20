@@ -70,6 +70,46 @@ scenario "AI e Consumo Energetico 2025-2040" {
     description: "Eventuale tassa carbonio applicata al consumo energetico dei data center (€/MWh)"
   }
 
+  // ── Assunzioni con dati reali ──
+
+  assumption consumo_dc_attuale {
+    value: 650
+    source: "IEA Data Centres and Data Transmission Networks 2025"
+    confidence: 0.6
+    uncertainty: normal(±20%)
+
+    bind {
+      source: "sdl:fallback/datacenter-energy"
+      refresh: quarterly
+      field: "twh_annual"
+      fallback: 650
+    }
+
+    watch {
+      warn  when: actual > assumed * 1.5
+      error when: actual > assumed * 2.0
+    }
+  }
+
+  assumption primary_energy_eu {
+    value: 1550
+    source: "Eurostat nrg_bal_c — primary energy supply EU-27"
+    confidence: 0.6
+    uncertainty: normal(±10%)
+
+    bind {
+      source: "https://ec.europa.eu/eurostat/databrowser/view/nrg_bal_c?geo=EU27_2020"
+      refresh: yearly
+      field: "primary_energy_mtoe"
+      fallback: 1550
+    }
+
+    watch {
+      warn  when: actual > assumed * 1.15
+      error when: actual > assumed * 1.25
+    }
+  }
+
   // ── Variables ──
 
   variable consumo_elettrico_ai {
@@ -181,7 +221,7 @@ scenario "AI e Consumo Energetico 2025-2040" {
 
   // ── Branches ──
 
-  branch "Svolta efficienza chip" when chip_efficiency > 0.4 {
+  branch "Svolta efficienza chip" when chip_efficiency > 40 {
     probability: 0.20
 
     variable consumo_elettrico_ai {
@@ -226,6 +266,16 @@ scenario "AI e Consumo Energetico 2025-2040" {
       2040: 108
       uncertainty: normal(±20%)
     }
+  }
+
+  // ── Calibrazione ──
+
+  calibrate consumo_elettrico_ai {
+    historical: "sdl:fallback/datacenter-energy"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±18%)
+    update_frequency: quarterly
   }
 
   // ── Simulation ──

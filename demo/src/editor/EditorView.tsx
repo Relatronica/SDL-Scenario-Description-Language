@@ -22,11 +22,20 @@ import { basicSetup } from 'codemirror';
 import { parse } from '@sdl/core/parser';
 import { validate } from '@sdl/core/validator';
 import { simulate } from '@sdl/engine/monte-carlo';
-import type { SimulationResult, ScenarioNode, ParameterNode, ExpressionNode } from '@sdl/core/types';
+import type { SimulationResult, ScenarioNode, ParameterNode, VariableNode, ImpactNode, ExpressionNode, AssumptionNode } from '@sdl/core/types';
 import { EDITOR_TEMPLATES, type SDLTemplate } from './templates';
-import { extractFanData, formatValue, type FanChartPoint } from '../lib/simulation';
+import { extractFanData, formatValue, getUncertaintyLevel, type FanChartPoint, type UncertaintyLevel } from '../lib/simulation';
+import { loadPulseData, loadPulseDataOffline, computeValidation } from '../lib/pulse-bridge';
+import type { ScenarioLiveData, WatchAlert } from '../lib/pulse-bridge';
+import { renderSDL } from '../lib/sdl-renderer';
+import type { VariableDisplay } from '../scenarios/types';
+import { runSensitivityAnalysis, type SensitivityResult } from '../lib/sensitivity';
+import { generateNarration, type NarrationBlock } from '../lib/narration';
+import FanChart from '../components/FanChart';
+import SensitivityPanel from '../components/SensitivityPanel';
+import NarrationPanel from '../components/NarrationPanel';
 import { SdlIcon } from '../lib/icons';
-import { PenLine } from 'lucide-react';
+import { PenLine, AlertTriangle, AlertOctagon, BarChart3, FileText } from 'lucide-react';
 
 // Colors for auto-generated variable charts
 const CHART_COLORS = [
@@ -38,14 +47,57 @@ const CHART_COLORS = [
 // Mini Fan Chart (for results)
 // ═══════════════════════════════════════════
 
+const MINI_UNCERTAINTY_COLORS: Record<UncertaintyLevel, string> = {
+  'bassa': 'rgb(34,197,94)',
+  'media': 'rgb(234,179,8)',
+  'alta': 'rgb(249,115,22)',
+  'molto alta': 'rgb(239,68,68)',
+};
+
+const MINI_UNCERTAINTY_LABELS: Record<UncertaintyLevel, string> = {
+  'bassa': 'Incertezza bassa',
+  'media': 'Incertezza moderata',
+  'alta': 'Incertezza alta',
+  'molto alta': 'Incertezza molto alta',
+};
+
+function MiniTooltip({ active, payload, label, unit, color }: {
+  active?: boolean;
+  payload?: Array<{ payload: FanChartPoint }>;
+  label?: number;
+  unit: string;
+  color: string;
+}) {
+  if (!active || !payload || !payload[0]) return null;
+  const d = payload[0].payload;
+  return (
+    <div style={{
+      backgroundColor: 'rgb(24,24,27)', border: '1px solid rgb(63,63,70)',
+      borderRadius: '12px', padding: '10px 12px', fontSize: '11px',
+      color: 'rgb(212,212,216)', boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+    }}>
+      <p style={{ color: 'rgb(161,161,170)', fontWeight: 600, marginBottom: '6px' }}>Anno {label}</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+        <span style={{ width: 8, height: 2, borderRadius: 1, backgroundColor: color, display: 'inline-block' }} />
+        <span style={{ fontWeight: 600 }}>Mediana: {formatValue(d.p50)} {unit}</span>
+      </div>
+      <p style={{ fontSize: '10px', color: 'rgb(113,113,122)' }}>
+        Range: {formatValue(d.absP5)} – {formatValue(d.absP95)} {unit}
+      </p>
+    </div>
+  );
+}
+
 function MiniFanChart({ data, label, color, unit }: {
   data: FanChartPoint[]; label: string; color: string; unit: string;
 }) {
   if (!data || data.length === 0) return null;
   const gid = `g-editor-${label.replace(/\s/g, '-')}`;
+  const uncertainty = getUncertaintyLevel(data);
+  const uColor = MINI_UNCERTAINTY_COLORS[uncertainty];
   return (
     <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 animate-fade-in">
-      <div className="flex items-center gap-2.5 mb-4">
+      <div className="flex items-center gap-2.5 mb-3">
         <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-semibold text-zinc-200 truncate">{label}</h3>
@@ -61,11 +113,7 @@ function MiniFanChart({ data, label, color, unit }: {
           <CartesianGrid strokeDasharray="3 3" stroke="rgb(39,39,42)" />
           <XAxis dataKey="year" tick={{ fontSize: 11, fill: 'rgb(113,113,122)' }} axisLine={{ stroke: 'rgb(63,63,70)' }} tickLine={false} />
           <YAxis tick={{ fontSize: 11, fill: 'rgb(113,113,122)' }} axisLine={{ stroke: 'rgb(63,63,70)' }} tickLine={false} tickFormatter={formatValue} width={50} />
-          <Tooltip
-            contentStyle={{ backgroundColor: 'rgb(24,24,27)', border: '1px solid rgb(63,63,70)', borderRadius: '12px', fontSize: '12px', color: 'rgb(212,212,216)', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
-            formatter={(value: number, name: string) => name === 'p50' ? [formatValue(value), 'Mediana'] : [null, null]}
-            labelFormatter={(l) => `Anno ${l}`} labelStyle={{ color: 'rgb(161,161,170)', fontWeight: 600 }}
-          />
+          <Tooltip content={<MiniTooltip unit={unit} color={color} />} />
           <Area type="monotone" dataKey="base" stackId="fan" fill="transparent" stroke="none" />
           <Area type="monotone" dataKey="outerLower" stackId="fan" fill={`url(#${gid}-o)`} stroke="none" />
           <Area type="monotone" dataKey="innerLower" stackId="fan" fill={`url(#${gid}-i)`} stroke="none" />
@@ -74,10 +122,16 @@ function MiniFanChart({ data, label, color, unit }: {
           <Line type="monotone" dataKey="p50" stroke={color} strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: color, stroke: 'white', strokeWidth: 2 }} />
         </ComposedChart>
       </ResponsiveContainer>
-      <div className="flex items-center justify-center gap-6 mt-2 text-[10px] text-zinc-600">
-        <span className="flex items-center gap-1.5"><span className="w-6 h-1.5 rounded-full" style={{ backgroundColor: color, opacity: 0.2 }} />90%</span>
-        <span className="flex items-center gap-1.5"><span className="w-6 h-1.5 rounded-full" style={{ backgroundColor: color, opacity: 0.4 }} />50%</span>
-        <span className="flex items-center gap-1.5"><span className="w-6 h-0.5 rounded-full" style={{ backgroundColor: color }} />Mediana</span>
+      <div className="flex items-center justify-between mt-2">
+        <div className="flex items-center gap-5 text-[10px] text-zinc-500">
+          <span className="flex items-center gap-1.5"><span className="w-5 h-1.5 rounded-full" style={{ backgroundColor: color, opacity: 0.2 }} />Fascia ampia</span>
+          <span className="flex items-center gap-1.5"><span className="w-5 h-1.5 rounded-full" style={{ backgroundColor: color, opacity: 0.4 }} />Probabile</span>
+          <span className="flex items-center gap-1.5"><span className="w-5 h-0.5 rounded-full" style={{ backgroundColor: color }} />Mediana</span>
+        </div>
+        <span className="flex items-center gap-1.5 text-[10px]" style={{ color: uColor }}>
+          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: uColor }} />
+          {MINI_UNCERTAINTY_LABELS[uncertainty]}
+        </span>
       </div>
     </div>
   );
@@ -449,10 +503,58 @@ export default function EditorView({ initialTemplate, aiGeneratedSource }: Edito
   const [activeTab, setActiveTab] = useState<'editor' | 'results'>('editor');
   const [paramOverrides, setParamOverrides] = useState<Record<string, number>>({});
 
+  // Pulse / live data state
+  const [liveData, setLiveData] = useState<ScenarioLiveData | null>(null);
+  const [calibratedAst, setCalibratedAst] = useState<ScenarioNode | null>(null);
+  const [alerts, setAlerts] = useState<WatchAlert[]>([]);
+
+  // Sensitivity & Narration state
+  const [showSensitivity, setShowSensitivity] = useState(false);
+  const [sensitivityData, setSensitivityData] = useState<SensitivityResult[] | null>(null);
+  const [showNarration, setShowNarration] = useState(false);
+  const [narrationBlocks, setNarrationBlocks] = useState<NarrationBlock[] | null>(null);
+  const [showValidation, setShowValidation] = useState(false);
+
   const parseTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const pulseTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Extract interactive parameters from AST
   const params = useMemo<ParamDef[]>(() => (ast ? extractParams(ast) : []), [ast]);
+
+  // Extract variable/impact display info from AST
+  const variableDisplays = useMemo<VariableDisplay[]>(() => {
+    if (!ast) return [];
+    const displays: VariableDisplay[] = [];
+    let idx = 0;
+    for (const decl of ast.declarations) {
+      if (decl.type === 'Variable') {
+        const v = decl as VariableNode;
+        displays.push({
+          id: v.name,
+          label: v.label ?? v.name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+          description: v.description ?? '',
+          unit: v.unit ?? '',
+          color: v.color ?? CHART_COLORS[idx % CHART_COLORS.length],
+          type: 'variable',
+          icon: v.icon ?? 'bar-chart',
+        });
+        idx++;
+      } else if (decl.type === 'Impact') {
+        const imp = decl as ImpactNode;
+        displays.push({
+          id: imp.name,
+          label: imp.label ?? imp.name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+          description: imp.description ?? '',
+          unit: imp.unit ?? '',
+          color: imp.color ?? CHART_COLORS[idx % CHART_COLORS.length],
+          type: 'impact',
+          icon: imp.icon ?? 'target',
+        });
+        idx++;
+      }
+    }
+    return displays;
+  }, [ast]);
 
   // Capture original parameter defaults for dependency modulation
   const parameterDefaults = useMemo<Record<string, number>>(() => {
@@ -508,6 +610,59 @@ export default function EditorView({ initialTemplate, aiGeneratedSource }: Edito
   useEffect(() => {
     parseSource(source);
   }, []);
+
+  // Load Pulse data when AST has bind/calibrate blocks (debounced)
+  useEffect(() => {
+    if (!ast) {
+      setLiveData(null);
+      setCalibratedAst(null);
+      setAlerts([]);
+      return;
+    }
+
+    const hasBind = ast.declarations.some(
+      d => d.type === 'Assumption' && (d as AssumptionNode).bind != null,
+    );
+    const hasCalibrate = ast.declarations.some(d => d.type === 'Calibrate');
+
+    if (!hasBind && !hasCalibrate) {
+      setLiveData(null);
+      setCalibratedAst(null);
+      setAlerts([]);
+      return;
+    }
+
+    clearTimeout(pulseTimerRef.current);
+    let cancelled = false;
+
+    pulseTimerRef.current = setTimeout(() => {
+      loadPulseDataOffline(ast).then(offline => {
+        if (cancelled || !offline) return;
+        setLiveData(offline);
+
+        loadPulseData(ast).then(live => {
+          if (cancelled || !live) return;
+          setLiveData(live);
+          setAlerts(live.alerts);
+          if (live.calibratedAst) setCalibratedAst(live.calibratedAst);
+        });
+      });
+    }, 600);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(pulseTimerRef.current);
+    };
+  }, [ast]);
+
+  // Reset sensitivity/narration when AST changes
+  useEffect(() => {
+    setSensitivityData(null);
+    setNarrationBlocks(null);
+    setShowSensitivity(false);
+    setShowNarration(false);
+    setShowValidation(false);
+  }, [ast]);
 
   // Run simulation (with parameter overrides applied)
   const handleSimulate = useCallback(() => {
@@ -589,6 +744,11 @@ export default function EditorView({ initialTemplate, aiGeneratedSource }: Edito
     setSource(t.source);
     setResult(null);
     setParamOverrides({});
+    setLiveData(null);
+    setCalibratedAst(null);
+    setAlerts([]);
+    setSensitivityData(null);
+    setNarrationBlocks(null);
     setShowTemplates(false);
     setActiveTab('editor');
     setTimeout(() => parseSource(t.source), 50);
@@ -613,6 +773,7 @@ export default function EditorView({ initialTemplate, aiGeneratedSource }: Edito
   const errorCount = diagnostics.filter(d => d.severity === 'error').length;
   const canSimulate = ast != null && errorCount === 0;
   const hasOverrides = Object.keys(paramOverrides).length > 0;
+  const hasLiveData = liveData !== null;
 
   return (
     <div className="min-h-full animate-fade-in">
@@ -659,6 +820,19 @@ export default function EditorView({ initialTemplate, aiGeneratedSource }: Edito
               <span className="flex items-center gap-1.5 bg-zinc-800/60 px-3 py-1.5 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
                 Errori nel codice
+              </span>
+            )}
+
+            {hasLiveData && (
+              <span className="flex items-center gap-1.5 bg-zinc-800/60 px-3 py-1.5 rounded-full text-cyan-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                Dati reali
+              </span>
+            )}
+            {calibratedAst && (
+              <span className="flex items-center gap-1.5 bg-zinc-800/60 px-3 py-1.5 rounded-full text-violet-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
+                Calibrato
               </span>
             )}
 
@@ -767,6 +941,33 @@ export default function EditorView({ initialTemplate, aiGeneratedSource }: Edito
               )}
             </div>
 
+            {/* Watch Alerts */}
+            {alerts.length > 0 && (
+              <div className="space-y-2">
+                {alerts.map((alert, i) => (
+                  <div
+                    key={`${alert.target}-${i}`}
+                    className={`flex items-start gap-3 px-4 py-3 rounded-xl border ${
+                      alert.severity === 'error'
+                        ? 'bg-red-500/5 border-red-500/20'
+                        : 'bg-amber-500/5 border-amber-500/20'
+                    }`}
+                  >
+                    {alert.severity === 'error'
+                      ? <AlertOctagon size={16} className="text-red-400 shrink-0 mt-0.5" />
+                      : <AlertTriangle size={16} className="text-amber-400 shrink-0 mt-0.5" />
+                    }
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-xs font-semibold ${alert.severity === 'error' ? 'text-red-300' : 'text-amber-300'}`}>
+                        {alert.severity === 'error' ? 'Deviazione critica' : 'Attenzione'}: {alert.target.replace(/_/g, ' ')}
+                      </p>
+                      <p className="text-[11px] text-zinc-400 mt-0.5">{alert.message}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {result ? (
               <div className="space-y-5">
                 {/* Summary cards */}
@@ -787,20 +988,142 @@ export default function EditorView({ initialTemplate, aiGeneratedSource }: Edito
                   })}
                 </div>
 
-                {/* Fan Charts */}
-                {resultCharts.map(({ name, type, color }) => {
-                  const src = type === 'impact' ? result.impacts.get(name) : result.variables.get(name);
-                  const unit = src?.unit ?? '';
-                  return (
-                    <MiniFanChart
-                      key={name}
-                      data={extractFanData(result, name, type)}
-                      label={name.replace(/_/g, ' ')}
-                      color={color}
-                      unit={unit}
-                    />
-                  );
-                })}
+                {/* Fan Charts — with historical data overlay when available */}
+                {variableDisplays.length > 0 ? (
+                  variableDisplays.map(vd => {
+                    const hist = liveData?.variables.get(vd.id);
+                    return (
+                      <FanChart
+                        key={vd.id}
+                        data={extractFanData(result, vd.id, vd.type)}
+                        display={vd}
+                        historical={hist}
+                      />
+                    );
+                  })
+                ) : (
+                  resultCharts.map(({ name, type, color }) => {
+                    const src = type === 'impact' ? result.impacts.get(name) : result.variables.get(name);
+                    const unit = src?.unit ?? '';
+                    return (
+                      <MiniFanChart
+                        key={name}
+                        data={extractFanData(result, name, type)}
+                        label={name.replace(/_/g, ' ')}
+                        color={color}
+                        unit={unit}
+                      />
+                    );
+                  })
+                )}
+
+                {/* ── Expandable Panels ── */}
+                <div className="space-y-3 mt-6">
+
+                  {/* Validation panel — only when live data + results available */}
+                  {hasLiveData && (
+                    <div className="border border-cyan-500/20 rounded-2xl overflow-hidden">
+                      <button onClick={() => setShowValidation(!showValidation)} className="w-full flex items-center justify-between px-5 py-3 bg-cyan-500/5 hover:bg-cyan-500/10 transition-colors">
+                        <div className="flex items-center gap-2.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                          <span className="text-xs font-semibold text-zinc-300">Validazione: proiezione vs. realtà</span>
+                        </div>
+                        <svg className={`w-3.5 h-3.5 text-zinc-500 transition-transform ${showValidation ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                      </button>
+                      {showValidation && (
+                        <div className="px-5 py-4 bg-zinc-950/50 animate-fade-in space-y-4">
+                          {Array.from(liveData!.variables.entries()).map(([varId, varHist]) => {
+                            const simVar = result.variables.get(varId) ?? result.impacts.get(varId);
+                            if (!simVar) return null;
+                            const projected = simVar.timeseries.map(ts => ({
+                              year: ts.date.getFullYear(),
+                              median: ts.distribution.percentiles.get(50) ?? ts.distribution.mean,
+                            }));
+                            const validation = computeValidation(varHist.data, projected);
+                            if (validation.length === 0) return null;
+                            const avgError = validation.reduce((s, v) => s + Math.abs(v.errorPct), 0) / validation.length;
+                            const errorColor = avgError < 5 ? 'rgb(34,197,94)' : avgError < 15 ? 'rgb(234,179,8)' : 'rgb(239,68,68)';
+                            const errorLabel = avgError < 5 ? 'Ottimo' : avgError < 15 ? 'Accettabile' : 'Da rivedere';
+                            return (
+                              <div key={varId} className="bg-zinc-900/40 rounded-xl p-3">
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className="text-[11px] font-semibold text-zinc-300">{varHist.label}</h4>
+                                  <span className="text-[10px] font-medium" style={{ color: errorColor }}>{errorLabel} — scarto medio {avgError.toFixed(1)}%</span>
+                                </div>
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-[10px]">
+                                    <thead><tr className="text-zinc-600 border-b border-zinc-800"><th className="text-left py-1 pr-3">Anno</th><th className="text-right py-1 px-2">Osservato</th><th className="text-right py-1 px-2">Proiezione</th><th className="text-right py-1 pl-2">Scarto</th></tr></thead>
+                                    <tbody>{validation.map(v => {
+                                      const absPct = Math.abs(v.errorPct);
+                                      const cellColor = absPct < 5 ? 'text-emerald-400' : absPct < 15 ? 'text-yellow-400' : 'text-red-400';
+                                      return (
+                                        <tr key={v.year} className="border-b border-zinc-800/50"><td className="py-1 pr-3 text-zinc-400">{v.year}</td><td className="py-1 px-2 text-right text-zinc-300 tabular-nums">{formatValue(v.observed)}</td><td className="py-1 px-2 text-right text-zinc-400 tabular-nums">{formatValue(v.projected)}</td><td className={`py-1 pl-2 text-right tabular-nums font-medium ${cellColor}`}>{v.errorPct > 0 ? '+' : ''}{v.errorPct.toFixed(1)}%</td></tr>
+                                      );
+                                    })}</tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Narration panel */}
+                  <div className="border border-violet-500/20 rounded-2xl overflow-hidden">
+                    <button onClick={() => {
+                      if (!showNarration && !narrationBlocks && result) {
+                        const blocks = generateNarration(result, variableDisplays, liveData, sensitivityData);
+                        setNarrationBlocks(blocks);
+                      }
+                      setShowNarration(!showNarration);
+                    }} className="w-full flex items-center justify-between px-5 py-3 bg-violet-500/5 hover:bg-violet-500/10 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <FileText size={14} className="text-violet-400/70" />
+                        <span className="text-xs font-semibold text-zinc-300">Riassunto automatico</span>
+                      </div>
+                      <svg className={`w-3.5 h-3.5 text-zinc-500 transition-transform ${showNarration ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                    {showNarration && (
+                      <div className="px-5 py-4 bg-zinc-950/50 animate-fade-in">
+                        {narrationBlocks ? <NarrationPanel blocks={narrationBlocks} /> : (
+                          <div className="flex items-center justify-center py-6"><div className="w-5 h-5 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" /></div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Sensitivity panel */}
+                  {params.length > 0 && (
+                    <div className="border border-amber-500/20 rounded-2xl overflow-hidden">
+                      <button onClick={() => {
+                        if (!showSensitivity && !sensitivityData) {
+                          const rendered = renderSDL(source, '__editor__');
+                          if (rendered) {
+                            const data = runSensitivityAnalysis(rendered, variableDisplays, calibratedAst ?? undefined);
+                            setSensitivityData(data);
+                          }
+                        }
+                        setShowSensitivity(!showSensitivity);
+                      }} className="w-full flex items-center justify-between px-5 py-3 bg-amber-500/5 hover:bg-amber-500/10 transition-colors">
+                        <div className="flex items-center gap-2.5">
+                          <BarChart3 size={14} className="text-amber-400/70" />
+                          <span className="text-xs font-semibold text-zinc-300">Sensitivity analysis</span>
+                          <span className="text-[9px] text-amber-400/60 bg-amber-400/10 px-1.5 py-0.5 rounded-full">quali parametri contano?</span>
+                        </div>
+                        <svg className={`w-3.5 h-3.5 text-zinc-500 transition-transform ${showSensitivity ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                      </button>
+                      {showSensitivity && (
+                        <div className="px-5 py-4 bg-zinc-950/50 animate-fade-in">
+                          {sensitivityData ? <SensitivityPanel data={sensitivityData} /> : (
+                            <div className="flex items-center justify-center py-6"><div className="w-5 h-5 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" /></div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="h-80 flex items-center justify-center">

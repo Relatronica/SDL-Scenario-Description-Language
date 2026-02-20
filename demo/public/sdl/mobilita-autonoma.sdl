@@ -12,6 +12,46 @@ scenario "Mobilita Autonoma 2025-2045" {
   color: "#06b6d4"
   difficulty: base
 
+  // ── Assunzioni con dati reali ──
+
+  assumption immatricolazioni_ev_attuale {
+    value: 14
+    source: "ACEA European EV registrations 2024 (%)"
+    confidence: 0.7
+    uncertainty: normal(±15%)
+
+    bind {
+      source: "sdl:fallback/ev-share-eu"
+      refresh: quarterly
+      field: "ev_share_pct"
+      fallback: 14
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.7
+      error when: actual < assumed * 0.5
+    }
+  }
+
+  assumption crescita_pil_eu {
+    value: 1.5
+    source: "Eurostat namq_10_gdp — GDP growth EU"
+    confidence: 0.6
+    uncertainty: normal(±25%)
+
+    bind {
+      source: "https://ec.europa.eu/eurostat/databrowser/view/namq_10_gdp"
+      refresh: yearly
+      field: "gdp_growth_annual_pct"
+      fallback: 1.5
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.5
+      error when: actual < assumed * 0.25
+    }
+  }
+
   parameter tech_readiness {
     label: "Maturità tecnologica AV"
     value: 55
@@ -238,6 +278,16 @@ scenario "Mobilita Autonoma 2025-2045" {
       2045: 1.1
       uncertainty: normal(±15%)
     }
+  }
+
+  // ── Calibrazione ──
+
+  calibrate flotta_av {
+    historical: "sdl:fallback/ev-share-eu"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±25%)
+    update_frequency: yearly
   }
 
   simulate {

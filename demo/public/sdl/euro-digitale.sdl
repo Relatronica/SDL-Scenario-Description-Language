@@ -20,6 +20,27 @@ scenario "Euro Digitale — Adozione CBDC 2025-2032" {
   color: "#f59e0b"
   difficulty: base
 
+  // ── Assunzioni con dati reali ──
+
+  assumption tasso_adozione_digitale {
+    value: 72
+    source: "Eurostat Digital Economy and Society Index (DESI) 2024"
+    confidence: 0.6
+    uncertainty: normal(±15%)
+
+    bind {
+      source: "https://ec.europa.eu/eurostat/databrowser/view/isoc_ci_in_h"
+      refresh: yearly
+      field: "digital_skills_index"
+      fallback: 72
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.85
+      error when: actual < assumed * 0.7
+    }
+  }
+
   // ── Parameters ──
 
   parameter ecb_commitment {
@@ -220,6 +241,16 @@ scenario "Euro Digitale — Adozione CBDC 2025-2032" {
       2032: 27.9%
       uncertainty: normal(±15%)
     }
+  }
+
+  // ── Calibrazione ──
+
+  calibrate wallet_adoption {
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/isoc_ci_ifp_iu"
+    method: bayesian_update
+    window: 3y
+    prior: normal(±20%)
+    update_frequency: quarterly
   }
 
   // ── Simulation ──

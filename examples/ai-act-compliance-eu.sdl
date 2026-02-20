@@ -5,7 +5,7 @@
 // and its cascading effects on enterprise compliance costs,
 // regulatory penalties, market consolidation, and public trust.
 //
-// Inspired by the Segno knowledge base (Art. 5, 6, 13, 50)
+// Inspired by the Rebica knowledge base (Art. 5, 6, 13, 50)
 // and real enforcement timelines.
 // ============================================================
 
@@ -17,7 +17,7 @@ scenario "EU AI Act — Rischio Compliance" {
   version: "1.0"
   description: "Modella l'impatto dell'AI Act europeo su aziende, rischi
                 sanzionatori, costi di conformità e fiducia pubblica.
-                Basato sulla knowledge base Segno (GDPR + AI Act)."
+                Basato sulla knowledge base Rebica (GDPR + AI Act)."
   tags: ["ai-act", "gdpr", "compliance", "regolamentazione", "europa"]
   subtitle: "Costi, sanzioni e fiducia nell'era dell'AI Act"
   category: politica
@@ -40,6 +40,18 @@ scenario "EU AI Act — Rischio Compliance" {
     source: "EDPB annual report 2024 — 2100+ enforcement actions since 2018"
     confidence: 0.75
     uncertainty: beta(7, 2)
+
+    bind {
+      source: "sdl:fallback/edpb-enforcement"
+      refresh: quarterly
+      field: "maturity_index"
+      fallback: 0.80
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.7
+      error when: actual < assumed * 0.5
+    }
   }
 
   assumption ai_adoption_enterprise {
@@ -367,6 +379,16 @@ scenario "EU AI Act — Rischio Compliance" {
     color: "#2563eb"
     derives_from: public_trust_ai_eu
     formula: public_trust_ai_eu - 38
+  }
+
+  // ── Calibration ──
+
+  calibrate enterprises_compliant {
+    historical: "sdl:fallback/edpb-enforcement"
+    method: bayesian_update
+    window: 3y
+    prior: beta(5, 5)
+    update_frequency: quarterly
   }
 
   // ── Simulation ──

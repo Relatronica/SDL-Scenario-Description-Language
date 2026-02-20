@@ -27,7 +27,7 @@ import {
 } from './providers';
 import { generateSDL } from './generate';
 import type { WizardData } from './system-prompt';
-import { extractFanData, formatValue, type FanChartPoint } from '../lib/simulation';
+import { extractFanData, formatValue, getUncertaintyLevel, type FanChartPoint, type UncertaintyLevel } from '../lib/simulation';
 import {
   Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Line, ComposedChart,
@@ -72,11 +72,45 @@ const REGIONS = [
 
 // ─── Mini Fan Chart (reused from EditorView) ───
 
+const WIZ_UNCERTAINTY_COLORS: Record<UncertaintyLevel, string> = {
+  'bassa': 'rgb(34,197,94)', 'media': 'rgb(234,179,8)',
+  'alta': 'rgb(249,115,22)', 'molto alta': 'rgb(239,68,68)',
+};
+
+function WizTooltip({ active, payload, label, unit, color }: {
+  active?: boolean;
+  payload?: Array<{ payload: FanChartPoint }>;
+  label?: number;
+  unit: string;
+  color: string;
+}) {
+  if (!active || !payload || !payload[0]) return null;
+  const d = payload[0].payload;
+  return (
+    <div style={{
+      backgroundColor: 'rgb(24,24,27)', border: '1px solid rgb(63,63,70)',
+      borderRadius: '10px', padding: '8px 10px', fontSize: '10px',
+      color: 'rgb(212,212,216)',
+    }}>
+      <p style={{ color: 'rgb(161,161,170)', fontWeight: 600, marginBottom: '4px' }}>Anno {label}</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '2px' }}>
+        <span style={{ width: 6, height: 2, borderRadius: 1, backgroundColor: color, display: 'inline-block' }} />
+        <span style={{ fontWeight: 600 }}>Mediana: {formatValue(d.p50)} {unit}</span>
+      </div>
+      <p style={{ fontSize: '9px', color: 'rgb(113,113,122)' }}>
+        Range: {formatValue(d.absP5)} – {formatValue(d.absP95)} {unit}
+      </p>
+    </div>
+  );
+}
+
 function MiniFanChart({ data, label, color, unit }: {
   data: FanChartPoint[]; label: string; color: string; unit: string;
 }) {
   if (!data || data.length === 0) return null;
   const gid = `g-wiz-${label.replace(/\s/g, '-')}`;
+  const uncertainty = getUncertaintyLevel(data);
+  const uColor = WIZ_UNCERTAINTY_COLORS[uncertainty];
   return (
     <div className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-3">
@@ -93,11 +127,7 @@ function MiniFanChart({ data, label, color, unit }: {
           <CartesianGrid strokeDasharray="3 3" stroke="rgb(39,39,42)" />
           <XAxis dataKey="year" tick={{ fontSize: 10, fill: 'rgb(113,113,122)' }} axisLine={{ stroke: 'rgb(63,63,70)' }} tickLine={false} />
           <YAxis tick={{ fontSize: 10, fill: 'rgb(113,113,122)' }} axisLine={{ stroke: 'rgb(63,63,70)' }} tickLine={false} tickFormatter={formatValue} width={45} />
-          <Tooltip
-            contentStyle={{ backgroundColor: 'rgb(24,24,27)', border: '1px solid rgb(63,63,70)', borderRadius: '10px', fontSize: '11px', color: 'rgb(212,212,216)' }}
-            formatter={(value: number, name: string) => name === 'p50' ? [formatValue(value), 'Mediana'] : [null, null]}
-            labelFormatter={(l) => `Anno ${l}`}
-          />
+          <Tooltip content={<WizTooltip unit={unit} color={color} />} />
           <Area type="monotone" dataKey="base" stackId="fan" fill="transparent" stroke="none" />
           <Area type="monotone" dataKey="outerLower" stackId="fan" fill={`url(#${gid}-o)`} stroke="none" />
           <Area type="monotone" dataKey="innerLower" stackId="fan" fill={`url(#${gid}-i)`} stroke="none" />
@@ -106,6 +136,17 @@ function MiniFanChart({ data, label, color, unit }: {
           <Line type="monotone" dataKey="p50" stroke={color} strokeWidth={2} dot={false} />
         </ComposedChart>
       </ResponsiveContainer>
+      <div className="flex items-center justify-between mt-2">
+        <div className="flex items-center gap-4 text-[9px] text-zinc-500">
+          <span className="flex items-center gap-1"><span className="w-4 h-1 rounded-full" style={{ backgroundColor: color, opacity: 0.2 }} />Ampia</span>
+          <span className="flex items-center gap-1"><span className="w-4 h-1 rounded-full" style={{ backgroundColor: color, opacity: 0.4 }} />Probabile</span>
+          <span className="flex items-center gap-1"><span className="w-4 h-0.5 rounded-full" style={{ backgroundColor: color }} />Mediana</span>
+        </div>
+        <span className="flex items-center gap-1 text-[9px]" style={{ color: uColor }}>
+          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: uColor }} />
+          {uncertainty === 'molto alta' ? 'Molto alta' : uncertainty.charAt(0).toUpperCase() + uncertainty.slice(1)}
+        </span>
+      </div>
     </div>
   );
 }

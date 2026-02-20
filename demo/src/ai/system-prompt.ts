@@ -96,8 +96,92 @@ scenario "Title" {
     output: distribution
     percentiles: [5, 25, 50, 75, 95]
   }
+
+  // (optional) calibrate — updates uncertainty using historical data
+  calibrate variable_name {
+    historical: "https://api.example.org/data/series"
+    method: bayesian_update | maximum_likelihood | ensemble
+    window: 5y
+    prior: normal(±X%)
+    update_frequency: daily | weekly | monthly | quarterly | yearly
+  }
 }
 \`\`\`
+
+### ADVANCED: REAL DATA BINDING (optional)
+
+Assumptions can include \`bind\` and \`watch\` blocks to connect to external data sources.
+SDL provides a **verified source registry** — always prefer these URLs:
+
+**EUROSTAT (adapter: eurostat)** — EU demographics, energy, economy, digital:
+  - \`https://ec.europa.eu/eurostat/databrowser/view/demo_frate\` — Fertility rate
+  - \`https://ec.europa.eu/eurostat/databrowser/view/demo_pjan\` — Population
+  - \`https://ec.europa.eu/eurostat/databrowser/view/nrg_ind_ren\` — Renewable energy share
+  - \`https://ec.europa.eu/eurostat/databrowser/view/env_air_gge\` — GHG emissions
+  - \`https://ec.europa.eu/eurostat/databrowser/view/lfsi_emp_a\` — Employment rate
+  - \`https://ec.europa.eu/eurostat/databrowser/view/isoc_ci_ifp_iu\` — Digital payments
+  - \`https://ec.europa.eu/eurostat/databrowser/view/isoc_cicce_use\` — Cloud computing adoption
+  - \`https://ec.europa.eu/eurostat/databrowser/view/isoc_ci_in_h\` — Digital skills
+  - \`https://ec.europa.eu/eurostat/databrowser/view/nama_10_gdp\` — GDP
+  - \`https://ec.europa.eu/eurostat/databrowser/view/une_rt_a\` — Unemployment rate
+  - \`https://ec.europa.eu/eurostat/databrowser/view/nrg_pc_204\` — Electricity prices
+
+**WORLD BANK (adapter: worldbank)** — Global indicators:
+  - \`https://data.worldbank.org/indicator/SP.POP.GROW\` — Population growth
+  - \`https://data.worldbank.org/indicator/SP.URB.TOTL.IN.ZS\` — Urbanization
+  - \`https://data.worldbank.org/indicator/SP.DYN.TFRT.IN\` — Fertility rate
+  - \`https://data.worldbank.org/indicator/EN.ATM.CO2E.KT\` — CO₂ emissions
+  - \`https://data.worldbank.org/indicator/MS.MIL.XPND.GD.ZS\` — Military expenditure
+  - \`https://data.worldbank.org/indicator/NY.GDP.MKTP.CD\` — GDP
+  - \`https://data.worldbank.org/indicator/SL.UEM.TOTL.ZS\` — Unemployment
+  - \`https://data.worldbank.org/indicator/SH.XPD.CHEX.GD.ZS\` — Health expenditure
+  - \`https://data.worldbank.org/indicator/EG.FEC.RNEW.ZS\` — Renewable consumption
+  - \`https://data.worldbank.org/indicator/IT.NET.USER.ZS\` — Internet users
+
+**BUNDLED FALLBACK (adapter: fallback)** — curated historical series:
+  - \`sdl:fallback/eu-ets-carbon-price\` — EU ETS €/tCO₂ (2012-2025)
+  - \`sdl:fallback/datacenter-energy\` — Data-center energy TWh (IEA)
+  - \`sdl:fallback/ev-share-eu\` — EV market share EU (ACEA)
+  - \`sdl:fallback/fda-novel-approvals\` — FDA novel drug approvals
+  - \`sdl:fallback/pharma-rd-spend\` — Global pharma R&D (EFPIA)
+  - \`sdl:fallback/mediterranean-precipitation\` — Med precipitation (Copernicus/ERA5)
+  - \`sdl:fallback/mediterranean-temperature\` — Med temperature anomaly
+  - \`sdl:fallback/edpb-enforcement\` — EU DPA enforcement index
+  - \`sdl:fallback/cctv-density-eu\` — CCTV cameras per 1000 (EU)
+  - \`sdl:fallback/who-genomic-surveillance\` — Genomic surveillance coverage
+  - \`sdl:fallback/amr-mortality\` — AMR mortality (Lancet/WHO)
+  - \`sdl:fallback/ihr-compliance\` — IHR compliance index (WHO)
+
+\`\`\`
+assumption name {
+  value: number
+  source: "citation"
+  confidence: 0.0 to 1.0
+  uncertainty: normal(±X%)
+
+  bind {
+    source: "https://ec.europa.eu/eurostat/databrowser/view/demo_frate"
+    refresh: yearly
+    field: "fertility_rate"
+    fallback: 1.24
+  }
+
+  watch {
+    warn  when: actual > assumed * 1.5
+    error when: actual > assumed * 2.0
+
+    on_trigger {
+      recalculate: true
+      notify: ["author"]
+      suggest: "assumption_update"
+    }
+  }
+}
+\`\`\`
+
+Use \`bind\` when real-time data is available — always pick a URL from the verified registry above.
+Use \`watch\` to define deviation thresholds that trigger alerts.
+Use \`calibrate\` (top-level) to auto-update uncertainty distributions from historical series.
 
 ## RULES
 
@@ -114,6 +198,8 @@ scenario "Title" {
 11. Choose colors from this palette: #3b82f6 (blue), #10b981 (green), #f59e0b (amber), #8b5cf6 (purple), #ef4444 (red), #06b6d4 (cyan), #ec4899 (pink), #84cc16 (lime).
 12. Use icons from this set: bar-chart, trending-up, trending-down, target, globe, users, shield, zap, factory, wheat, flame, droplets, building, coins, baby, leaf, pill, car, rocket, swords, heart, laptop, lock, dna, scale, eye.
 13. Comments are optional but appreciated to explain methodology.
+14. When the topic involves data that can be observed in real-time (energy, demographics, economics, climate), include \`bind\` blocks inside key assumptions using URLs from the **verified source registry** listed above (Eurostat databrowser, World Bank indicators, or sdl:fallback/ entries). Add a \`watch\` block with reasonable thresholds and at least one \`calibrate\` block for the most important variable.
+15. calibrate targets must reference declared variables. The method must be one of: bayesian_update, maximum_likelihood, ensemble.
 
 ## EXAMPLE
 
@@ -124,7 +210,7 @@ scenario "Crisi Idrica Mediterraneo 2025-2045" {
   timeframe: 2025 -> 2045
   resolution: yearly
   confidence: 0.40
-  author: "Segno AI"
+  author: "Rebica AI"
   version: "1.0"
   description: "Modelli della crisi idrica mediterranea: precipitazioni, agricoltura e infrastrutture"
   tags: ["acqua", "clima", "agricoltura"]
@@ -139,6 +225,18 @@ scenario "Crisi Idrica Mediterraneo 2025-2045" {
     source: "Copernicus ERA5 Mediterranean precipitation baseline"
     confidence: 0.6
     uncertainty: normal(±20%)
+
+    bind {
+      source: "sdl:fallback/mediterranean-precipitation"
+      refresh: monthly
+      field: "precipitation_index"
+      fallback: 100
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.7
+      error when: actual < assumed * 0.5
+    }
   }
 
   parameter infra_investment {
@@ -222,6 +320,14 @@ scenario "Crisi Idrica Mediterraneo 2025-2045" {
     }
   }
 
+  calibrate water_stress {
+    historical: "sdl:fallback/mediterranean-precipitation"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±15%)
+    update_frequency: monthly
+  }
+
   simulate {
     runs: 2000
     method: monte_carlo
@@ -286,6 +392,8 @@ export function buildUserPrompt(data: WizardData): string {
   lines.push('- Includi almeno 1-2 impact derivati');
   lines.push('- Usa valori realistici basati su dati reali');
   lines.push('- Labels e descrizioni in italiano');
+  lines.push('- Se il tema ha dati osservabili (energia, clima, economia, demografia), aggiungi bind + watch nelle assumption principali e almeno un calibrate sulla variabile più importante');
+  lines.push('- Usa SOLO URLs dal registro verificato SDL: Eurostat databrowser (ec.europa.eu/eurostat/databrowser/view/...), World Bank (data.worldbank.org/indicator/...), o fallback bundled (sdl:fallback/...)');
 
   return lines.join('\n');
 }

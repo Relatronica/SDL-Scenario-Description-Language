@@ -6,7 +6,7 @@
 // Explores trade-offs between data utility, privacy protection,
 // and the cost of governance frameworks.
 //
-// Inspired by the Segno knowledge base:
+// Inspired by the Rebica knowledge base:
 //   - gdpr-data-transfer-usa (Art. 44-49, Schrems II)
 //   - gdpr-security-storage (Art. 32)
 //   - gdpr-special-categories (Art. 9)
@@ -24,7 +24,7 @@ scenario "GDPR e Governance Dati AI" {
   description: "Simula l'evoluzione della governance dati per sistemi AI
                 nell'UE: trasferimenti extra-UE, data breach, costi DPIA,
                 e adozione della privacy by design.
-                Basato sulla knowledge base Segno (6 regole GDPR)."
+                Basato sulla knowledge base Rebica (6 regole GDPR)."
   tags: ["gdpr", "privacy", "data-governance", "schrems-ii", "dpia"]
   subtitle: "Privacy, trasferimenti dati e AI nell'era post-Schrems II"
   category: politica

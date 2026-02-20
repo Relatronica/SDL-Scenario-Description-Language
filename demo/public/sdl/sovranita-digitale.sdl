@@ -12,6 +12,27 @@ scenario "Sovranita Digitale Europea 2025-2035" {
   color: "#ef4444"
   difficulty: avanzato
 
+  // ── Assunzioni con dati reali ──
+
+  assumption quota_cloud_eu_attuale {
+    value: 13
+    source: "Eurostat Cloud Computing statistics 2024 (% mercato EU)"
+    confidence: 0.6
+    uncertainty: normal(±20%)
+
+    bind {
+      source: "https://ec.europa.eu/eurostat/databrowser/view/isoc_cicce_use"
+      refresh: yearly
+      field: "eu_cloud_market_share_pct"
+      fallback: 13
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.8
+      error when: actual < assumed * 0.6
+    }
+  }
+
   parameter eu_cloud_investment {
     label: "Investimento in cloud EU"
     value: 10
@@ -162,6 +183,16 @@ scenario "Sovranita Digitale Europea 2025-2035" {
       2035: 75.0
       uncertainty: normal(±15%)
     }
+  }
+
+  // ── Calibrazione ──
+
+  calibrate indice_sovranita_digitale {
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/isoc_cicce_use"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±15%)
+    update_frequency: yearly
   }
 
   simulate {

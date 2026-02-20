@@ -64,6 +64,7 @@ const KEYWORDS: Record<string, TokenType> = {
 
   // Resolution
   yearly: TokenType.Yearly,
+  quarterly: TokenType.Quarterly,
   monthly: TokenType.Monthly,
   weekly: TokenType.Weekly,
   daily: TokenType.Daily,

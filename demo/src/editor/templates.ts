@@ -116,6 +116,44 @@ scenario "Il mio scenario" {
     formula: indicatore_principale - 100  // Espressione di calcolo
   }
 
+  // ═══════════════════════════════════════════════════════
+  // Funzionalità avanzate (opzionali)
+  // ═══════════════════════════════════════════════════════
+  //
+  // ── Dati reali (bind) ──
+  // Collega un'assunzione a una API esterna.
+  // SDL Pulse scarica il dato più recente e lo sovrappone
+  // alla proiezione nel grafico.
+  //
+  //   assumption mio_dato {
+  //     value: 50
+  //     source: "Eurostat"
+  //     confidence: 0.7
+  //     uncertainty: normal(±15%)
+  //
+  //     bind {
+  //       source: "https://ec.europa.eu/eurostat/databrowser/view/demo_frate"
+  //       refresh: yearly
+  //       field: "fertility_rate"
+  //       fallback: 50
+  //     }
+  //
+  //     watch {
+  //       warn when: actual < assumed * 0.8
+  //       error when: actual < assumed * 0.5
+  //     }
+  //   }
+  //
+  // ── Calibrazione (calibrate) ──
+  // Aggiorna le distribuzioni usando dati storici:
+  //
+  //   calibrate indicatore_principale {
+  //     historical: "https://ec.europa.eu/eurostat/databrowser/view/nrg_ind_ren"
+  //     method: bayesian_update
+  //     window: 5y
+  //     prior: normal(±15%)
+  //   }
+
   // ── Simulazione Monte Carlo ──
   // Configura il motore probabilistico. Esegue N run con
   // variazioni casuali basate sulle incertezze dichiarate,
@@ -172,6 +210,18 @@ scenario "Crescita Economica Italia" {
     source: "ISTAT / Commissione Europea, previsioni 2025"
     confidence: 0.5              // Previsione incerta
     uncertainty: normal(±40%)    // Ampia variabilità possibile
+
+    bind {
+      source: "https://ec.europa.eu/eurostat/databrowser/view/nama_10_gdp"
+      refresh: quarterly
+      field: "growth_rate"
+      fallback: 0.8
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.5
+      error when: actual < 0
+    }
   }
 
   assumption tasso_inflazione {
@@ -322,6 +372,16 @@ scenario "Crescita Economica Italia" {
     formula: tasso_occupazione - 73  // Negativo = sotto la media UE
   }
 
+  // ── Calibrazione ──
+
+  calibrate pil_reale {
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/nama_10_gdp"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±10%)
+    update_frequency: quarterly
+  }
+
   // ── Simulazione Monte Carlo ──
 
   simulate {
@@ -375,13 +435,41 @@ scenario "Transizione Energetica Locale" {
     source: "EU ETS, prezzo medio 2025"
     confidence: 0.6
     uncertainty: normal(±25%)    // Mercato volatile
+
+    // ── Dati reali ──
+    // bind collega l'assunzione a una API esterna.
+    // SDL Pulse scaricherà i dati e li sovrapporrà al grafico.
+    bind {
+      source: "sdl:fallback/eu-ets-carbon-price"
+      refresh: daily
+      field: "price_per_ton_eur"
+      fallback: 85
+    }
+
+    // watch scatta quando il dato reale devia dall'assunzione.
+    watch {
+      warn  when: actual > assumed * 1.5
+      error when: actual > assumed * 2.0
+    }
   }
 
-  assumption costo_solare {
-    value: 35                    // Costo livellato dell'energia solare
-    source: "IRENA, LCOE solare 2025 (EUR/MWh)"
-    confidence: 0.7              // Trend tecnologico abbastanza prevedibile
-    uncertainty: normal(±15%)
+  assumption quota_rinnovabili_attuale {
+    value: 20.4
+    source: "Eurostat nrg_ind_ren, Italia 2023"
+    confidence: 0.8
+    uncertainty: normal(±5%)
+
+    bind {
+      source: "https://ec.europa.eu/eurostat/databrowser/view/nrg_ind_ren"
+      refresh: yearly
+      field: "renewable_share_pct"
+      fallback: 20.4
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.85
+      error when: actual < assumed * 0.7
+    }
   }
 
   assumption volonta_politica {
@@ -437,7 +525,7 @@ scenario "Transizione Energetica Locale" {
     2040: 65
     2045: 78
 
-    depends_on: prezzo_carbonio, costo_solare, sussidio_rinnovabili
+    depends_on: prezzo_carbonio, quota_rinnovabili_attuale, sussidio_rinnovabili
     uncertainty: normal(±12%)
     interpolation: spline        // Curva a S tipica dell'adozione tecnologica
   }
@@ -470,7 +558,7 @@ scenario "Transizione Energetica Locale" {
     2040: 78
     2045: 65
 
-    depends_on: quota_rinnovabili, costo_solare, sussidio_rinnovabili
+    depends_on: quota_rinnovabili, quota_rinnovabili_attuale, sussidio_rinnovabili
     uncertainty: normal(±18%)    // Alta incertezza sui prezzi energetici
     interpolation: spline
   }
@@ -506,6 +594,26 @@ scenario "Transizione Energetica Locale" {
     unit: "indice"
     derives_from: costo_energia
     formula: 100 - costo_energia  // Positivo = risparmio, negativo = aumento
+  }
+
+  // ── Calibrazione automatica ──
+  // calibrate usa dati storici reali per aggiornare le distribuzioni
+  // di incertezza, rendendo le proiezioni più accurate.
+
+  calibrate quota_rinnovabili {
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/nrg_ind_ren"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±12%)
+    update_frequency: monthly
+  }
+
+  calibrate emissioni_co2 {
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/env_air_gge"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±15%)
+    update_frequency: monthly
   }
 
   // ── Simulazione Monte Carlo ──
@@ -561,6 +669,18 @@ scenario "Sfida Demografica" {
     source: "ISTAT, TFT 2024"
     confidence: 0.7              // Dato stabile negli ultimi anni
     uncertainty: normal(±10%)
+
+    bind {
+      source: "https://ec.europa.eu/eurostat/databrowser/view/demo_frate"
+      refresh: yearly
+      field: "fertility_rate"
+      fallback: 1.24
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.9
+      error when: actual < 1.0
+    }
   }
 
   assumption saldo_migratorio {
@@ -710,7 +830,241 @@ scenario "Sfida Demografica" {
     formula: spesa_pensionistica - 16.3  // Punti % di spesa in più
   }
 
+  // ── Calibrazione ──
+
+  calibrate popolazione_totale {
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/demo_pjan"
+    method: bayesian_update
+    window: 10y
+    prior: normal(±5%)
+    update_frequency: yearly
+  }
+
   // ── Simulazione Monte Carlo ──
+
+  simulate {
+    runs: 2000
+    method: monte_carlo
+    seed: 42
+    output: distribution
+    percentiles: [5, 25, 50, 75, 95]
+  }
+}
+`,
+  },
+  {
+    id: 'advanced',
+    name: 'Avanzato — Dati reali',
+    description: 'Template completo con bind, watch, calibrate e dati reali (Pulse)',
+    icon: 'database',
+    source: `// ═══════════════════════════════════════════════════════
+// SDL Avanzato — Tutte le funzionalità
+// ═══════════════════════════════════════════════════════
+//
+// Questo template mostra le funzionalità avanzate di SDL:
+//   • bind — collega assunzioni a fonti dati esterne
+//   • watch — monitora deviazioni dal dato reale
+//   • calibrate — aggiorna le distribuzioni con dati storici
+//   • branch — scenari alternativi condizionali
+//
+// Il sistema Pulse scarica automaticamente i dati reali
+// e li sovrappone alle proiezioni nei grafici.
+// ═══════════════════════════════════════════════════════
+
+scenario "Energia e Clima Italia" {
+
+  timeframe: 2025 -> 2045
+  resolution: yearly
+  confidence: 0.55
+  author: "Citizen Lab"
+  version: "1.0"
+  description: "Scenario con dati reali: rinnovabili, emissioni e costi"
+  tags: ["energia", "clima", "dati-reali"]
+  subtitle: "Transizione energetica con validazione empirica"
+  category: ambiente
+  icon: "⚡"
+  color: "#10b981"
+  difficulty: avanzato
+
+  // ── Assunzioni con dati reali ──
+
+  assumption prezzo_carbonio {
+    value: 72
+    source: "EU ETS, media 2025 (EMBER/ICAP)"
+    confidence: 0.6
+    uncertainty: normal(±25%)
+
+    bind {
+      source: "sdl:fallback/eu-ets-carbon-price"
+      refresh: daily
+      field: "price_per_ton_eur"
+      fallback: 72
+    }
+
+    watch {
+      warn  when: actual > assumed * 1.5
+      error when: actual > assumed * 2.0
+    }
+  }
+
+  assumption quota_rinnovabili_attuale {
+    value: 20.4
+    source: "Eurostat nrg_ind_ren, Italia 2023"
+    confidence: 0.8
+    uncertainty: normal(±5%)
+
+    bind {
+      source: "https://ec.europa.eu/eurostat/databrowser/view/nrg_ind_ren"
+      refresh: yearly
+      field: "renewable_share_pct"
+      fallback: 20.4
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.85
+      error when: actual < assumed * 0.7
+    }
+  }
+
+  // ── Parametri interattivi ──
+
+  parameter sussidio_rinnovabili {
+    value: 30
+    range: [0, 60]
+    label: "Sussidio rinnovabili"
+    unit: "%"
+    step: 5
+    format: "{value}%"
+    control: slider
+    icon: "☀"
+    color: "#10b981"
+    description: "Incentivo statale sulle installazioni rinnovabili"
+  }
+
+  parameter obiettivo_emissioni {
+    value: 55
+    range: [30, 80]
+    label: "Obiettivo riduzione CO₂"
+    unit: "%"
+    step: 5
+    format: "-{value}% al 2045"
+    control: slider
+    icon: "🎯"
+    color: "#06b6d4"
+    description: "Target di riduzione emissioni rispetto al 2025"
+  }
+
+  // ── Variabili ──
+
+  variable quota_rinnovabili {
+    description: "Quota rinnovabili nel mix energetico italiano"
+    unit: "%"
+    label: "Quota rinnovabili"
+    icon: "☀"
+    color: "#10b981"
+
+    2025: 22
+    2030: 35
+    2035: 50
+    2040: 65
+    2045: 78
+
+    depends_on: prezzo_carbonio, quota_rinnovabili_attuale, sussidio_rinnovabili
+    uncertainty: normal(±12%)
+    interpolation: spline
+  }
+
+  variable emissioni_co2 {
+    description: "Emissioni annue di CO₂ italiane"
+    unit: "MtCO2"
+    label: "Emissioni CO₂"
+    icon: "☁"
+    color: "#ef4444"
+
+    2025: 320
+    2030: 260
+    2035: 185
+    2040: 110
+    2045: 55
+
+    depends_on: quota_rinnovabili, obiettivo_emissioni
+    uncertainty: normal(±15%)
+    interpolation: linear
+  }
+
+  variable costo_energia {
+    description: "Indice costo energia per famiglie (2025 = 100)"
+    unit: "indice"
+    label: "Costo energia"
+    icon: "🏠"
+    color: "#f59e0b"
+
+    2025: 100
+    2030: 105
+    2035: 92
+    2040: 78
+    2045: 65
+
+    depends_on: quota_rinnovabili, quota_rinnovabili_attuale, sussidio_rinnovabili
+    uncertainty: normal(±18%)
+    interpolation: spline
+  }
+
+  // ── Branch ──
+
+  branch "Crisi Energetica" when prezzo_carbonio > 150 {
+    probability: 0.10
+    variable costo_energia {
+      2030: 135
+      2035: 115
+      2040: 88
+      uncertainty: normal(±25%)
+    }
+  }
+
+  // ── Impatti ──
+
+  impact riduzione_emissioni {
+    description: "Riduzione emissioni rispetto al 2025"
+    unit: "%"
+    label: "Riduzione emissioni"
+    icon: "🎯"
+    color: "#10b981"
+    derives_from: emissioni_co2
+    formula: (320 - emissioni_co2) / 320 * 100
+  }
+
+  impact risparmio_famiglie {
+    description: "Risparmio famiglie su energia (vs 2025)"
+    unit: "indice"
+    label: "Risparmio famiglie"
+    icon: "💰"
+    color: "#06b6d4"
+    derives_from: costo_energia
+    formula: 100 - costo_energia
+  }
+
+  // ── Calibrazione ──
+  // Usa dati storici reali per aggiornare le distribuzioni
+  // di incertezza (aggiornamento bayesiano).
+
+  calibrate quota_rinnovabili {
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/nrg_ind_ren"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±12%)
+    update_frequency: monthly
+  }
+
+  calibrate emissioni_co2 {
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/env_air_gge"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±15%)
+    update_frequency: monthly
+  }
+
+  // ── Simulazione ──
 
   simulate {
     runs: 2000

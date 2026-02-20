@@ -34,7 +34,7 @@ scenario "Demographic Winter Europe 2050" {
     uncertainty: normal(±8%)
 
     bind {
-      source: "https://ec.europa.eu/eurostat/api/fertility/eu27"
+      source: "https://ec.europa.eu/eurostat/databrowser/view/demo_frate"
       refresh: yearly
       field: "total_fertility_rate"
       fallback: 1.46
@@ -385,7 +385,7 @@ scenario "Demographic Winter Europe 2050" {
   // ── Calibration ──
 
   calibrate total_population {
-    historical: "https://ec.europa.eu/eurostat/api/population/eu27/2000-2025"
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/demo_pjan"
     method: bayesian_update
     window: 10y
     prior: normal(±5%)
@@ -393,7 +393,7 @@ scenario "Demographic Winter Europe 2050" {
   }
 
   calibrate fertility_rate {
-    historical: "https://ec.europa.eu/eurostat/api/fertility/eu27/2000-2025"
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/demo_frate"
     method: bayesian_update
     window: 10y
     prior: normal(±10%)

@@ -19,6 +19,8 @@ import type {
   BranchNode,
   ImpactNode,
   SimulateNode,
+  CalibrateNode,
+  WatchNode,
   DistributionExpression,
   DateValue,
   Diagnostic,
@@ -134,6 +136,8 @@ class Validator {
         case 'Branch': this.validateBranch(decl); break;
         case 'Impact': this.validateImpact(decl); break;
         case 'Simulate': this.validateSimulate(decl); break;
+        case 'Calibrate': this.validateCalibrate(decl); break;
+        case 'Watch': this.validateWatch(decl); break;
       }
     }
   }
@@ -207,6 +211,30 @@ class Validator {
         message: `Confidence for "${node.name}" must be between 0 and 1`,
         span: node.span,
       });
+    }
+
+    if (node.bind) {
+      if (!node.bind.source) {
+        this.diagnostics.push({
+          code: 'SDL-E009',
+          severity: 'error',
+          message: `Bind block in "${node.name}" must specify a source URL`,
+          span: node.bind.span,
+          hint: 'Add source: "https://..." to specify where to fetch live data.',
+        });
+      }
+    }
+
+    if (node.watch) {
+      if (node.watch.rules.length === 0) {
+        this.diagnostics.push({
+          code: 'SDL-W004',
+          severity: 'warning',
+          message: `Watch block in "${node.name}" has no rules defined`,
+          span: node.watch.span,
+          hint: 'Add rules like: warn when actual < assumed * 0.8',
+        });
+      }
     }
   }
 
@@ -294,6 +322,66 @@ class Validator {
             span: node.span,
           });
         }
+      }
+    }
+  }
+
+  private validateCalibrate(node: CalibrateNode): void {
+    if (!this.symbols.has(node.target)) {
+      this.diagnostics.push({
+        code: 'SDL-E005',
+        severity: 'error',
+        message: `Calibrate target "${node.target}" is not declared in this scenario`,
+        span: node.span,
+        hint: 'The target must be a declared variable or assumption name.',
+      });
+    }
+
+    if (!node.historical) {
+      this.diagnostics.push({
+        code: 'SDL-W004',
+        severity: 'warning',
+        message: `Calibrate for "${node.target}" has no historical data URL. Calibration will be skipped.`,
+        span: node.span,
+        hint: 'Add historical: "https://..." to specify where to fetch observed data.',
+      });
+    }
+
+    const supportedMethods = ['bayesian_update', 'maximum_likelihood', 'ensemble'];
+    if (node.method && !supportedMethods.includes(node.method)) {
+      this.diagnostics.push({
+        code: 'SDL-E010',
+        severity: 'error',
+        message: `Unsupported calibration method "${node.method}" for "${node.target}"`,
+        span: node.span,
+        hint: `Supported methods: ${supportedMethods.join(', ')}`,
+      });
+    }
+  }
+
+  private validateWatch(node: WatchNode): void {
+    if (node.target && !this.symbols.has(node.target)) {
+      this.diagnostics.push({
+        code: 'SDL-E005',
+        severity: 'error',
+        message: `Watch target "${node.target}" is not declared in this scenario`,
+        span: node.span,
+        hint: 'The target must be a declared variable or assumption name.',
+      });
+    }
+
+    if (node.rules.length === 0) {
+      this.diagnostics.push({
+        code: 'SDL-W004',
+        severity: 'warning',
+        message: `Watch block${node.target ? ` for "${node.target}"` : ''} has no rules defined`,
+        span: node.span,
+      });
+    }
+
+    for (const rule of node.rules) {
+      if (rule.condition.type === 'BinaryExpression') {
+        this.validateExpressionReferences(rule.condition, `watch rule`);
       }
     }
   }

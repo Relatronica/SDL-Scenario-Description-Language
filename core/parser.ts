@@ -1402,7 +1402,7 @@ export class Parser {
 
   private parseRefreshRate(): RefreshRate {
     const token = this.current();
-    const rates: RefreshRate[] = ['realtime', 'hourly', 'daily', 'weekly', 'monthly'];
+    const rates: RefreshRate[] = ['realtime', 'hourly', 'daily', 'weekly', 'monthly', 'quarterly', 'yearly'];
     if (token.type === TokenType.Identifier && rates.includes(token.value as RefreshRate)) {
       this.advance();
       return token.value as RefreshRate;
@@ -1412,6 +1412,7 @@ export class Parser {
       [TokenType.Daily]: 'daily',
       [TokenType.Weekly]: 'weekly',
       [TokenType.Monthly]: 'monthly',
+      [TokenType.Quarterly]: 'quarterly',
       [TokenType.Yearly]: 'yearly',
     };
     const value = keywordMap[token.type];

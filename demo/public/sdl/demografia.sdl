@@ -12,6 +12,46 @@ scenario "Demografia e Pensioni Italia 2025-2050" {
   color: "#8b5cf6"
   difficulty: intermedio
 
+  // ── Assunzioni con dati reali ──
+
+  assumption tasso_natalita_storico {
+    value: 1.24
+    source: "ISTAT Indicatori demografici 2024"
+    confidence: 0.7
+    uncertainty: normal(±10%)
+
+    bind {
+      source: "https://ec.europa.eu/eurostat/databrowser/view/demo_frate"
+      refresh: yearly
+      field: "fertility_rate"
+      fallback: 1.24
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.9
+      error when: actual < 1.0
+    }
+  }
+
+  assumption popolazione_attuale {
+    value: 59.0
+    source: "ISTAT Bilancio demografico 2024"
+    confidence: 0.8
+    uncertainty: normal(±2%)
+
+    bind {
+      source: "https://ec.europa.eu/eurostat/databrowser/view/demo_pjan"
+      refresh: yearly
+      field: "population_millions"
+      fallback: 59.0
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.98
+      error when: actual < assumed * 0.95
+    }
+  }
+
   parameter fertility_rate {
     label: "Tasso di fecondità"
     value: 1.24
@@ -156,6 +196,16 @@ scenario "Demografia e Pensioni Italia 2025-2050" {
       2050: 16.40
       uncertainty: normal(±10%)
     }
+  }
+
+  // ── Calibrazione ──
+
+  calibrate popolazione_totale {
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/demo_pjan"
+    method: bayesian_update
+    window: 10y
+    prior: normal(±5%)
+    update_frequency: yearly
   }
 
   simulate {

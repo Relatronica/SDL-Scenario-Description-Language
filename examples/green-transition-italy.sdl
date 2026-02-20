@@ -30,7 +30,7 @@ scenario "Green Transition Italy 2040" {
     uncertainty: normal(±25%)
 
     bind {
-      source: "https://api.worldbank.org/carbon-pricing/eu-ets"
+      source: "sdl:fallback/eu-ets-carbon-price"
       refresh: daily
       field: "price_per_ton_eur"
       fallback: 85
@@ -329,7 +329,7 @@ scenario "Green Transition Italy 2040" {
   // ── Calibration ──
 
   calibrate renewable_share {
-    historical: "https://api.irena.org/capacity/italy/2015-2025"
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/nrg_ind_ren"
     method: bayesian_update
     window: 5y
     prior: normal(±15%)
@@ -337,7 +337,7 @@ scenario "Green Transition Italy 2040" {
   }
 
   calibrate co2_emissions {
-    historical: "https://api.eea.europa.eu/ghg/italy/2015-2025"
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/env_air_gge"
     method: bayesian_update
     window: 5y
     prior: normal(±12%)

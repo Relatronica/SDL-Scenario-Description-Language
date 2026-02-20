@@ -90,7 +90,7 @@ export function getProvider(id: string): AIProvider | undefined {
 
 // ─── LocalStorage persistence ───
 
-const STORAGE_KEY = 'segno-ai-config';
+const STORAGE_KEY = 'rebica-ai-config';
 
 export interface AIConfig {
   providerId: string;

@@ -47,7 +47,7 @@ scenario "Autonomous Mobility 2040" {
     uncertainty: beta(4, 5)
 
     bind {
-      source: "https://api.eurobarometer.eu/surveys/autonomous-driving/trust"
+      source: "sdl:fallback/ev-share-eu"
       refresh: yearly
       field: "trust_index"
       fallback: 0.42
@@ -478,7 +478,7 @@ scenario "Autonomous Mobility 2040" {
   // ── Calibration ──
 
   calibrate av_fleet_l4_l5 {
-    historical: "https://api.sae.org/av-deployment/oecd/fleet-size/2020-2025"
+    historical: "sdl:fallback/ev-share-eu"
     method: bayesian_update
     window: 3y
     prior: lognormal(5.0, 0.6)
@@ -486,7 +486,7 @@ scenario "Autonomous Mobility 2040" {
   }
 
   calibrate traffic_fatalities_oecd {
-    historical: "https://stats.oecd.org/api/traffic-fatalities/2010-2025"
+    historical: "sdl:fallback/ev-share-eu"
     method: bayesian_update
     window: 5y
     prior: normal(±12%)

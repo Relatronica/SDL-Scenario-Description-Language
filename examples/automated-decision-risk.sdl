@@ -4,9 +4,9 @@
 // Models the evolution of AI-driven automated decisions
 // (credit scoring, hiring, welfare) and the growing tension
 // with GDPR Art. 22 and AI Act Art. 14 requirements for
-// human oversight. Based on Segno knowledge base patterns.
+// human oversight. Based on Rebica knowledge base patterns.
 //
-// Blueprint origin: Segno "Decisione Automatica" + "Human-in-the-loop"
+// Blueprint origin: Rebica "Decisione Automatica" + "Human-in-the-loop"
 // Rules: gdpr-automated-decision (Art. 22), aiact-highrisk-systems (Art. 6)
 // ============================================================
 
@@ -18,7 +18,7 @@ scenario "Decisioni Automatizzate — Rischio e Supervisione" {
   version: "1.0"
   description: "Simula l'impatto delle decisioni automatizzate AI su credito,
                 lavoro e welfare nell'UE, e l'efficacia della supervisione umana
-                come mitigazione. Ispirato ai blueprint Segno."
+                come mitigazione. Ispirato ai blueprint Rebica."
   tags: ["decisioni-automatizzate", "human-in-the-loop", "art-22", "gdpr", "ai-act"]
   subtitle: "Credito, assunzioni e welfare nell'era delle decisioni AI"
   category: politica

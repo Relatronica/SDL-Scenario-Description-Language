@@ -40,7 +40,7 @@ scenario "AI Energy Demand & Climate Tension 2035" {
     uncertainty: normal(±8%)
 
     bind {
-      source: "https://api.uptimeinstitute.com/survey/pue/global"
+      source: "sdl:fallback/datacenter-energy"
       refresh: yearly
       field: "average_pue"
       fallback: 1.30
@@ -54,7 +54,7 @@ scenario "AI Energy Demand & Climate Tension 2035" {
     uncertainty: normal(±15%)
 
     bind {
-      source: "https://api.ember-climate.org/global/carbon-intensity"
+      source: "sdl:fallback/datacenter-energy"
       refresh: monthly
       field: "gco2_per_kwh"
       fallback: 410
@@ -400,7 +400,7 @@ scenario "AI Energy Demand & Climate Tension 2035" {
   // ── Calibration ──
 
   calibrate ai_electricity_consumption {
-    historical: "https://api.iea.org/data/electricity/ai-datacenters/2020-2025"
+    historical: "sdl:fallback/datacenter-energy"
     method: bayesian_update
     window: 3y
     prior: lognormal(4.8, 0.4)
@@ -408,7 +408,7 @@ scenario "AI Energy Demand & Climate Tension 2035" {
   }
 
   calibrate ai_sector_co2_emissions {
-    historical: "https://api.ember-climate.org/sector/datacenters/emissions/2020-2025"
+    historical: "sdl:fallback/datacenter-energy"
     method: bayesian_update
     window: 3y
     prior: normal(±20%)

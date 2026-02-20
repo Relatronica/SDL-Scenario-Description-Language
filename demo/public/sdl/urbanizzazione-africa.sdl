@@ -19,6 +19,41 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
   color: "#f59e0b"
   difficulty: intermedio
 
+  // ── Assunzioni con dati reali ──
+
+  assumption popolazione_africa_attuale {
+    value: 1.46
+    source: "UN World Population Prospects 2024 (miliardi)"
+    confidence: 0.8
+    uncertainty: normal(±3%)
+
+    bind {
+      source: "https://data.worldbank.org/indicator/SP.POP.TOTL"
+      refresh: yearly
+      field: "population_billions"
+      fallback: 1.46
+    }
+
+    watch {
+      warn  when: actual > assumed * 1.05
+      error when: actual > assumed * 1.10
+    }
+  }
+
+  assumption tasso_urbanizzazione {
+    value: 43
+    source: "UN World Urbanization Prospects 2024 (%)"
+    confidence: 0.7
+    uncertainty: normal(±8%)
+
+    bind {
+      source: "https://data.worldbank.org/indicator/SP.URB.TOTL.IN.ZS"
+      refresh: yearly
+      field: "urbanization_rate_pct"
+      fallback: 43
+    }
+  }
+
   // ── Parameters ──
 
   parameter pop_growth {
@@ -246,6 +281,16 @@ scenario "Urbanizzazione Africana e Leapfrog 2025-2055" {
       2050: 13524
       uncertainty: normal(±15%)
     }
+  }
+
+  // ── Calibrazione ──
+
+  calibrate urban_population {
+    historical: "https://data.worldbank.org/indicator/SP.URB.TOTL.IN.ZS"
+    method: bayesian_update
+    window: 10y
+    prior: normal(±8%)
+    update_frequency: yearly
   }
 
   // ── Simulation ──

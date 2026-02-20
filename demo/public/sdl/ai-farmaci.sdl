@@ -20,6 +20,41 @@ scenario "AI e Scoperta Farmaci 2025-2042" {
   color: "#10b981"
   difficulty: intermedio
 
+  // ── Assunzioni con dati reali ──
+
+  assumption approvazioni_fda_baseline {
+    value: 55
+    source: "FDA Novel Drug Approvals Annual Report 2024"
+    confidence: 0.7
+    uncertainty: normal(±15%)
+
+    bind {
+      source: "sdl:fallback/fda-novel-approvals"
+      refresh: yearly
+      field: "novel_approvals"
+      fallback: 55
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.7
+      error when: actual < assumed * 0.5
+    }
+  }
+
+  assumption spesa_rd_globale {
+    value: 260
+    source: "EFPIA/PhRMA Global R&D Spending Report 2024 (mld USD)"
+    confidence: 0.6
+    uncertainty: normal(±10%)
+
+    bind {
+      source: "sdl:fallback/pharma-rd-spend"
+      refresh: yearly
+      field: "total_billion_usd"
+      fallback: 260
+    }
+  }
+
   // ── Parameters ──
 
   parameter ai_biomedical_capability {
@@ -115,7 +150,7 @@ scenario "AI e Scoperta Farmaci 2025-2042" {
   variable costo_sviluppo {
     label: "Costo per farmaco"
     description: "Costo medio di sviluppo di un nuovo farmaco"
-    unit: "miliardi USD"
+    unit: "USD"
     icon: "coins"
     color: "#f59e0b"
 
@@ -248,6 +283,16 @@ scenario "AI e Scoperta Farmaci 2025-2042" {
       2040: 3780
       uncertainty: normal(±20%)
     }
+  }
+
+  // ── Calibrazione ──
+
+  calibrate approvazioni_ai {
+    historical: "sdl:fallback/fda-novel-approvals"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±15%)
+    update_frequency: yearly
   }
 
   // ── Simulation ──

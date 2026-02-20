@@ -7,7 +7,7 @@ import { SDL_NATIVE_SCENARIOS } from '../scenarios';
 import { renderSDL } from '../lib/sdl-renderer';
 import { SdlIcon } from '../lib/icons';
 
-export default function WelcomePage({ onSelect }: { onSelect: (id: string) => void }) {
+export default function WelcomePage({ onSelect, onManifestoSelect }: { onSelect: (id: string) => void; onManifestoSelect?: () => void }) {
   const featured = useMemo(() => {
     return SDL_NATIVE_SCENARIOS.slice(0, 4).map(s => {
       const rendered = renderSDL(s.source, s.id);
@@ -20,10 +20,10 @@ export default function WelcomePage({ onSelect }: { onSelect: (id: string) => vo
       <div className="flex-1 flex items-center justify-center px-6 py-16">
         <div className="max-w-3xl text-center animate-fade-in">
           <div className="flex items-center justify-center gap-3 mb-8">
-            <img src="/segno_logo_white.png" alt="Segno" className="w-16 h-16 object-contain" />
+            <img src="/logo.png" alt="Rebica" className="w-16 h-16 object-contain" />
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-1">
-            Segno
+            Rebica
           </h1>
           <p className="text-lg md:text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400 mb-4">
             SDL Citizen Lab
@@ -31,10 +31,22 @@ export default function WelcomePage({ onSelect }: { onSelect: (id: string) => vo
           <p className="text-lg text-zinc-400 max-w-xl mx-auto leading-relaxed mb-2">
             Esplora il futuro con simulazioni trasparenti e verificabili.
           </p>
-          <p className="text-sm text-zinc-500 max-w-lg mx-auto mb-12">
+          <p className="text-sm text-zinc-500 max-w-lg mx-auto mb-6">
             Ogni scenario e' basato su dati reali, fonti citate, e 2.000 simulazioni Monte Carlo.
             Modifica le assunzioni, verifica tutto. Niente e' nascosto.
           </p>
+          {onManifestoSelect && (
+            <button
+              onClick={onManifestoSelect}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-500/8 border border-rose-500/15 text-rose-400/90 text-[13px] font-medium hover:bg-rose-500/15 hover:border-rose-500/25 hover:text-rose-400 transition-all mb-12"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              Perche' SDL — Il manifesto
+            </button>
+          )}
+          {!onManifestoSelect && <div className="mb-12" />}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
             {featured.map(s => (
@@ -69,7 +81,7 @@ export default function WelcomePage({ onSelect }: { onSelect: (id: string) => vo
       <footer className="shrink-0 border-t border-zinc-800/40 px-6 py-6">
         <div className="max-w-3xl mx-auto flex flex-col items-center gap-3 text-[11px] text-zinc-600">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
-            <p>Segno — SDL Citizen Lab</p>
+            <p>Rebica — SDL Citizen Lab</p>
             <p>Simulazioni eseguite nel tuo browser. Nessun dato inviato a terzi.</p>
           </div>
           <p className="text-zinc-600">

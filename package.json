@@ -19,6 +19,10 @@
     "./engine": {
       "types": "./dist/engine/monte-carlo.d.ts",
       "import": "./dist/engine/monte-carlo.js"
+    },
+    "./pulse": {
+      "types": "./dist/pulse/index.d.ts",
+      "import": "./dist/pulse/index.js"
     }
   },
   "files": [

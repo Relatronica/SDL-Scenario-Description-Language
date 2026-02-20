@@ -20,6 +20,10 @@ export const GUIDE_SECTIONS = [
   { id: 'parametri', label: 'Parametri', icon: 'settings' },
   { id: 'branches', label: 'Branches', icon: 'git-branch' },
   { id: 'impatti', label: 'Impatti', icon: 'target' },
+  { id: 'dati-reali', label: 'Dati reali (bind)', icon: 'radio' },
+  { id: 'registro-fonti', label: 'Registro fonti', icon: 'database' },
+  { id: 'monitoraggio', label: 'Monitoraggio (watch)', icon: 'alert-triangle' },
+  { id: 'calibrazione', label: 'Calibrazione', icon: 'crosshair' },
   { id: 'simulazione', label: 'Simulazione', icon: 'dice' },
   { id: 'distribuzioni', label: 'Distribuzioni', icon: 'trending-up' },
   { id: 'riferimento', label: 'Riferimento rapido', icon: 'clipboard-list' },
@@ -134,9 +138,9 @@ function SectionPanoramica() {
           ['Temporale', 'Il tempo e\' una dimensione fondamentale di ogni costrutto'],
           ['Causale', 'Le dipendenze tra variabili formano un grafo causale esplicito'],
           ['Componibile', 'Gli scenari possono essere combinati, derivati, confrontati'],
-          ['Leggibile', 'La sintassi e\' comprensibile anche ai non-programmatori'],
-          ['Trasparente', 'Ogni assunzione dichiara la sua fonte e il livello di confidenza'],
-          ['Verificabile', 'I risultati possono essere riprodotti e controllati'],
+          ['Collegato ai dati', 'Le assunzioni si collegano a fonti reali via bind e si auto-aggiornano'],
+          ['Auto-calibrante', 'Le distribuzioni si restringono man mano che i dati storici confermano le previsioni'],
+          ['Verificabile', 'Watch monitora le deviazioni e genera alert quando la realta\' diverge'],
         ].map(([title, desc]) => (
           <div key={title} className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-3">
             <p className="text-sm font-semibold text-zinc-200 mb-1">{title}</p>
@@ -146,12 +150,14 @@ function SectionPanoramica() {
       </div>
 
       <h3 className="text-lg font-semibold text-white mt-8 mb-3">Come funziona</h3>
-      <div className="flex flex-col sm:flex-row items-center gap-3 text-center">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center">
         {[
           ['1. Scrivi', 'Definisci scenario con assunzioni, variabili, branches'],
-          ['2. Valida', 'Il parser controlla sintassi e costruisce il grafo causale'],
-          ['3. Simula', '2.000+ simulazioni Monte Carlo propagano l\'incertezza'],
-          ['4. Analizza', 'Fan chart con percentili mostrano la gamma di futuri possibili'],
+          ['2. Collega', 'bind collega le assunzioni a fonti dati reali (API)'],
+          ['3. Valida', 'Il parser controlla sintassi e costruisce il grafo causale'],
+          ['4. Simula', '2.000+ simulazioni Monte Carlo propagano l\'incertezza'],
+          ['5. Calibra', 'I dati storici restringono le distribuzioni di incertezza'],
+          ['6. Analizza', 'Fan chart, sensibilita\', narrazione e alert in tempo reale'],
         ].map(([step, desc]) => (
           <div key={step} className="flex-1 bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-4">
             <p className="text-sm font-bold text-blue-400 mb-1">{step}</p>
@@ -265,6 +271,30 @@ function SectionAssunzioni() {
         <strong>Buona pratica:</strong> indica sempre la <code>source</code> di ogni assunzione. 
         Questo rende lo scenario verificabile e trasparente.
       </Tip>
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Assunzioni con dati reali <span className="text-xs font-normal text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full ml-2">v0.2</span></h3>
+      <p className="text-zinc-400 leading-relaxed mb-3">
+        Le assunzioni possono includere blocchi <code className="text-amber-300/80">bind</code> (collegamento dati) e 
+        <code className="text-amber-300/80"> watch</code> (monitoraggio deviazioni). Vedi le sezioni dedicate per i dettagli.
+      </p>
+      <CodeBlock title="Assunzione con bind + watch" code={`assumption prezzo_carbonio {
+  value: 72 EUR
+  source: "EU ETS, media 2025"
+  confidence: 0.7
+  uncertainty: normal(±25%)
+
+  bind {
+    source: "sdl:fallback/eu-ets-carbon-price"
+    refresh: daily
+    field: "price_per_ton_eur"
+    fallback: 72
+  }
+
+  watch {
+    warn  when: actual > assumed * 1.5
+    error when: actual > assumed * 2.0
+  }
+}`} />
 
       <h3 className="text-lg font-semibold text-white mt-8 mb-3">Esempio completo</h3>
       <CodeBlock code={`assumption tasso_crescita_pil {
@@ -698,6 +728,558 @@ impact risparmio_famiglie {
   );
 }
 
+function SectionDatiReali() {
+  return (
+    <section>
+      <h2 className="text-2xl font-bold text-white mb-4">Dati reali (bind) <span className="text-xs font-normal text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full ml-2">v0.2</span></h2>
+      <p className="text-zinc-400 leading-relaxed mb-4">
+        Il blocco <code className="text-amber-300/80">bind</code> collega un'assunzione a una <strong className="text-zinc-200">fonte dati esterna</strong>.
+        Questo permette allo scenario di auto-aggiornarsi con dati reali, confrontare le previsioni con la realta',
+        e sovrapporre i dati storici ai fan chart.
+      </p>
+
+      <CodeBlock title="Sintassi" code={`assumption nome_assunzione {
+  value: 1.24
+  source: "Eurostat demo_frate, 2024"
+  confidence: 0.9
+  uncertainty: normal(±5%)
+
+  bind {
+    source: "https://ec.europa.eu/eurostat/databrowser/view/demo_frate"
+    refresh: yearly                          // Frequenza aggiornamento
+    field: "fertility_rate"                  // Campo da estrarre
+    fallback: 1.24                           // Valore se l'API non risponde
+  }
+}`} />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Proprieta' del bind</h3>
+      <Table
+        headers={['Campo', 'Tipo', 'Obbligatorio', 'Descrizione']}
+        rows={[
+          ['source', 'URL', 'Si\'', 'Endpoint API da cui recuperare il dato'],
+          ['refresh', 'daily | weekly | monthly | quarterly | yearly', 'No', 'Frequenza di aggiornamento (default: yearly)'],
+          ['field', '"nome_campo"', 'No', 'Path del campo JSON nel payload della risposta'],
+          ['fallback', 'Numero', 'No', 'Valore da usare se la chiamata API fallisce'],
+        ]}
+      />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Frequenze di aggiornamento</h3>
+      <Table
+        headers={['Frequenza', 'Uso tipico']}
+        rows={[
+          ['daily', 'Prezzi di mercato, indicatori finanziari, dati meteo'],
+          ['weekly', 'Report epidemiologici, dati occupazionali'],
+          ['monthly', 'Indici economici, dati energetici'],
+          ['quarterly', 'PIL, dati demografici, report istituzionali'],
+          ['yearly', 'Censimenti, proiezioni a lungo termine, benchmark'],
+        ]}
+      />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Esempio: scenario con fonti reali</h3>
+      <CodeBlock code={`assumption prezzo_carbonio {
+  value: 72 EUR
+  source: "EU ETS, media 2025"
+  confidence: 0.7
+  uncertainty: normal(±25%)
+
+  bind {
+    source: "sdl:fallback/eu-ets-carbon-price"
+    refresh: daily
+    field: "price_per_ton_eur"
+    fallback: 72
+  }
+}
+
+assumption tasso_fecondita {
+  value: 1.24
+  source: "Eurostat demo_frate, 2024"
+  confidence: 0.9
+  uncertainty: normal(±5%)
+
+  bind {
+    source: "https://ec.europa.eu/eurostat/databrowser/view/demo_frate"
+    refresh: yearly
+    field: "fertility_rate"
+    fallback: 1.24
+  }
+}`} />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Cosa succede nell'interfaccia</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {[
+          ['Dati storici sul grafico', 'I dati reali vengono sovrapposti ai fan chart come punti o linea, permettendo di vedere quanto la previsione corrisponde alla realta\''],
+          ['Badge "Dati reali"', 'Lo scenario mostra un badge verde quando ha dati collegati attivi'],
+          ['Pannello Validazione', 'Tabella che confronta proiezione vs dato osservato anno per anno'],
+          ['Fallback automatico', 'Se l\'API non e\' raggiungibile, il sistema usa dati pre-registrati'],
+        ].map(([title, desc]) => (
+          <div key={title} className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-3">
+            <p className="text-sm font-semibold text-zinc-200 mb-1">{title}</p>
+            <p className="text-[12px] text-zinc-500 leading-relaxed">{desc}</p>
+          </div>
+        ))}
+      </div>
+
+      <Tip>
+        <strong>Buona pratica:</strong> specifica sempre un <code>fallback</code> per garantire che 
+        lo scenario funzioni anche offline. Il sistema Pulse usa dati pre-registrati quando le API esterne non sono disponibili.
+      </Tip>
+    </section>
+  );
+}
+
+function SourceTable({ title, color, entries }: {
+  title: string;
+  color: string;
+  entries: Array<{ url: string; field: string; description: string; geo: string }>;
+}) {
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+
+  const handleCopy = (idx: number, entry: typeof entries[0]) => {
+    const snippet = `bind {\n      source: "${entry.url}"\n      refresh: yearly\n      field: "${entry.field}"\n    }`;
+    navigator.clipboard.writeText(snippet);
+    setCopiedIdx(idx);
+    setTimeout(() => setCopiedIdx(null), 2000);
+  };
+
+  return (
+    <div className="mb-6">
+      <h4 className="text-sm font-semibold mb-2" style={{ color }}>{title}</h4>
+      <div className="overflow-x-auto rounded-xl border border-zinc-800">
+        <table className="w-full text-[12px]">
+          <thead>
+            <tr className="bg-zinc-800/40">
+              <th className="text-left px-3 py-2 text-zinc-400 font-semibold border-b border-zinc-800/60">URL / Identificatore</th>
+              <th className="text-left px-3 py-2 text-zinc-400 font-semibold border-b border-zinc-800/60">Descrizione</th>
+              <th className="text-left px-3 py-2 text-zinc-400 font-semibold border-b border-zinc-800/60">Geo</th>
+              <th className="text-left px-3 py-2 text-zinc-400 font-semibold border-b border-zinc-800/60 w-16"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((e, i) => (
+              <tr key={i} className="border-b border-zinc-800/30 last:border-b-0 hover:bg-zinc-800/20 transition-colors">
+                <td className="px-3 py-2 font-mono text-[11px] text-amber-300/80 max-w-[280px] truncate" title={e.url}>{e.url}</td>
+                <td className="px-3 py-2 text-zinc-400">{e.description}</td>
+                <td className="px-3 py-2 text-zinc-500">{e.geo}</td>
+                <td className="px-3 py-2">
+                  <button
+                    onClick={() => handleCopy(i, e)}
+                    className="text-[10px] text-zinc-600 hover:text-zinc-300 transition-colors px-2 py-0.5 rounded hover:bg-zinc-700/50"
+                    title="Copia snippet bind"
+                  >
+                    {copiedIdx === i ? '✓' : 'bind'}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function SectionRegistroFonti() {
+  return (
+    <section>
+      <h2 className="text-2xl font-bold text-white mb-4">Registro fonti verificate <span className="text-xs font-normal text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full ml-2">v0.2</span></h2>
+      <p className="text-zinc-400 leading-relaxed mb-4">
+        SDL fornisce un <strong className="text-zinc-200">catalogo curato di fonti dati reali</strong> che puoi usare
+        nei blocchi <code className="text-amber-300/80">bind</code> e <code className="text-amber-300/80">calibrate</code>.
+        Ogni URL e' verificato e gestito da un adapter Pulse dedicato.
+      </p>
+      <p className="text-zinc-400 leading-relaxed mb-6">
+        Clicca il pulsante <strong className="text-zinc-200">bind</strong> su ogni riga per copiare
+        lo snippet SDL pronto da incollare nel tuo scenario.
+      </p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+        {[
+          ['Eurostat', '#60a5fa', 'API pubblica UE — demografia, energia, economia, digitale. Nessuna API key richiesta.'],
+          ['World Bank', '#34d399', 'Indicatori globali — popolazione, CO\u2082, PIL, urbanizzazione. Nessuna API key richiesta.'],
+          ['SDL Fallback', '#fbbf24', 'Dati storici curati, inclusi nel bundle SDL. Funzionano sempre, anche offline.'],
+        ].map(([name, color, desc]) => (
+          <div key={name} className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-3">
+            <p className="text-sm font-semibold mb-1" style={{ color }}>{name}</p>
+            <p className="text-[11px] text-zinc-500 leading-relaxed">{desc}</p>
+          </div>
+        ))}
+      </div>
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-4">Demografia</h3>
+      <SourceTable
+        title="Eurostat"
+        color="#60a5fa"
+        entries={[
+          { url: 'ec.europa.eu/eurostat/databrowser/view/demo_frate', field: 'fertility_rate', description: 'Tasso di fecondita\'', geo: 'EU27, IT, DE, FR...' },
+          { url: 'ec.europa.eu/eurostat/databrowser/view/demo_pjan', field: 'population_millions', description: 'Popolazione al 1° gennaio', geo: 'EU27, IT, DE, FR...' },
+          { url: 'ec.europa.eu/eurostat/databrowser/view/demo_pjanind', field: 'old_age_dependency_ratio', description: 'Indice di dipendenza anziani', geo: 'EU27, IT, DE, FR...' },
+        ]}
+      />
+      <SourceTable
+        title="World Bank"
+        color="#34d399"
+        entries={[
+          { url: 'data.worldbank.org/indicator/SP.POP.GROW', field: 'annual_growth_rate_pct', description: 'Crescita demografica annua (%)', geo: 'Globale, SSF, IT...' },
+          { url: 'data.worldbank.org/indicator/SP.URB.TOTL.IN.ZS', field: 'urbanization_rate_pct', description: 'Popolazione urbana (%)', geo: 'Globale, SSF, IT...' },
+          { url: 'data.worldbank.org/indicator/SP.DYN.TFRT.IN', field: 'fertility_rate', description: 'Tasso fecondita\' (globale)', geo: 'Globale, SSF, IT...' },
+          { url: 'data.worldbank.org/indicator/SP.DYN.LE00.IN', field: 'life_expectancy_years', description: 'Aspettativa di vita alla nascita', geo: 'Globale, IT, DE...' },
+          { url: 'data.worldbank.org/indicator/SM.POP.NETM', field: 'net_migration', description: 'Migrazione netta', geo: 'Globale, IT, DE...' },
+        ]}
+      />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-4">Energia e clima</h3>
+      <SourceTable
+        title="Eurostat"
+        color="#60a5fa"
+        entries={[
+          { url: 'ec.europa.eu/eurostat/databrowser/view/nrg_ind_ren', field: 'renewable_share_pct', description: 'Quota rinnovabili nel mix energetico', geo: 'EU27, IT, DE...' },
+          { url: 'ec.europa.eu/eurostat/databrowser/view/env_air_gge', field: 'ghg_total_mt', description: 'Emissioni gas serra (MtCO\u2082eq)', geo: 'EU27, IT, DE...' },
+          { url: 'ec.europa.eu/eurostat/databrowser/view/nrg_pc_204', field: 'price_eur_kwh', description: 'Prezzi elettricita\' famiglie', geo: 'EU27, IT, DE...' },
+        ]}
+      />
+      <SourceTable
+        title="World Bank"
+        color="#34d399"
+        entries={[
+          { url: 'data.worldbank.org/indicator/EN.ATM.CO2E.KT', field: 'co2_kt', description: 'Emissioni CO\u2082 (kt)', geo: 'Globale, IT, SSF...' },
+          { url: 'data.worldbank.org/indicator/EG.FEC.RNEW.ZS', field: 'renewable_pct', description: 'Consumo energia rinnovabile (%)', geo: 'Globale, IT...' },
+        ]}
+      />
+      <SourceTable
+        title="SDL Fallback (dati inclusi)"
+        color="#fbbf24"
+        entries={[
+          { url: 'sdl:fallback/eu-ets-carbon-price', field: 'price_per_ton_eur', description: 'Prezzo carbonio EU ETS (\u20ac/tCO\u2082)', geo: 'EU' },
+          { url: 'sdl:fallback/datacenter-energy', field: 'twh_annual', description: 'Consumo energetico data center (TWh)', geo: 'Globale' },
+          { url: 'sdl:fallback/mediterranean-precipitation', field: 'precipitation_index', description: 'Indice precipitazioni Mediterraneo', geo: 'IT, ES, GR...' },
+          { url: 'sdl:fallback/mediterranean-temperature', field: 'annual_anomaly_celsius', description: 'Anomalia temperatura Mediterraneo', geo: 'IT, ES, GR...' },
+        ]}
+      />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-4">Economia e occupazione</h3>
+      <SourceTable
+        title="Eurostat"
+        color="#60a5fa"
+        entries={[
+          { url: 'ec.europa.eu/eurostat/databrowser/view/lfsi_emp_a', field: 'employment_rate', description: 'Tasso occupazione (20-64 anni)', geo: 'EU27, IT, DE...' },
+          { url: 'ec.europa.eu/eurostat/databrowser/view/nama_10_gdp', field: 'gdp_million_eur', description: 'PIL (milioni di euro)', geo: 'EU27, IT, DE...' },
+          { url: 'ec.europa.eu/eurostat/databrowser/view/une_rt_a', field: 'unemployment_rate_pct', description: 'Tasso disoccupazione', geo: 'EU27, IT, DE...' },
+        ]}
+      />
+      <SourceTable
+        title="World Bank"
+        color="#34d399"
+        entries={[
+          { url: 'data.worldbank.org/indicator/NY.GDP.MKTP.CD', field: 'gdp_usd', description: 'PIL (USD correnti)', geo: 'Globale, IT, SSF...' },
+          { url: 'data.worldbank.org/indicator/SL.UEM.TOTL.ZS', field: 'unemployment_rate_pct', description: 'Disoccupazione (% forza lavoro)', geo: 'Globale, IT...' },
+          { url: 'data.worldbank.org/indicator/SI.POV.GINI', field: 'gini_index', description: 'Indice Gini (disuguaglianza)', geo: 'Globale, IT...' },
+        ]}
+      />
+      <SourceTable
+        title="SDL Fallback (dati inclusi)"
+        color="#fbbf24"
+        entries={[
+          { url: 'sdl:fallback/pharma-rd-spend', field: 'total_billion_usd', description: 'Spesa R&D farmaceutica globale (mld USD)', geo: 'Globale' },
+        ]}
+      />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-4">Digitale</h3>
+      <SourceTable
+        title="Eurostat"
+        color="#60a5fa"
+        entries={[
+          { url: 'ec.europa.eu/eurostat/databrowser/view/isoc_ci_ifp_iu', field: 'digital_payment_adoption_pct', description: 'Adozione pagamenti digitali', geo: 'EU27, IT, DE...' },
+          { url: 'ec.europa.eu/eurostat/databrowser/view/isoc_cicce_use', field: 'eu_cloud_market_share_pct', description: 'Adozione cloud computing imprese', geo: 'EU27, IT...' },
+          { url: 'ec.europa.eu/eurostat/databrowser/view/isoc_ci_in_h', field: 'digital_skills_index', description: 'Competenze digitali di base', geo: 'EU27, IT, DE...' },
+        ]}
+      />
+      <SourceTable
+        title="World Bank"
+        color="#34d399"
+        entries={[
+          { url: 'data.worldbank.org/indicator/IT.NET.USER.ZS', field: 'internet_users_pct', description: 'Utenti Internet (%)', geo: 'Globale, IT, SSF...' },
+        ]}
+      />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-4">Salute</h3>
+      <SourceTable
+        title="World Bank"
+        color="#34d399"
+        entries={[
+          { url: 'data.worldbank.org/indicator/SH.XPD.CHEX.GD.ZS', field: 'health_expenditure_gdp_pct', description: 'Spesa sanitaria (% PIL)', geo: 'Globale, IT...' },
+        ]}
+      />
+      <SourceTable
+        title="SDL Fallback (dati inclusi)"
+        color="#fbbf24"
+        entries={[
+          { url: 'sdl:fallback/fda-novel-approvals', field: 'novel_approvals', description: 'Approvazioni FDA (farmaci nuovi/anno)', geo: 'US' },
+          { url: 'sdl:fallback/who-genomic-surveillance', field: 'global_coverage_pct', description: 'Copertura sorveglianza genomica', geo: 'Globale' },
+          { url: 'sdl:fallback/amr-mortality', field: 'annual_deaths_millions', description: 'Mortalita\' resistenza antimicrobica (mln)', geo: 'Globale' },
+          { url: 'sdl:fallback/ihr-compliance', field: 'global_compliance_index', description: 'Indice conformita\' IHR (WHO)', geo: 'Globale' },
+        ]}
+      />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-4">Difesa, trasporti e governance</h3>
+      <SourceTable
+        title="World Bank"
+        color="#34d399"
+        entries={[
+          { url: 'data.worldbank.org/indicator/MS.MIL.XPND.GD.ZS', field: 'military_gdp_pct', description: 'Spesa militare (% PIL)', geo: 'Globale, IT, DE...' },
+        ]}
+      />
+      <SourceTable
+        title="SDL Fallback (dati inclusi)"
+        color="#fbbf24"
+        entries={[
+          { url: 'sdl:fallback/ev-share-eu', field: 'ev_share_pct', description: 'Quota mercato EV (nuove immatricolazioni UE)', geo: 'EU27' },
+          { url: 'sdl:fallback/edpb-enforcement', field: 'maturity_index', description: 'Indice enforcement DPA (EDPB)', geo: 'EU' },
+          { url: 'sdl:fallback/cctv-density-eu', field: 'cameras_per_1000', description: 'Telecamere per 1.000 abitanti', geo: 'EU' },
+        ]}
+      />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Esempio: usare il registro</h3>
+      <CodeBlock title="Assumption con fonte verificata Eurostat" code={`assumption tasso_fecondita {
+  value: 1.24
+  source: "Eurostat demo_frate, 2024"
+  confidence: 0.9
+  uncertainty: normal(±5%)
+
+  bind {
+    source: "https://ec.europa.eu/eurostat/databrowser/view/demo_frate"
+    refresh: yearly
+    field: "fertility_rate"
+    fallback: 1.24
+  }
+}`} />
+      <CodeBlock title="Assumption con fonte verificata World Bank" code={`assumption crescita_popolazione {
+  value: 2.7
+  source: "World Bank SP.POP.GROW, 2023"
+  confidence: 0.8
+  uncertainty: normal(±3%)
+
+  bind {
+    source: "https://data.worldbank.org/indicator/SP.POP.GROW"
+    refresh: yearly
+    field: "annual_growth_rate_pct"
+    fallback: 2.7
+  }
+}`} />
+      <CodeBlock title="Assumption con fallback incluso" code={`assumption prezzo_carbonio {
+  value: 72 EUR
+  source: "EU ETS, media 2025"
+  confidence: 0.6
+  uncertainty: normal(±25%)
+
+  bind {
+    source: "sdl:fallback/eu-ets-carbon-price"
+    refresh: daily
+    field: "price_per_ton_eur"
+    fallback: 72
+  }
+}`} />
+
+      <Tip>
+        <strong>Usa solo URL dal registro:</strong> il sistema Pulse gestisce automaticamente
+        il fetch dei dati per gli URL verificati. URL esterni non riconosciuti verranno ignorati.
+        Se hai bisogno di una fonte non presente, puoi registrare fallback personalizzati via API.
+      </Tip>
+
+      <Tip>
+        <strong>Eurostat vs World Bank:</strong> usa Eurostat per dati EU-specifici (piu' granulari e aggiornati).
+        Usa World Bank per confronti globali o dati su paesi extra-UE (Africa, Asia, ecc.).
+        Usa i fallback per indicatori di nicchia dove non esistono API pubbliche gratuite.
+      </Tip>
+    </section>
+  );
+}
+
+function SectionMonitoraggio() {
+  return (
+    <section>
+      <h2 className="text-2xl font-bold text-white mb-4">Monitoraggio (watch) <span className="text-xs font-normal text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full ml-2">v0.2</span></h2>
+      <p className="text-zinc-400 leading-relaxed mb-4">
+        Il blocco <code className="text-amber-300/80">watch</code> definisce regole di monitoraggio: 
+        quando il dato reale (ottenuto via <code className="text-amber-300/80">bind</code>) devia troppo 
+        dal valore assunto, il sistema genera un <strong className="text-zinc-200">alert</strong>.
+      </p>
+
+      <CodeBlock title="Sintassi (dentro un'assunzione)" code={`assumption tasso_occupazione {
+  value: 65.4%
+  source: "Eurostat lfsi_emp_a, 2024"
+  uncertainty: normal(±5%)
+
+  bind {
+    source: "https://ec.europa.eu/eurostat/databrowser/view/lfsi_emp_a"
+    refresh: quarterly
+    field: "employment_rate"
+    fallback: 65.4
+  }
+
+  watch {
+    warn  when: actual < assumed * 0.9    // Warning: -10%
+    error when: actual < assumed * 0.8    // Errore: -20%
+  }
+}`} />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Livelli di alert</h3>
+      <Table
+        headers={['Livello', 'Significato', 'Visualizzazione']}
+        rows={[
+          ['warn', 'Il dato reale devia significativamente', 'Badge giallo con messaggio di avviso'],
+          ['error', 'Il dato reale e\' in contraddizione con l\'assunzione', 'Badge rosso con messaggio critico'],
+        ]}
+      />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Variabili nelle condizioni</h3>
+      <p className="text-zinc-400 leading-relaxed mb-3">
+        All'interno delle condizioni <code className="text-amber-300/80">when</code> puoi usare:
+      </p>
+      <Table
+        headers={['Variabile', 'Significato']}
+        rows={[
+          ['actual', 'Il valore reale ottenuto dal bind'],
+          ['assumed', 'Il valore dichiarato nell\'assunzione'],
+        ]}
+      />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Watch top-level</h3>
+      <p className="text-zinc-400 leading-relaxed mb-3">
+        Oltre che dentro le assunzioni, <code className="text-amber-300/80">watch</code> puo' essere 
+        dichiarato a livello top-level per monitorare una variabile specifica:
+      </p>
+      <CodeBlock title="Watch top-level" code={`watch quota_rinnovabili {
+  warn  when: actual < assumed * 0.8
+  error when: actual < assumed * 0.6
+  on_trigger: recalculate
+}`} />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Azioni su trigger</h3>
+      <Table
+        headers={['Azione', 'Descrizione']}
+        rows={[
+          ['recalculate', 'Rilancia la simulazione con i dati aggiornati'],
+          ['notify', 'Invia una notifica all\'utente'],
+          ['suggest_update', 'Suggerisce di aggiornare l\'assunzione'],
+        ]}
+      />
+
+      <Tip>
+        <strong>Quando usare watch:</strong> aggiungi watch alle assunzioni che hanno un bind attivo 
+        e che sono critiche per lo scenario. Cosi' saprai subito se la realta' si discosta dalle tue ipotesi.
+      </Tip>
+    </section>
+  );
+}
+
+function SectionCalibrazione() {
+  return (
+    <section>
+      <h2 className="text-2xl font-bold text-white mb-4">Calibrazione <span className="text-xs font-normal text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full ml-2">v0.2</span></h2>
+      <p className="text-zinc-400 leading-relaxed mb-4">
+        Il blocco <code className="text-amber-300/80">calibrate</code> usa dati storici per 
+        <strong className="text-zinc-200"> aggiornare automaticamente le distribuzioni di incertezza</strong>.
+        Man mano che i dati reali si accumulano, le previsioni diventano piu' precise: 
+        le bande del fan chart si restringono.
+      </p>
+
+      <CodeBlock title="Sintassi" code={`calibrate nome_variabile {
+  historical: "https://ec.europa.eu/eurostat/databrowser/view/nrg_ind_ren"
+  method: bayesian_update
+  window: 5y
+  prior: normal(±15%)
+  update_frequency: monthly
+}`} />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Proprieta'</h3>
+      <Table
+        headers={['Campo', 'Tipo', 'Obbligatorio', 'Descrizione']}
+        rows={[
+          ['historical', 'URL', 'Consigliato', 'URL dei dati storici per la calibrazione'],
+          ['method', 'bayesian_update | maximum_likelihood | ensemble', 'No', 'Algoritmo di calibrazione (default: bayesian_update)'],
+          ['window', 'Durata (es. 5y)', 'No', 'Finestra temporale dei dati storici da considerare'],
+          ['prior', 'Distribuzione', 'No', 'Distribuzione a priori (sovrascrive quella della variabile)'],
+          ['update_frequency', 'daily | monthly | quarterly | yearly', 'No', 'Con quale frequenza aggiornare la calibrazione'],
+        ]}
+      />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Metodi di calibrazione</h3>
+      <div className="space-y-3">
+        <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-4">
+          <p className="text-sm font-semibold text-blue-400 mb-1">bayesian_update</p>
+          <p className="text-[12px] text-zinc-400">
+            Aggiornamento bayesiano: combina la distribuzione a priori (prior) con i dati osservati 
+            per produrre una distribuzione a posteriori piu' stretta. Il metodo piu' robusto e comune.
+          </p>
+        </div>
+        <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-4">
+          <p className="text-sm font-semibold text-emerald-400 mb-1">maximum_likelihood</p>
+          <p className="text-[12px] text-zinc-400">
+            Massima verosimiglianza: trova i parametri della distribuzione che meglio spiegano i dati osservati. 
+            Piu' semplice ma meno robusto con pochi dati.
+          </p>
+        </div>
+        <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-4">
+          <p className="text-sm font-semibold text-amber-400 mb-1">ensemble</p>
+          <p className="text-[12px] text-zinc-400">
+            Ensemble: media pesata di piu' metodi di calibrazione. 
+            Utile quando non c'e' un metodo chiaramente preferibile.
+          </p>
+        </div>
+      </div>
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Esempio completo</h3>
+      <CodeBlock code={`// La variabile quota_rinnovabili ha uncertainty: normal(±12%)
+// Con i dati Eurostat degli ultimi 5 anni, la calibrazione
+// puo' restringere l'incertezza a ±7% se i dati sono coerenti
+
+calibrate quota_rinnovabili {
+  historical: "https://ec.europa.eu/eurostat/databrowser/view/nrg_ind_ren"
+  method: bayesian_update
+  window: 5y
+  prior: normal(±12%)
+  update_frequency: monthly
+}
+
+calibrate emissioni_co2 {
+  historical: "https://ec.europa.eu/eurostat/databrowser/view/env_air_gge"
+  method: ensemble
+  window: 10y
+  prior: normal(±15%)
+  update_frequency: yearly
+}`} />
+
+      <h3 className="text-lg font-semibold text-white mt-8 mb-3">Cosa succede nell'interfaccia</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {[
+          ['Badge "Calibrato"', 'Lo scenario mostra un badge blu quando la calibrazione e\' attiva e ha ridotto l\'incertezza'],
+          ['Fan chart piu\' stretti', 'Le bande di incertezza si restringono dove i dati storici confermano le proiezioni'],
+          ['Prior vs Posterior', 'Il sistema mostra la distribuzione originale vs quella calibrata'],
+          ['Aggiornamento continuo', 'La calibrazione si rinnova automaticamente alla frequenza specificata'],
+        ].map(([title, desc]) => (
+          <div key={title} className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-3">
+            <p className="text-sm font-semibold text-zinc-200 mb-1">{title}</p>
+            <p className="text-[12px] text-zinc-500 leading-relaxed">{desc}</p>
+          </div>
+        ))}
+      </div>
+
+      <Tip>
+        <strong>Importante:</strong> il target del <code>calibrate</code> deve corrispondere al nome 
+        di una variabile o assunzione dichiarata nello scenario. Se il nome non corrisponde, 
+        la validazione fallira' con errore SDL-E005.
+      </Tip>
+
+      <Tip>
+        <strong>bind + watch + calibrate:</strong> queste tre funzionalita' lavorano insieme. 
+        <code>bind</code> recupera i dati, <code>watch</code> verifica la coerenza, 
+        <code>calibrate</code> aggiorna le distribuzioni. Insieme rendono lo scenario <em>vivente</em>: 
+        si auto-aggiorna e auto-corregge con i dati reali.
+      </Tip>
+    </section>
+  );
+}
+
 function SectionSimulazione() {
   return (
     <section>
@@ -839,10 +1421,14 @@ function SectionRiferimento() {
           'uncertainty', 'source', 'confidence', 'timeframe', 'resolution',
           'normal', 'uniform', 'beta', 'triangular', 'lognormal',
           'linear', 'logistic', 'exponential', 'sigmoid',
-          'yearly', 'monthly', 'weekly', 'daily',
+          'yearly', 'monthly', 'weekly', 'daily', 'quarterly',
           'derives_from', 'formula', 'interpolation',
           'label', 'step', 'format', 'control', 'icon', 'color',
           'category', 'subtitle', 'difficulty',
+          'refresh', 'field', 'fallback', 'historical', 'method',
+          'window', 'prior', 'update_frequency',
+          'bayesian_update', 'maximum_likelihood', 'ensemble',
+          'warn', 'error', 'actual', 'assumed', 'on_trigger',
         ].map(kw => (
           <span key={kw} className="text-[11px] font-mono bg-zinc-800/60 text-amber-300/70 px-2 py-1 rounded-md">{kw}</span>
         ))}
@@ -900,7 +1486,7 @@ function SectionRiferimento() {
       </div>
 
       <h3 className="text-lg font-semibold text-white mt-8 mb-3">Schema completo</h3>
-      <CodeBlock title="Scenario completo (con campi v0.1.1)" code={`scenario "Nome" {
+      <CodeBlock title="Scenario completo (v0.2)" code={`scenario "Nome" {
   timeframe: 2025 -> 2040
   resolution: yearly
   confidence: 0.6
@@ -908,38 +1494,50 @@ function SectionRiferimento() {
   version: "1.0"
   description: "Descrizione"
   tags: ["tag1", "tag2"]
-  subtitle: "Sottotitolo"         // v0.1.1
-  category: tecnologia             // v0.1.1
-  icon: "🔬"                       // v0.1.1
-  color: "#3b82f6"                 // v0.1.1
-  difficulty: intermedio            // v0.1.1
+  subtitle: "Sottotitolo"
+  category: tecnologia
+  icon: "🔬"
+  color: "#3b82f6"
+  difficulty: intermedio
 
   assumption nome {
     value: 100
     source: "Fonte"
     confidence: 0.7
     uncertainty: normal(±20%)
+
+    bind {                           // v0.2
+      source: "https://ec.europa.eu/eurostat/databrowser/view/demo_frate"
+      refresh: yearly
+      field: "fertility_rate"
+      fallback: 100
+    }
+
+    watch {                          // v0.2
+      warn  when: actual < assumed * 0.7
+      error when: actual < assumed * 0.5
+    }
   }
 
   parameter nome {
     value: 50
     range: [10, 100]
     description: "Descrizione"
-    label: "Nome leggibile"        // v0.1.1
-    unit: "unita'"                  // v0.1.1
-    step: 5                         // v0.1.1
-    format: "{value} unita'"        // v0.1.1
-    control: slider                 // v0.1.1
-    icon: "⚙"                      // v0.1.1
-    color: "#10b981"                // v0.1.1
+    label: "Nome leggibile"
+    unit: "unita'"
+    step: 5
+    format: "{value} unita'"
+    control: slider
+    icon: "⚙"
+    color: "#10b981"
   }
 
   variable nome {
     description: "Descrizione"
     unit: "unita'"
-    label: "Nome leggibile"        // v0.1.1
-    icon: "📊"                      // v0.1.1
-    color: "#3b82f6"                // v0.1.1
+    label: "Nome leggibile"
+    icon: "📊"
+    color: "#3b82f6"
     2025: 100
     2030: 150
     2040: 200
@@ -959,11 +1557,19 @@ function SectionRiferimento() {
   impact nome {
     description: "Descrizione"
     unit: "unita'"
-    label: "Nome leggibile"        // v0.1.1
-    icon: "🎯"                      // v0.1.1
-    color: "#ef4444"                // v0.1.1
+    label: "Nome leggibile"
+    icon: "🎯"
+    color: "#ef4444"
     derives_from: var1, var2
     formula: var1 - var2
+  }
+
+  calibrate nome {                   // v0.2
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/nrg_ind_ren"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±15%)
+    update_frequency: monthly
   }
 
   simulate {
@@ -990,6 +1596,10 @@ const SECTION_COMPONENTS: Record<GuideSectionId, React.FC> = {
   parametri: SectionParametri,
   branches: SectionBranches,
   impatti: SectionImpatti,
+  'dati-reali': SectionDatiReali,
+  'registro-fonti': SectionRegistroFonti,
+  monitoraggio: SectionMonitoraggio,
+  calibrazione: SectionCalibrazione,
   simulazione: SectionSimulazione,
   distribuzioni: SectionDistribuzioni,
   riferimento: SectionRiferimento,
@@ -1042,7 +1652,7 @@ export default function GuideView({ initialSection }: GuideViewProps) {
             Guida SDL
           </h1>
           <p className="text-sm text-zinc-400 max-w-2xl leading-relaxed mb-4">
-            Impara a scrivere scenari in SDL: dalla struttura base fino ai branches e alle simulazioni Monte Carlo.
+            Impara a scrivere scenari in SDL: dalla struttura base fino ai dati reali, alla calibrazione bayesiana e alle simulazioni Monte Carlo.
           </p>
 
           {/* Section tabs */}

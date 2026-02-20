@@ -34,7 +34,7 @@ scenario "African Urban Leapfrog 2050" {
     uncertainty: normal(±12%)
 
     bind {
-      source: "https://population.un.org/wpp/api/ssa/growth-rate"
+      source: "https://data.worldbank.org/indicator/SP.POP.GROW"
       refresh: yearly
       field: "annual_growth_rate_pct"
       fallback: 2.4
@@ -414,7 +414,7 @@ scenario "African Urban Leapfrog 2050" {
   // ── Calibration ──
 
   calibrate urban_population {
-    historical: "https://population.un.org/wup/api/ssa/urban/2000-2025"
+    historical: "https://data.worldbank.org/indicator/SP.URB.TOTL.IN.ZS"
     method: bayesian_update
     window: 10y
     prior: normal(±10%)
@@ -422,7 +422,7 @@ scenario "African Urban Leapfrog 2050" {
   }
 
   calibrate electrification_rate {
-    historical: "https://trackingsdg7.esmap.org/api/ssa/electricity-access/2010-2025"
+    historical: "https://data.worldbank.org/indicator/EG.ELC.ACCS.ZS"
     method: bayesian_update
     window: 5y
     prior: normal(±12%)

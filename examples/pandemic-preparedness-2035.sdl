@@ -37,6 +37,18 @@ scenario "Global Pandemic Preparedness 2035" {
     source: "WHO IHR State Party Self-Assessment, 2024"
     confidence: 0.5
     uncertainty: beta(5, 4)
+
+    bind {
+      source: "sdl:fallback/ihr-compliance"
+      refresh: yearly
+      field: "global_compliance_index"
+      fallback: 0.55
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.75
+      error when: actual < assumed * 0.5
+    }
   }
 
   assumption global_health_security_funding {
@@ -362,6 +374,16 @@ scenario "Global Pandemic Preparedness 2035" {
     color: "#10b981"
     derives_from: genomic_surveillance_coverage, vaccine_response_time, icu_capacity_per_100k, health_workforce_density
     formula: (genomic_surveillance_coverage * 0.3) + ((300 - vaccine_response_time) / 300 * 30) + (icu_capacity_per_100k / 15 * 20) + (health_workforce_density / 100 * 20)
+  }
+
+  // ── Calibration ──
+
+  calibrate genomic_surveillance_coverage {
+    historical: "sdl:fallback/who-genomic-surveillance"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±25%)
+    update_frequency: quarterly
   }
 
   // ── Simulation ──

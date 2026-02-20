@@ -12,6 +12,41 @@ scenario "Inverno Demografico Europeo 2025-2060" {
   color: "#8b5cf6"
   difficulty: intermedio
 
+  // ── Assunzioni con dati reali ──
+
+  assumption tasso_fecondita_eu {
+    value: 1.46
+    source: "Eurostat, EU-27 Total Fertility Rate 2024"
+    confidence: 0.7
+    uncertainty: normal(±8%)
+
+    bind {
+      source: "https://ec.europa.eu/eurostat/databrowser/view/demo_frate"
+      refresh: yearly
+      field: "fertility_rate"
+      fallback: 1.46
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.9
+      error when: actual < 1.2
+    }
+  }
+
+  assumption popolazione_eu_attuale {
+    value: 447
+    source: "Eurostat demo_pjan EU-27, 2024"
+    confidence: 0.9
+    uncertainty: normal(±1%)
+
+    bind {
+      source: "https://ec.europa.eu/eurostat/databrowser/view/demo_pjan"
+      refresh: yearly
+      field: "population_millions"
+      fallback: 447
+    }
+  }
+
   parameter fertility_rate {
     label: "Tasso di fecondità EU"
     value: 1.46
@@ -212,6 +247,16 @@ scenario "Inverno Demografico Europeo 2025-2060" {
       2060: 21.25
       uncertainty: normal(±15%)
     }
+  }
+
+  // ── Calibrazione ──
+
+  calibrate total_population {
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/demo_pjan"
+    method: bayesian_update
+    window: 10y
+    prior: normal(±3%)
+    update_frequency: yearly
   }
 
   simulate {

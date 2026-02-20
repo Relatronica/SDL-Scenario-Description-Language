@@ -10,6 +10,8 @@ import WelcomePage from './components/WelcomePage';
 import EditorView from './editor/EditorView';
 import GuideView, { type GuideSectionId } from './guide/GuideView';
 import WizardView from './ai/WizardView';
+import ManifestoView from './components/ManifestoView';
+import AcademyView from './academy/AcademyView';
 import OnboardingModal, { useOnboardingAutoOpen } from './components/OnboardingModal';
 
 export default function App() {
@@ -61,6 +63,24 @@ export default function App() {
     mainRef.current?.scrollTo(0, 0);
   }, []);
 
+  const handleManifestoSelect = useCallback(() => {
+    setMode('manifesto');
+    setSelectedId(null);
+    setEditorTemplateId(null);
+    setGuideSectionId(null);
+    setSidebarOpen(false);
+    mainRef.current?.scrollTo(0, 0);
+  }, []);
+
+  const handleAcademySelect = useCallback(() => {
+    setMode('academy');
+    setSelectedId(null);
+    setEditorTemplateId(null);
+    setGuideSectionId(null);
+    setSidebarOpen(false);
+    mainRef.current?.scrollTo(0, 0);
+  }, []);
+
   const handleWizardOpenInEditor = useCallback((sdlSource: string) => {
     setMode('editor');
     setEditorTemplateId('__ai_generated__');
@@ -100,6 +120,8 @@ export default function App() {
         onEditorSelect={handleEditorSelect}
         onGuideSelect={handleGuideSelect}
         onWizardSelect={handleWizardSelect}
+        onManifestoSelect={handleManifestoSelect}
+        onAcademySelect={handleAcademySelect}
         onHelpOpen={() => onboarding.setOpen(true)}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -118,8 +140,8 @@ export default function App() {
             </svg>
           </button>
           <div className="flex items-center gap-2">
-            <img src="/segno_logo_white.png" alt="Segno" className="w-6 h-6 object-contain" />
-            <span className="text-sm font-semibold text-white">Segno</span>
+            <img src="/segno_logo_white.png" alt="Rebica" className="w-6 h-6 object-contain" />
+            <span className="text-sm font-semibold text-white">Rebica</span>
           </div>
           {mode === 'editor' && (
             <span className="ml-auto text-[11px] text-emerald-400 truncate max-w-[40%]">Editor</span>
@@ -130,10 +152,20 @@ export default function App() {
           {mode === 'guide' && (
             <span className="ml-auto text-[11px] text-amber-400 truncate max-w-[40%]">Guida SDL</span>
           )}
+          {mode === 'academy' && (
+            <span className="ml-auto text-[11px] text-teal-400 truncate max-w-[40%]">Academy</span>
+          )}
+          {mode === 'manifesto' && (
+            <span className="ml-auto text-[11px] text-rose-400 truncate max-w-[40%]">Manifesto</span>
+          )}
         </div>
 
         {/* Page content */}
-        {mode === 'wizard' ? (
+        {mode === 'academy' ? (
+          <AcademyView />
+        ) : mode === 'manifesto' ? (
+          <ManifestoView />
+        ) : mode === 'wizard' ? (
           <WizardView onOpenInEditor={handleWizardOpenInEditor} />
         ) : mode === 'guide' && guideSectionId ? (
           <GuideView key={guideSectionId} initialSection={guideSectionId} />
@@ -146,7 +178,7 @@ export default function App() {
         ) : mode === 'demo' && selectedScenario ? (
           <SdlScenarioView key={selectedScenario.id} sdlSource={selectedScenario.source} sdlId={selectedScenario.id} />
         ) : (
-          <WelcomePage onSelect={handleSelect} />
+          <WelcomePage onSelect={handleSelect} onManifestoSelect={handleManifestoSelect} />
         )}
       </div>
     </div>

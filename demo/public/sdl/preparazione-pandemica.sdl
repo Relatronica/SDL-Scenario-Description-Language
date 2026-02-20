@@ -19,6 +19,60 @@ scenario "Preparazione Pandemica Globale 2025-2040" {
   color: "#8b5cf6"
   difficulty: intermedio
 
+  // ── Assunzioni con dati reali ──
+
+  assumption sorveglianza_genomica_attuale {
+    value: 35
+    source: "WHO Global Genomic Surveillance Strategy Progress Report 2024"
+    confidence: 0.5
+    uncertainty: normal(±25%)
+
+    bind {
+      source: "sdl:fallback/who-genomic-surveillance"
+      refresh: quarterly
+      field: "global_coverage_pct"
+      fallback: 35
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.7
+      error when: actual < assumed * 0.5
+    }
+  }
+
+  assumption resistenza_antibiotici_baseline {
+    value: 1.3
+    source: "Lancet/GRAM study 2024 (milioni di morti/anno da AMR)"
+    confidence: 0.5
+    uncertainty: normal(±20%)
+
+    bind {
+      source: "sdl:fallback/amr-mortality"
+      refresh: yearly
+      field: "annual_deaths_millions"
+      fallback: 1.3
+    }
+  }
+
+  assumption spesa_sanitaria_pil_pct {
+    value: 9.5
+    source: "World Bank SH.XPD.CHEX.GD.ZS — health expenditure % GDP"
+    confidence: 0.6
+    uncertainty: normal(±12%)
+
+    bind {
+      source: "https://data.worldbank.org/indicator/SH.XPD.CHEX.GD.ZS"
+      refresh: yearly
+      field: "health_expenditure_gdp_pct"
+      fallback: 9.5
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.9
+      error when: actual < assumed * 0.8
+    }
+  }
+
   // ── Parameters ──
 
   parameter surveillance_coverage {
@@ -225,6 +279,16 @@ scenario "Preparazione Pandemica Globale 2025-2040" {
       2040: 8.4
       uncertainty: lognormal(1.0, 0.5)
     }
+  }
+
+  // ── Calibrazione ──
+
+  calibrate detection_time {
+    historical: "sdl:fallback/who-genomic-surveillance"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±20%)
+    update_frequency: quarterly
   }
 
   // ── Simulation ──

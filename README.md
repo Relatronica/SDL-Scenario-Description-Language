@@ -39,6 +39,18 @@ scenario "My First Scenario" {
     value: 3.5%
     uncertainty: normal(±20%)
     source: "World Bank, 2024"
+
+    bind {
+      source: "https://api.worldbank.org/v2/country/ITA/indicator/SP.POP.GROW"
+      refresh: yearly
+      field: "value"
+      fallback: 3.5
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.7
+      error when: actual < assumed * 0.5
+    }
   }
 
   parameter investment_level {
@@ -69,6 +81,13 @@ scenario "My First Scenario" {
     icon: "📈"
     color: "#10b981"
     formula: population - 60000000
+  }
+
+  calibrate population {
+    historical: "https://api.worldbank.org/v2/country/ITA/indicator/SP.POP.TOTL"
+    method: bayesian_update
+    window: 10y
+    prior: normal(±5%)
   }
 
   simulate {
@@ -104,8 +123,8 @@ The language specification, lexer, parser, and validator. Open source.
 ### SDL Engine (this package)
 Monte Carlo simulation engine with uncertainty propagation through causal graphs.
 
-### SDL Pulse (coming soon)
-Live data binding, watchdog monitoring, and Bayesian calibration.
+### SDL Pulse (this package)
+Live data binding, watchdog monitoring, and Bayesian calibration. Connects scenarios to real-world data via `bind`, monitors deviations with `watch`, and updates uncertainty distributions via `calibrate`.
 
 ### SDL Natural (coming soon)
 LLM-powered compilation between natural language and SDL.
@@ -163,6 +182,39 @@ if (ast) {
 }
 ```
 
+### Connect to live data (Pulse)
+
+```typescript
+import { parse, validate } from '@relatronica/sdl';
+import { loadPulseData, runCalibration, evaluateWatchRules } from '@relatronica/sdl/pulse';
+
+const { ast } = parse(source);
+
+if (ast) {
+  const liveData = await loadPulseData(ast);
+
+  // Calibrate uncertainty distributions with historical data
+  const calibratedAst = liveData.calibratedAst ?? ast;
+
+  // Check watch rules for deviations
+  const alerts = evaluateWatchRules(ast, liveData);
+  alerts.forEach(a => console.log(`[${a.level}] ${a.variable}: ${a.message}`));
+}
+```
+
+### Run sensitivity analysis
+
+```typescript
+import { renderSDL, runSensitivityAnalysis } from '@relatronica/sdl';
+
+const rendered = renderSDL(source, 'my-scenario');
+const sensitivity = runSensitivityAnalysis(rendered, { runs: 1000 });
+
+sensitivity.rankings.forEach(r => {
+  console.log(`${r.parameter}: swing = ${r.swing.toFixed(2)}`);
+});
+```
+
 ## Language Features
 
 ### Uncertainty-Native
@@ -177,11 +229,50 @@ Time is a first-class citizen. Timeseries support linear, step, and spline inter
 ### Branching Scenarios
 Conditional branches create alternative trajectories. When conditions are met during simulation, the engine forks and explores both paths.
 
-### Live Data Binding
-Assumptions can bind to real-world API data sources, enabling scenarios that self-validate and self-update.
+### Live Data Binding (`bind`)
+Assumptions can bind to real-world API data sources, enabling scenarios that self-validate and self-update. When historical data is available, it's overlaid on fan charts for visual validation.
 
-### Bayesian Calibration
-Uncertainty distributions automatically narrow as historical data accumulates, making simulations more precise over time.
+```sdl
+assumption carbon_tax {
+  value: 85 EUR
+  source: "EU ETS market price, Q1 2025"
+  uncertainty: normal(±25%)
+
+  bind {
+    source: "https://api.worldbank.org/carbon-pricing/eu-ets"
+    refresh: daily
+    field: "price_per_ton_eur"
+    fallback: 85
+  }
+
+  watch {
+    warn  when: actual > assumed * 1.5
+    error when: actual > assumed * 2.0
+  }
+}
+```
+
+### Watchdog Monitoring (`watch`)
+Watch rules detect when real-world data deviates from scenario assumptions. Configurable `warn` and `error` thresholds trigger alerts in the UI, with optional `on_trigger` actions (recalculate, notify, suggest updates).
+
+### Bayesian Calibration (`calibrate`)
+Uncertainty distributions automatically narrow as historical data accumulates, making simulations more precise over time. Supports `bayesian_update`, `maximum_likelihood`, and `ensemble` methods.
+
+```sdl
+calibrate renewable_share {
+  historical: "https://ec.europa.eu/eurostat/api/nrg_ind_ren"
+  method: bayesian_update
+  window: 5y
+  prior: normal(±12%)
+  update_frequency: monthly
+}
+```
+
+### Sensitivity Analysis
+Automatically measures which parameters most influence outputs. For each slider parameter, the engine runs simulations at extreme values and computes the output swing, producing tornado charts sorted by influence.
+
+### Automated Narration
+Generates human-readable Italian text summaries from simulation results, covering key trajectories, uncertainty levels, historical accuracy (when live data is available), and most influential parameters.
 
 ### Composability
 Scenarios can import and compose with other scenarios, enabling modular foresight — an energy scenario combined with a demographic scenario.
@@ -249,16 +340,21 @@ See the [`examples/`](./examples/) directory:
 | Example | Domain | Complexity | Key SDL Features |
 |---------|--------|------------|-----------------|
 | **[`green-transition-italy.sdl`](./examples/green-transition-italy.sdl)** | Energy / Climate | High | `bind`, `watch`, `calibrate`, spline interpolation |
+| **[`water-scarcity-mediterranean.sdl`](./examples/water-scarcity-mediterranean.sdl)** | Climate / Resources | High | Multiple `bind` + `calibrate`, `watch` with thresholds |
+| **[`ai-energy-demand-2035.sdl`](./examples/ai-energy-demand-2035.sdl)** | AI / Energy / Climate | High | `bind` + `watch` + `calibrate`, `lognormal` compute growth |
+| **[`demographic-winter-europe.sdl`](./examples/demographic-winter-europe.sdl)** | Demographics | High | `bind` + `calibrate`, `triangular` distribution, 35-year horizon |
+| **[`ai-drug-discovery-2040.sdl`](./examples/ai-drug-discovery-2040.sdl)** | AI / Health / Pharma | High | `bind` + `calibrate`, `lognormal` for breakthroughs |
+| **[`autonomous-mobility-2040.sdl`](./examples/autonomous-mobility-2040.sdl)** | AI / Mobility / Urban | Medium | `bind` + `calibrate`, `logistic` adoption curves |
+| **[`african-urban-leapfrog-2050.sdl`](./examples/african-urban-leapfrog-2050.sdl)** | Urbanization | Medium | `bind` + `calibrate`, `latin_hypercube` sampling |
 | **[`ai-governance-2030.sdl`](./examples/ai-governance-2030.sdl)** | Tech / Governance | High | Multi-bloc geopolitics, `beta` distributions |
 | **[`digital-euro-adoption.sdl`](./examples/digital-euro-adoption.sdl)** | Finance / CBDC | Low | Great first read, compact scenario, `logistic` model |
-| **[`demographic-winter-europe.sdl`](./examples/demographic-winter-europe.sdl)** | Demographics | Medium | `import`/`compose`, `triangular` distribution, 35-year horizon |
-| **[`water-scarcity-mediterranean.sdl`](./examples/water-scarcity-mediterranean.sdl)** | Climate / Resources | High | Multiple `bind` + `calibrate`, `watch` with thresholds |
 | **[`pandemic-preparedness-2035.sdl`](./examples/pandemic-preparedness-2035.sdl)** | Health / Biosecurity | Medium | `lognormal` for fat-tailed risks, low confidence |
-| **[`african-urban-leapfrog-2050.sdl`](./examples/african-urban-leapfrog-2050.sdl)** | Urbanization | Medium | `latin_hypercube` sampling, exponential growth |
 | **[`eu-defense-autonomy-2035.sdl`](./examples/eu-defense-autonomy-2035.sdl)** | Geopolitics / Defense | Medium | Very low confidence (0.25), many external assumptions |
-| **[`ai-energy-demand-2035.sdl`](./examples/ai-energy-demand-2035.sdl)** | AI / Energy / Climate | High | `bind` + `watch` + `calibrate`, `lognormal` compute growth |
-| **[`ai-drug-discovery-2040.sdl`](./examples/ai-drug-discovery-2040.sdl)** | AI / Health / Pharma | High | `lognormal` for breakthroughs, `beta` for accuracy rates |
-| **[`autonomous-mobility-2040.sdl`](./examples/autonomous-mobility-2040.sdl)** | AI / Mobility / Urban | Medium | `logistic` adoption curves, `calibrate`, 20-year horizon |
+| **[`ai-act-compliance-eu.sdl`](./examples/ai-act-compliance-eu.sdl)** | Regulation / AI Act | High | `beta` for enforcement uncertainty, multi-branch |
+| **[`biometric-surveillance-risk.sdl`](./examples/biometric-surveillance-risk.sdl)** | Privacy / AI Act | High | Civil liberties impact, regulatory branches |
+| **[`gdpr-ai-data-governance.sdl`](./examples/gdpr-ai-data-governance.sdl)** | Privacy / GDPR | Medium | Compliance cost modeling, `beta` distributions |
+| **[`chatbot-llm-transparency.sdl`](./examples/chatbot-llm-transparency.sdl)** | AI Ethics | Medium | Transparency metrics, trust modeling |
+| **[`automated-decision-risk.sdl`](./examples/automated-decision-risk.sdl)** | AI / Governance | Medium | Algorithmic decision-making, bias modeling |
 
 ## Specification
 
@@ -266,7 +362,7 @@ The full formal specification is available at [`spec/SDL-SPEC-v0.1.md`](./spec/S
 
 ## Roadmap
 
-### v0.1 (current)
+### v0.1
 - [x] Language specification
 - [x] Lexer / Tokenizer
 - [x] Recursive descent parser
@@ -275,26 +371,31 @@ The full formal specification is available at [`spec/SDL-SPEC-v0.1.md`](./spec/S
 - [x] Distribution sampling (normal, uniform, beta, triangular, lognormal)
 - [x] Branch evaluation
 - [x] Convergence detection
+- [x] Interactive parameters (sliders, toggles, dropdowns)
 
-### v0.2
-- [ ] SDL Pulse: data binding to HTTP/JSON APIs
-- [ ] SDL Pulse: watchdog monitoring and alerting
-- [ ] SDL Pulse: Bayesian calibration
+### v0.2 (current)
+- [x] SDL Pulse: `bind` — data binding to HTTP/JSON APIs
+- [x] SDL Pulse: `watch` — watchdog monitoring and alerting
+- [x] SDL Pulse: `calibrate` — Bayesian calibration with historical data
+- [x] Sensitivity analysis (tornado charts, parameter influence ranking)
+- [x] Automated narration (Italian, from simulation results)
+- [x] Historical data overlay on fan charts
+- [x] AI Wizard with bind/watch/calibrate generation
+- [x] 15 demo scenarios with live data integration
 - [ ] WebAssembly engine for browser execution
-- [ ] Sensitivity analysis
 
 ### v0.3
-- [ ] SDL Natural: NL → SDL compilation
-- [ ] SDL Natural: SDL → NL narration
+- [ ] SDL Natural: NL → SDL compilation (advanced)
 - [ ] SDL Natural: conversational scenario refinement
-- [ ] SDL Natural: simulation result interpretation
-- [ ] Visual editor (web-based)
+- [ ] Multi-language narration (EN, DE, FR, ES)
+- [ ] Visual editor with drag-and-drop variables
+- [ ] Real-time collaborative editing
 
 ### v0.4
 - [ ] SDL Registry: public scenario repository
 - [ ] Scenario diff / merge / fork
-- [ ] Collaborative editing
 - [ ] Accuracy tracking and leaderboards
+- [ ] Ensemble multi-scenario analysis
 
 ## Support the Project
 

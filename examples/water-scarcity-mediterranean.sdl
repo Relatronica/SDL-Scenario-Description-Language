@@ -33,7 +33,7 @@ scenario "Water Scarcity Mediterranean 2040" {
     uncertainty: normal(±18%)
 
     bind {
-      source: "https://cds.climate.copernicus.eu/api/v2/precipitation/mediterranean"
+      source: "sdl:fallback/mediterranean-precipitation"
       refresh: monthly
       field: "annual_precipitation_index"
       fallback: 100
@@ -58,7 +58,7 @@ scenario "Water Scarcity Mediterranean 2040" {
     uncertainty: normal(±15%)
 
     bind {
-      source: "https://cds.climate.copernicus.eu/api/v2/temperature/mediterranean"
+      source: "sdl:fallback/mediterranean-temperature"
       refresh: monthly
       field: "annual_anomaly_celsius"
       fallback: 1.3
@@ -344,7 +344,7 @@ scenario "Water Scarcity Mediterranean 2040" {
   // ── Calibration ──
 
   calibrate annual_rainfall_index {
-    historical: "https://cds.climate.copernicus.eu/api/v2/precipitation/mediterranean/2000-2025"
+    historical: "sdl:fallback/mediterranean-precipitation"
     method: bayesian_update
     window: 10y
     prior: normal(±18%)
@@ -352,7 +352,7 @@ scenario "Water Scarcity Mediterranean 2040" {
   }
 
   calibrate water_stress_index {
-    historical: "https://www.wri.org/api/aqueduct/mediterranean/2010-2025"
+    historical: "sdl:fallback/mediterranean-precipitation"
     method: bayesian_update
     window: 5y
     prior: normal(±15%)
@@ -360,7 +360,7 @@ scenario "Water Scarcity Mediterranean 2040" {
   }
 
   calibrate groundwater_depletion {
-    historical: "https://grace.jpl.nasa.gov/api/groundwater/mediterranean/2010-2025"
+    historical: "sdl:fallback/mediterranean-precipitation"
     method: bayesian_update
     window: 5y
     prior: normal(±20%)

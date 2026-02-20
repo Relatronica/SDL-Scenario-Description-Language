@@ -20,6 +20,27 @@ scenario "AI e Lavoro in Italia 2025-2035" {
   color: "#3b82f6"
   difficulty: base
 
+  // ── Assunzioni con dati reali ──
+
+  assumption tasso_occupazione_attuale {
+    value: 62
+    source: "ISTAT Forze di lavoro 2024"
+    confidence: 0.8
+    uncertainty: normal(±5%)
+
+    bind {
+      source: "https://ec.europa.eu/eurostat/databrowser/view/lfsi_emp_a"
+      refresh: quarterly
+      field: "employment_rate"
+      fallback: 62
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.95
+      error when: actual < assumed * 0.90
+    }
+  }
+
   // ── Parameters ──
 
   parameter ai_adoption_rate {
@@ -132,7 +153,7 @@ scenario "AI e Lavoro in Italia 2025-2035" {
   variable impatto_pil {
     label: "Impatto sul PIL"
     description: "Contributo AI al PIL italiano"
-    unit: "miliardi EUR"
+    unit: "EUR"
     icon: "diamond"
     color: "#f59e0b"
 
@@ -162,7 +183,7 @@ scenario "AI e Lavoro in Italia 2025-2035" {
 
   // ── Branches ──
 
-  branch "Regolamentazione forte" when regulation_level > 0.7 {
+  branch "Regolamentazione forte" when regulation_level > 70 {
     probability: 0.40
 
     variable posti_lavoro_a_rischio {
@@ -207,6 +228,16 @@ scenario "AI e Lavoro in Italia 2025-2035" {
       2035: 229.5B EUR
       uncertainty: normal(±25%)
     }
+  }
+
+  // ── Calibrazione ──
+
+  calibrate posti_lavoro_a_rischio {
+    historical: "https://ec.europa.eu/eurostat/databrowser/view/lfsi_emp_a"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±12%)
+    update_frequency: yearly
   }
 
   // ── Simulation ──

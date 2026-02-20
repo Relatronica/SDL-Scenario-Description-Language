@@ -18,7 +18,8 @@
   "include": [
     "index.ts",
     "core/**/*.ts",
-    "engine/**/*.ts"
+    "engine/**/*.ts",
+    "pulse/**/*.ts"
   ],
   "exclude": [
     "node_modules",

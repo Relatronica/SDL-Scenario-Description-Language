@@ -14,7 +14,7 @@ import { SdlIcon } from '../lib/icons';
 
 // ─── Types ───
 
-export type AppMode = 'demo' | 'editor' | 'guide' | 'wizard';
+export type AppMode = 'demo' | 'editor' | 'guide' | 'wizard' | 'academy' | 'manifesto';
 
 export interface SidebarProps {
   mode: AppMode;
@@ -25,6 +25,8 @@ export interface SidebarProps {
   onEditorSelect: (templateId: string) => void;
   onGuideSelect: (sectionId: GuideSectionId) => void;
   onWizardSelect: () => void;
+  onManifestoSelect: () => void;
+  onAcademySelect: () => void;
   onHelpOpen: () => void;
   isOpen: boolean;
   onClose: () => void;
@@ -60,7 +62,7 @@ interface ScenarioMeta {
   category: ScenarioCategory;
 }
 
-export default function Sidebar({ mode, selectedId, editorTemplateId, guideSectionId, onSelect, onEditorSelect, onGuideSelect, onWizardSelect, onHelpOpen, isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ mode, selectedId, editorTemplateId, guideSectionId, onSelect, onEditorSelect, onGuideSelect, onWizardSelect, onManifestoSelect, onAcademySelect, onHelpOpen, isOpen, onClose }: SidebarProps) {
   const [expandedCategories, setExpandedCategories] = useState<Set<ScenarioCategory>>(new Set());
   const [editorExpanded, setEditorExpanded] = useState(false);
   const [guideExpanded, setGuideExpanded] = useState(false);
@@ -118,7 +120,7 @@ export default function Sidebar({ mode, selectedId, editorTemplateId, guideSecti
       {/* Sidebar panel */}
       <aside
         className={`
-          fixed top-0 left-0 z-50 h-full w-[280px] bg-zinc-950 border-r border-zinc-800
+          fixed top-0 left-0 z-50 h-full w-[280px] bg-zinc-900 border-r border-zinc-800
           flex flex-col shrink-0 overflow-hidden
           transition-transform duration-300 ease-in-out
           md:relative md:translate-x-0 md:z-0 md:h-full
@@ -128,9 +130,9 @@ export default function Sidebar({ mode, selectedId, editorTemplateId, guideSecti
         {/* Logo / Header */}
         <div className="shrink-0 px-5 pt-6 pb-4 border-b border-zinc-800/60">
           <div className="flex items-center gap-3">
-            <img src="/segno_logo_white.png" alt="Segno" className="w-9 h-9 object-contain" />
+            <img src="/logo.png" alt="Rebica" className="w-9 h-9 object-contain" />
             <div>
-              <h1 className="text-sm font-bold text-white leading-tight">Segno</h1>
+              <h1 className="text-sm font-bold text-white leading-tight">Rebica</h1>
               <p className="text-[10px] text-zinc-500">SDL Citizen Lab</p>
             </div>
             <button
@@ -398,6 +400,74 @@ export default function Sidebar({ mode, selectedId, editorTemplateId, guideSecti
               </div>
             )}
           </div>
+
+          {/* ─── Divider ─── */}
+          <div className="my-5 border-t border-zinc-800/60" />
+
+          {/* ─── ACADEMY Section ─── */}
+          <div className="flex items-center gap-2 px-2 mb-3">
+            <svg className="w-4 h-4 text-teal-500/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15v4.5" />
+            </svg>
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-zinc-500">Academy</span>
+            <span className="ml-auto text-[10px] text-teal-500/60 bg-teal-500/10 px-1.5 py-0.5 rounded-full">new</span>
+          </div>
+
+          <div className="space-y-0.5 mb-1">
+            <button
+              onClick={() => { onAcademySelect(); onClose(); }}
+              className={`
+                w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all duration-150
+                ${mode === 'academy'
+                  ? 'bg-teal-500/10 border border-teal-500/20 text-teal-300'
+                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/40 border border-transparent'
+                }
+              `}
+            >
+              <svg className={`w-4 h-4 ${mode === 'academy' ? 'text-teal-400' : 'text-zinc-500'} transition-colors`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+              </svg>
+              <div className="min-w-0 flex-1">
+                <p className={`text-[12px] font-medium leading-tight truncate ${mode === 'academy' ? 'text-teal-300' : 'text-zinc-300'}`}>
+                  Impara il foresight
+                </p>
+                <p className="text-[10px] text-zinc-600 truncate mt-0.5">9 corsi · 3 track · quiz</p>
+              </div>
+              {mode === 'academy' && (
+                <div className="w-1.5 h-1.5 rounded-full bg-teal-400 shrink-0 animate-pulse" />
+              )}
+            </button>
+          </div>
+
+          {/* ─── Divider ─── */}
+          <div className="my-5 border-t border-zinc-800/60" />
+
+          {/* ─── MANIFESTO Section ─── */}
+          <div className="space-y-0.5 mb-1">
+            <button
+              onClick={() => { onManifestoSelect(); onClose(); }}
+              className={`
+                w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all duration-150
+                ${mode === 'manifesto'
+                  ? 'bg-rose-500/10 border border-rose-500/20 text-rose-300'
+                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/40 border border-transparent'
+                }
+              `}
+            >
+              <svg className={`w-4 h-4 ${mode === 'manifesto' ? 'text-rose-400' : 'text-zinc-500'} transition-colors`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              <div className="min-w-0 flex-1">
+                <p className={`text-[12px] font-medium leading-tight truncate ${mode === 'manifesto' ? 'text-rose-300' : 'text-zinc-300'}`}>
+                  Perche' SDL
+                </p>
+                <p className="text-[10px] text-zinc-600 truncate mt-0.5">Il manifesto del progetto</p>
+              </div>
+              {mode === 'manifesto' && (
+                <div className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0 animate-pulse" />
+              )}
+            </button>
+          </div>
         </nav>
 
         {/* Footer */}
@@ -424,8 +494,8 @@ export default function Sidebar({ mode, selectedId, editorTemplateId, guideSecti
             <button
               onClick={onHelpOpen}
               className="p-1.5 rounded-lg text-zinc-600 hover:text-blue-400 hover:bg-zinc-800 transition-colors"
-              aria-label="Cos'è Segno?"
-              title="Cos'è Segno?"
+              aria-label="Cos'è Rebica?"
+              title="Cos'è Rebica?"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

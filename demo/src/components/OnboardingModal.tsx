@@ -1,12 +1,12 @@
 /**
- * OnboardingModal — 3-step intro that explains Segno / SDL to new users.
+ * OnboardingModal — 3-step intro that explains Rebica / SDL to new users.
  * Shown on first visit (localStorage), recallable via help button.
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { BarChart3, Search, Settings, Lock } from 'lucide-react';
 
-const STORAGE_KEY = 'segno-onboarding-seen';
+const STORAGE_KEY = 'rebica-onboarding-seen';
 
 interface OnboardingModalProps {
   open: boolean;
@@ -17,11 +17,11 @@ interface OnboardingModalProps {
 const STEPS = [
   {
     tag: 'Benvenuto',
-    title: "Cos'è Segno?",
+    title: "Cos'è Rebica?",
     body: (
       <>
         <p className="text-zinc-400 leading-relaxed">
-          Segno trasforma gli <strong className="text-zinc-200">scenari futuri</strong> in
+          Rebica trasforma gli <strong className="text-zinc-200">scenari futuri</strong> in
           codice eseguibile. Invece di slide statiche, qui ogni ipotesi viene simulata con
           migliaia di run Monte Carlo.
         </p>

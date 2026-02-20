@@ -104,6 +104,7 @@ export enum TokenType {
 
   // Resolution keywords
   Yearly = 'Yearly',
+  Quarterly = 'Quarterly',
   Monthly = 'Monthly',
   Weekly = 'Weekly',
   Daily = 'Daily',
@@ -438,7 +439,7 @@ export interface CalibrateNode extends BaseNode {
 }
 
 export type CalibrationMethod = 'bayesian_update' | 'maximum_likelihood' | 'ensemble';
-export type RefreshRate = 'realtime' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly';
+export type RefreshRate = 'realtime' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
 
 // ============================================================
 // 2.10 Bind

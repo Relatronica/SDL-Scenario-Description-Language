@@ -12,6 +12,27 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
   color: "#ef4444"
   difficulty: avanzato
 
+  // ── Assunzioni con dati reali ──
+
+  assumption spesa_difesa_eu_attuale {
+    value: 1.9
+    source: "NATO Defence Expenditure Report 2024 (% PIL medio EU)"
+    confidence: 0.8
+    uncertainty: normal(±5%)
+
+    bind {
+      source: "https://data.worldbank.org/indicator/MS.MIL.XPND.GD.ZS"
+      refresh: yearly
+      field: "eu_avg_gdp_pct"
+      fallback: 1.9
+    }
+
+    watch {
+      warn  when: actual < assumed * 0.9
+      error when: actual < 1.5
+    }
+  }
+
   parameter us_commitment {
     label: "Impegno USA/NATO"
     value: 65
@@ -228,6 +249,16 @@ scenario "Autonomia Strategica Difesa Europea 2025-2038" {
       2035: 651.00
       uncertainty: normal(±20%)
     }
+  }
+
+  // ── Calibrazione ──
+
+  calibrate defense_spending {
+    historical: "https://data.worldbank.org/indicator/MS.MIL.XPND.GD.ZS"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±8%)
+    update_frequency: yearly
   }
 
   simulate {

@@ -6,7 +6,7 @@
 // exploring scenarios for privacy erosion, civil liberties,
 // and market dynamics under AI Act Art. 5 prohibitions.
 //
-// Inspired by the Segno knowledge base:
+// Inspired by the Rebica knowledge base:
 //   - aiact-prohibited-biometric (Art. 5)
 //   - aiact-highrisk-biometric (Art. 6 & Annex III)
 //   - gdpr-special-categories (Art. 9)
@@ -43,6 +43,18 @@ scenario "Sorveglianza Biometrica — Rischio e Regolazione" {
     source: "Comparitech 2024 — avg 35 cameras per 1000 people in major EU cities"
     confidence: 0.55
     uncertainty: normal(±20%)
+
+    bind {
+      source: "sdl:fallback/cctv-density-eu"
+      refresh: yearly
+      field: "cameras_per_1000"
+      fallback: 35
+    }
+
+    watch {
+      warn  when: actual > assumed * 1.3
+      error when: actual > assumed * 1.8
+    }
   }
 
   assumption civil_society_pressure {
@@ -341,6 +353,16 @@ scenario "Sorveglianza Biometrica — Rischio e Regolazione" {
     color: "#f59e0b"
     derives_from: false_identification_incidents
     formula: false_identification_incidents * 0.025
+  }
+
+  // ── Calibration ──
+
+  calibrate deployed_biometric_systems {
+    historical: "sdl:fallback/cctv-density-eu"
+    method: bayesian_update
+    window: 5y
+    prior: normal(±20%)
+    update_frequency: yearly
   }
 
   // ── Simulation ──
