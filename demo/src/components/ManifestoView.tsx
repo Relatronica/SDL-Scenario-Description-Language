@@ -40,21 +40,28 @@ export default function ManifestoView() {
           <div className="space-y-4 text-[15px] text-zinc-400 leading-relaxed">
             <p>
               La <strong className="text-zinc-300">ribeca</strong> e' uno degli strumenti musicali
-              piu' antichi d'Europa. Arrivata attraverso il Mediterraneo dal mondo arabo, e' stata
-              per secoli lo strumento del popolo: suonata nelle piazze, nei mercati, nelle feste.
+              piu' antichi d'Europa. Arrivata dal mondo arabo attraverso il Mediterraneo, per secoli
+              e' stata lo strumento del popolo: suonata nelle piazze, nei mercati, nelle feste.
               Non apparteneva alle corti. Apparteneva a tutti.
             </p>
             <p>
-              E' anche uno strumento che non produce una nota sola. Le sue corde vibrano
-              insieme, generando <strong className="text-zinc-300">armoniche</strong> —
-              frequenze multiple che si sovrappongono, creando un suono ricco e complesso da
-              un gesto semplice. Un arco su una corda, e nasce uno spettro intero.
+              E' anche uno strumento che non produce mai una nota sola. Le sue corde vibrano
+              generando <strong className="text-zinc-300">armoniche</strong> — frequenze multiple
+              che si sovrappongono, creando un suono ricco e complesso da un gesto semplice.
+              Un arco su una corda, e nasce uno spettro intero.
             </p>
             <p>
-              Rebica prende il nome da li'. Come la ribeca genera armoniche da una corda,
-              SDL genera <strong className="text-zinc-300">distribuzioni di futuri possibili</strong> da
-              un insieme di assunzioni. Non una previsione sola, ma un ventaglio. Non una nota,
-              ma un accordo. Non la risposta, ma lo spazio delle risposte.
+              <strong className="text-zinc-300">Rebica</strong> e' un anagramma
+              di <em>ribeca</em>. Le stesse lettere, in un ordine diverso — esattamente
+              come SDL prende gli stessi dati e li ricompone in ordini diversi: migliaia di
+              traiettorie possibili da un unico insieme di assunzioni. L'anagramma non e' un
+              vezzo. E' il metodo: <strong className="text-zinc-300">ricombinare gli elementi
+              per vedere cio' che una disposizione sola non mostra.</strong>
+            </p>
+            <p>
+              Come la ribeca generava armoniche da una corda, Rebica
+              genera <strong className="text-zinc-300">distribuzioni di futuri possibili</strong> da
+              un file di testo. Non una previsione, ma un ventaglio. Non una nota, ma un accordo.
             </p>
             <p>
               E come la ribeca era lo strumento del popolo — non dei re, non dei cortigiani —

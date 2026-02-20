@@ -140,7 +140,7 @@ export default function App() {
             </svg>
           </button>
           <div className="flex items-center gap-2">
-            <img src="/segno_logo_white.png" alt="Rebica" className="w-6 h-6 object-contain" />
+            <img src="/logo.png" alt="Rebica" className="w-6 h-6 object-contain" />
             <span className="text-sm font-semibold text-white">Rebica</span>
           </div>
           {mode === 'editor' && (
